@@ -14,14 +14,8 @@ import (
 
 var listenNetwork = flag.String(
 	"listenNetwork",
-	"unix",
+	"tcp",
 	"how to listen on the address (unix, tcp, etc.)",
-)
-
-var listenAddr = flag.String(
-	"listenAddr",
-	"/tmp/garden.sock",
-	"address to listen on",
 )
 
 var containerGraceTime = flag.Duration(
@@ -31,6 +25,16 @@ var containerGraceTime = flag.Duration(
 )
 
 func main() {
+	iface := "0.0.0.0:3333"
+	if os.Getenv("PORT") != "" {
+		iface = "0.0.0.0:" + os.Getenv("PORT")
+	}
+	var listenAddr = flag.String(
+		"listenAddr",
+		iface,
+		"address to listen on",
+	)
+
 	logger := cf_lager.New("garden-dotnet")
 
 	netBackend := backend.DotNetBackend{}
