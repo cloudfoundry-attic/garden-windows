@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/cloudfoundry-incubator/garden/api"
-	"github.com/pivotal-cf/netgarden/container"
+	"github.com/pivotal-cf-experimental/garden-dot-net/container"
 )
 
 type DotNetBackend struct{}

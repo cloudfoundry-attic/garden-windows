@@ -4,7 +4,7 @@ import (
 	"io"
 
 	"github.com/cloudfoundry-incubator/garden/api"
-	"github.com/pivotal-cf/netgarden/process"
+	"github.com/pivotal-cf-experimental/garden-dot-net/process"
 )
 
 type DotNetContainer struct{}

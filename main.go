@@ -8,7 +8,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-lager"
 	"github.com/cloudfoundry-incubator/garden/server"
-	"github.com/pivotal-cf/netgarden/backend"
+	"github.com/pivotal-cf-experimental/garden-dot-net/backend"
 	"github.com/pivotal-golang/lager"
 )
 
