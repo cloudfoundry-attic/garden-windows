@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"os"
 	"os/signal"
 	"syscall"
@@ -12,34 +11,17 @@ import (
 	"github.com/pivotal-golang/lager"
 )
 
-var listenNetwork = flag.String(
-	"listenNetwork",
-	"tcp",
-	"how to listen on the address (unix, tcp, etc.)",
-)
-
-var containerGraceTime = flag.Duration(
-	"containerGraceTime",
-	0,
-	"time after which to destroy idle containers",
-)
-
 func main() {
-	iface := "0.0.0.0:3333"
+	listenAddr := "0.0.0.0:3000"
 	if os.Getenv("PORT") != "" {
-		iface = "0.0.0.0:" + os.Getenv("PORT")
+		listenAddr = "0.0.0.0:" + os.Getenv("PORT")
 	}
-	var listenAddr = flag.String(
-		"listenAddr",
-		iface,
-		"address to listen on",
-	)
 
 	logger := cf_lager.New("garden-dotnet")
 
 	netBackend := backend.DotNetBackend{}
 
-	gardenServer := server.New(*listenNetwork, *listenAddr, *containerGraceTime, netBackend, logger)
+	gardenServer := server.New("tcp", listenAddr, 0, netBackend, logger)
 	err := gardenServer.Start()
 	if err != nil {
 		logger.Fatal("Server Failed to Start", err)
@@ -47,8 +29,7 @@ func main() {
 	}
 
 	logger.Info("started", lager.Data{
-		"network": *listenNetwork,
-		"addr":    *listenAddr,
+		"addr":    listenAddr,
 	})
 
 	signals := make(chan os.Signal, 1)
