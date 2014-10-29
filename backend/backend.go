@@ -38,7 +38,12 @@ func (backend DotNetBackend) Destroy(handle string) error {
 }
 
 func (backend DotNetBackend) Containers(api.Properties) ([]api.Container, error) {
-	containers := []api.Container{}
+	containers := []api.Container{
+		container.DotNetContainer{},
+		container.DotNetContainer{},
+		container.DotNetContainer{},
+		container.DotNetContainer{},
+	}
 	return containers, nil
 }
 

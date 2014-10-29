@@ -73,8 +73,9 @@ func (container DotNetContainer) Attach(uint32, api.ProcessIO) (api.Process, err
 }
 
 func (container DotNetContainer) GetProperty(name string) (string, error) {
-	return "", nil
+	return "A Property Value", nil
 }
+
 func (container DotNetContainer) SetProperty(name string, value string) error {
 	return nil
 }
