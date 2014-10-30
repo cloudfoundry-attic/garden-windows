@@ -1,4 +1,6 @@
-﻿using NSpec;
+﻿using System;
+using System.Collections.Generic;
+using NSpec;
 using System.Linq;
 using System.Web.Http.Results;
 
@@ -12,6 +14,15 @@ namespace Containerizer.Tests
         {
             containersController = new Controllers.ContainersController();
             
+        }
+
+        void describe_get()
+        {
+            it["returns an array of strings"] = () =>
+            {
+                var response = containersController.Get();
+                response.should_be(new string[] { "value1", "value2" });
+            };
         }
 
         void describe_delete()
