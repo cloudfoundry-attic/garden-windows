@@ -1,0 +1,91 @@
+package backend_test
+
+import (
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+
+	"github.com/cloudfoundry-incubator/garden/api"
+	"github.com/pivotal-cf-experimental/garden-dot-net/backend"
+
+	"github.com/onsi/gomega/ghttp"
+	"time"
+)
+
+var _ = Describe("backend", func() {
+	var server *ghttp.Server
+	var backend backend.DotNetBackend
+
+	BeforeEach(func() {
+		server = ghttp.NewServer()
+		backend.TupperwareURL = server.URL()
+	})
+
+	AfterEach(func() {
+		//shut down the server between tests
+		if server.HTTPTestServer != nil {
+			server.Close()
+		}
+	})
+
+	Describe("Create", func() {
+		var testContainer api.ContainerSpec
+
+		BeforeEach(func() {
+			testContainer = api.ContainerSpec{
+				Handle:     "Fred",
+				GraceTime:  1 * time.Second,
+				RootFSPath: "/stuff",
+				Env: []string{
+					"jim",
+					"jane",
+				},
+			}
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("POST", "/api/containers"),
+					ghttp.VerifyJSONRepresenting(testContainer),
+				),
+			)
+		})
+
+		It("makes a call out to an external service", func() {
+			_, err := backend.Create(testContainer)
+			Ω(err).NotTo(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+
+		Context("when there is an error making the http connection", func() {
+			It("returns an error", func() {
+				server.Close()
+				_, err := backend.Create(testContainer)
+				Ω(err).To(HaveOccurred())
+			})
+		})
+	})
+
+	Describe("Destroy", func() {
+		BeforeEach(func() {
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("DELETE", "/api/containers/bob"),
+				),
+			)
+		})
+
+		It("makes a call out to an external service", func() {
+
+			err := backend.Destroy("bob")
+			Ω(err).NotTo(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+
+		Context("when there is an error making the http connection", func() {
+			It("returns an error", func() {
+				server.Close()
+				err := backend.Destroy("the world")
+				Ω(err).To(HaveOccurred())
+			})
+		})
+
+	})
+})
