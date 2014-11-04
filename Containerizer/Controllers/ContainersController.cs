@@ -4,38 +4,38 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using Newtonsoft.Json;
+using Containerizer.Services.Interfaces;
+using System.Threading.Tasks;
 
 namespace Containerizer.Controllers
 {
+    public class CreateResponse
+    {
+        [JsonProperty("id")]
+        public string Id { get; set; }
+    }
+
     public class ContainersController : ApiController
     {
-        // GET: api/Containers
-        public IEnumerable<string> Get()
+        private ICreateContainerService createContainerService;
+
+        public ContainersController(ICreateContainerService createContainerService)
         {
-            return new string[] { "value1", "value2" };
+            this.createContainerService = createContainerService;
         }
 
-        // GET: api/Containers/5
-        public string Get(int id)
+        public async Task<IHttpActionResult> Post()
         {
-            return "value";
-        }
-
-        // POST: api/Containers
-        public void Post([FromBody]string value)
-        {
-           // return "Container started";
-        }
-
-        // PUT: api/Containers/5
-        public void Put(int id, [FromBody]string value)
-        {
-        }
-
-        // DELETE: api/Containers/5
-        public IHttpActionResult Delete(int id)
-        {
-            return Ok();
+            try
+            {
+               var id = await createContainerService.CreateContainer();
+               return Json(new CreateResponse { Id = id });
+            }
+            catch (CouldNotCreateContainerException ex)
+            {
+                return this.InternalServerError(ex);
+            }
         }
     }
 }
