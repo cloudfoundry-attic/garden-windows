@@ -61,7 +61,7 @@ namespace Containerizer.Tests
             {
                 before = () =>
                 {
-                    mockCreateContainerService.Setup(x => x.CreateContainer()).ThrowsAsync(new CouldNotCreateContainerException(null));
+                    mockCreateContainerService.Setup(x => x.CreateContainer()).ThrowsAsync(new CouldNotCreateContainerException(String.Empty, null));
                 };
 
                 it["returns a error status code"] = () =>

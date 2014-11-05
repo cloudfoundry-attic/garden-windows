@@ -33,9 +33,20 @@ namespace Containerizer.Services.Implementations
                     return id;
                 });
             }
+            catch (System.Runtime.InteropServices.COMException ex)
+            {
+                if (ex.Message.Contains("2B72133B-3F5B-4602-8952-803546CE3344"))
+                {
+                    throw new CouldNotCreateContainerException("Please install IIS.", ex);
+                }
+                else
+                {
+                    throw new CouldNotCreateContainerException("", ex);
+                }
+            }
             catch (Exception ex)
             {
-                throw new CouldNotCreateContainerException(ex);
+                throw new CouldNotCreateContainerException(String.Empty, ex);
             }
         }
     }

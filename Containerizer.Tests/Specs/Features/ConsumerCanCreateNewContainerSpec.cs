@@ -20,7 +20,7 @@ namespace Containerizer.Tests
         void before_each()
         {
             port = 8088;
-            Helpers.SetupSiteInIIS("Containerizer", "Containerizer.Tests", "ContainerizerTestsApplicationPool", port);
+            Helpers.SetupSiteInIIS("Containerizer", "Containerizer.Tests", "ContainerizerTestsApplicationPool", port, true);
         }
 
         void after_each()

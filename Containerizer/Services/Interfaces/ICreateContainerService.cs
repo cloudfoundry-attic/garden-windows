@@ -16,6 +16,6 @@ namespace Containerizer.Services.Interfaces
 
     public class CouldNotCreateContainerException : Exception
     {
-        public CouldNotCreateContainerException(Exception inner) : base(String.Empty, inner) { }
+        public CouldNotCreateContainerException(string message, Exception inner) : base(message, inner) { }
     } 
 }

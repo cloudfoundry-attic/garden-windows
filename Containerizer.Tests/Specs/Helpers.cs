@@ -10,23 +10,41 @@ namespace Containerizer.Tests
 {
     public static class Helpers
     {
-        public static void SetupSiteInIIS(string applicationFolderName, string siteName, string applicationPoolName, int port)
+        public static void SetupSiteInIIS(string applicationFolderName, string siteName, string applicationPoolName, int port, bool privleged)
         {
-            ServerManager serverManager = new ServerManager();
-            var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, applicationFolderName);
+            try
+            {
+                ServerManager serverManager = new ServerManager();
+                var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, applicationFolderName);
 
-            Helpers.RemoveExistingSite(siteName, applicationPoolName);
+                Helpers.RemoveExistingSite(siteName, applicationPoolName);
 
-            Site mySite = serverManager.Sites.Add(siteName, path, port);
-            mySite.ServerAutoStart = true;
+                Site mySite = serverManager.Sites.Add(siteName, path, port);
+                mySite.ServerAutoStart = true;
 
-            serverManager.ApplicationPools.Add(applicationPoolName);
-            mySite.Applications[0].ApplicationPoolName = applicationPoolName;
-            ApplicationPool apppool = serverManager.ApplicationPools[applicationPoolName];
-            apppool.ManagedRuntimeVersion = "v4.0";
-            apppool.ManagedPipelineMode = ManagedPipelineMode.Integrated;
+                serverManager.ApplicationPools.Add(applicationPoolName);
+                mySite.Applications[0].ApplicationPoolName = applicationPoolName;
+                ApplicationPool apppool = serverManager.ApplicationPools[applicationPoolName];
+                if (privleged)
+                {
+                    apppool.ProcessModel.IdentityType = ProcessModelIdentityType.LocalSystem;
+                }
+                apppool.ManagedRuntimeVersion = "v4.0";
+                apppool.ManagedPipelineMode = ManagedPipelineMode.Integrated;
 
-            serverManager.CommitChanges();
+                serverManager.CommitChanges();
+            }
+            catch (System.Runtime.InteropServices.COMException ex)
+            {
+                if (ex.Message.Contains("2B72133B-3F5B-4602-8952-803546CE3344"))
+                {
+                    throw new Exception("Please install IIS.", ex);
+                }
+                else
+                {
+                    throw;
+                }
+            }
         }
 
         public static void RemoveExistingSite(string siteName, string applicationPoolName)
@@ -46,6 +64,17 @@ namespace Containerizer.Tests
                 {
                     serverManager.ApplicationPools.Remove(existingAppPool);
                     serverManager.CommitChanges();
+                }
+            }
+            catch (System.Runtime.InteropServices.COMException ex)
+            {
+                if (ex.Message.Contains("2B72133B-3F5B-4602-8952-803546CE3344"))
+                {
+                    throw new Exception("Please install IIS.", ex);
+                }
+                else
+                {
+                    throw;
                 }
             }
             catch (UnauthorizedAccessException ex)
