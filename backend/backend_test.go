@@ -13,11 +13,11 @@ import (
 
 var _ = Describe("backend", func() {
 	var server *ghttp.Server
-	var backend backend.DotNetBackend
+	var dotNetBackend api.Backend
 
 	BeforeEach(func() {
 		server = ghttp.NewServer()
-		backend.TupperwareURL = server.URL()
+		dotNetBackend = backend.NewDotNetBackend(server.URL())
 	})
 
 	AfterEach(func() {
@@ -49,7 +49,7 @@ var _ = Describe("backend", func() {
 		})
 
 		It("makes a call out to an external service", func() {
-			_, err := backend.Create(testContainer)
+			_, err := dotNetBackend.Create(testContainer)
 			Ω(err).NotTo(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
@@ -57,7 +57,7 @@ var _ = Describe("backend", func() {
 		Context("when there is an error making the http connection", func() {
 			It("returns an error", func() {
 				server.Close()
-				_, err := backend.Create(testContainer)
+				_, err := dotNetBackend.Create(testContainer)
 				Ω(err).To(HaveOccurred())
 			})
 		})
@@ -74,7 +74,7 @@ var _ = Describe("backend", func() {
 
 		It("makes a call out to an external service", func() {
 
-			err := backend.Destroy("bob")
+			err := dotNetBackend.Destroy("bob")
 			Ω(err).NotTo(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
@@ -82,7 +82,7 @@ var _ = Describe("backend", func() {
 		Context("when there is an error making the http connection", func() {
 			It("returns an error", func() {
 				server.Close()
-				err := backend.Destroy("the world")
+				err := dotNetBackend.Destroy("the world")
 				Ω(err).To(HaveOccurred())
 			})
 		})

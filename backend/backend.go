@@ -10,32 +10,42 @@ import (
 	"strings"
 )
 
-type DotNetBackend struct {
-	TupperwareURL string
+type dotNetBackend struct {
+	tupperwareURL string
 }
 
-func (backend DotNetBackend) Start() error {
+func NewDotNetBackend(tupperwareURL string) *dotNetBackend {
+	return &dotNetBackend{
+		tupperwareURL: tupperwareURL,
+	}
+}
+
+func (dotNetBackend *dotNetBackend) TupperwareURL() string {
+	return dotNetBackend.tupperwareURL
+}
+
+func (dotNetBackend *dotNetBackend) Start() error {
 	return nil
 }
 
-func (backend DotNetBackend) Stop() {}
+func (dotNetBackend *dotNetBackend) Stop() {}
 
-func (backend DotNetBackend) GraceTime(api.Container) time.Duration {
+func (dotNetBackend *dotNetBackend) GraceTime(api.Container) time.Duration {
 	return time.Second
 }
 
-func (backend DotNetBackend) Ping() error {
+func (dotNetBackend *dotNetBackend) Ping() error {
 	return nil
 }
 
-func (backend DotNetBackend) Capacity() (api.Capacity, error) {
+func (dotNetBackend *dotNetBackend) Capacity() (api.Capacity, error) {
 	capacity := api.Capacity{}
 	return capacity, nil
 }
 
-func (backend DotNetBackend) Create(containerSpec api.ContainerSpec) (api.Container, error) {
-	netContainer := container.DotNetContainer{}
-	url := backend.TupperwareURL + "/api/containers"
+func (dotNetBackend *dotNetBackend) Create(containerSpec api.ContainerSpec) (api.Container, error) {
+	netContainer := container.NewContainer(dotNetBackend.TupperwareURL())
+	url := dotNetBackend.tupperwareURL + "/api/containers"
 	containerSpecJSON, err := json.Marshal(containerSpec)
 	if err != nil {
 		return nil, err
@@ -47,8 +57,8 @@ func (backend DotNetBackend) Create(containerSpec api.ContainerSpec) (api.Contai
 	return netContainer, nil
 }
 
-func (backend DotNetBackend) Destroy(handle string) error {
-	url := backend.TupperwareURL + "/api/containers/" + handle
+func (dotNetBackend *dotNetBackend) Destroy(handle string) error {
+	url := dotNetBackend.tupperwareURL + "/api/containers/" + handle
 
 	req, err := http.NewRequest("DELETE", url, nil)
 	if err != nil {
@@ -59,17 +69,17 @@ func (backend DotNetBackend) Destroy(handle string) error {
 	return err
 }
 
-func (backend DotNetBackend) Containers(api.Properties) ([]api.Container, error) {
+func (dotNetBackend *dotNetBackend) Containers(api.Properties) ([]api.Container, error) {
 	containers := []api.Container{
-		container.DotNetContainer{},
-		container.DotNetContainer{},
-		container.DotNetContainer{},
-		container.DotNetContainer{},
+		container.NewContainer(dotNetBackend.TupperwareURL()),
+		container.NewContainer(dotNetBackend.TupperwareURL()),
+		container.NewContainer(dotNetBackend.TupperwareURL()),
+		container.NewContainer(dotNetBackend.TupperwareURL()),
 	}
 	return containers, nil
 }
 
-func (backend DotNetBackend) Lookup(handle string) (api.Container, error) {
-	netContainer := container.DotNetContainer{}
+func (dotNetBackend *dotNetBackend) Lookup(handle string) (api.Container, error) {
+	netContainer := container.NewContainer(dotNetBackend.TupperwareURL())
 	return netContainer, nil
 }
