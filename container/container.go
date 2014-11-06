@@ -5,6 +5,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/garden/api"
 	"github.com/pivotal-cf-experimental/garden-dot-net/process"
+	"net/http"
 )
 
 type container struct {
@@ -18,7 +19,7 @@ func NewContainer(tupperwareURL string) *container {
 }
 
 func (container *container) Handle() string {
-	return "a dotnetcontainer handle"
+	return "containerhandle"
 }
 
 func (container *container) Stop(kill bool) error {
@@ -30,7 +31,15 @@ func (container *container) Info() (api.ContainerInfo, error) {
 }
 
 func (container *container) StreamIn(dstPath string, tarStream io.Reader) error {
-	return nil
+	url := container.tupperwareURL + "/api/containers/" + container.Handle() + "/files"
+
+	req, err := http.NewRequest("PUT", url, tarStream)
+	if err != nil {
+		return err
+	}
+	_, err = http.DefaultClient.Do(req)
+
+	return err
 }
 func (container *container) StreamOut(srcPath string) (io.ReadCloser, error) {
 	// FIXME: is this sufficient??? I assume not
