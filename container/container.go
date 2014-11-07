@@ -3,9 +3,10 @@ package container
 import (
 	"io"
 
+	"net/http"
+
 	"github.com/cloudfoundry-incubator/garden/api"
 	"github.com/pivotal-cf-experimental/garden-dot-net/process"
-	"net/http"
 )
 
 type container struct {
@@ -42,8 +43,12 @@ func (container *container) StreamIn(dstPath string, tarStream io.Reader) error 
 	return err
 }
 func (container *container) StreamOut(srcPath string) (io.ReadCloser, error) {
-	// FIXME: is this sufficient??? I assume not
-	return nil, nil
+	url := container.tupperwareURL + "/api/containers/" + container.Handle() + "/files" + "?source=" + srcPath
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Body, nil
 }
 
 func (container *container) LimitBandwidth(limits api.BandwidthLimits) error {
