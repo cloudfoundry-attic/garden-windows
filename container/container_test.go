@@ -25,7 +25,7 @@ var _ = Describe("backend", func() {
 
 	BeforeEach(func() {
 		server = ghttp.NewServer()
-		container = netContainer.NewContainer(server.URL())
+		container = netContainer.NewContainer(server.URL(), "containerhandle")
 	})
 
 	AfterEach(func() {

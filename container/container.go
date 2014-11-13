@@ -11,16 +11,18 @@ import (
 
 type container struct {
 	tupperwareURL string
+	handle        string
 }
 
-func NewContainer(tupperwareURL string) *container {
+func NewContainer(tupperwareURL string, handle string) *container {
 	return &container{
 		tupperwareURL: tupperwareURL,
+		handle:        handle,
 	}
 }
 
 func (container *container) Handle() string {
-	return "containerhandle"
+	return container.handle
 }
 
 func (container *container) Stop(kill bool) error {

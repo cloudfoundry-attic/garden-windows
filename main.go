@@ -43,9 +43,7 @@ func main() {
 
 	logger := cf_lager.New("garden-dotnet")
 
-	netBackend := backend.DotNetBackend{
-		TupperwareURL: *tupperwareURL,
-	}
+	netBackend := backend.NewDotNetBackend(*tupperwareURL)
 
 	gardenServer := server.New(*listenNetwork, *listenAddr, *containerGraceTime, netBackend, logger)
 	err := gardenServer.Start()

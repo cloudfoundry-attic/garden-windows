@@ -7,8 +7,9 @@ import (
 	"github.com/cloudfoundry-incubator/garden/api"
 	"github.com/pivotal-cf-experimental/garden-dot-net/backend"
 
-	"github.com/onsi/gomega/ghttp"
 	"time"
+
+	"github.com/onsi/gomega/ghttp"
 )
 
 var _ = Describe("backend", func() {
@@ -59,6 +60,16 @@ var _ = Describe("backend", func() {
 				server.Close()
 				_, err := dotNetBackend.Create(testContainer)
 				Ω(err).To(HaveOccurred())
+			})
+		})
+	})
+
+	Describe("Lookup", func() {
+		Context("when the handle exists", func() {
+			It("returns a container with the correct handle", func() {
+				container, err := dotNetBackend.Lookup("someHandle")
+				Ω(err).NotTo(HaveOccurred())
+				Ω(container.Handle()).To(Equal("someHandle"))
 			})
 		})
 	})

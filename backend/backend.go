@@ -5,9 +5,10 @@ import (
 	"net/http"
 	"time"
 
+	"strings"
+
 	"github.com/cloudfoundry-incubator/garden/api"
 	"github.com/pivotal-cf-experimental/garden-dot-net/container"
-	"strings"
 )
 
 type dotNetBackend struct {
@@ -44,7 +45,7 @@ func (dotNetBackend *dotNetBackend) Capacity() (api.Capacity, error) {
 }
 
 func (dotNetBackend *dotNetBackend) Create(containerSpec api.ContainerSpec) (api.Container, error) {
-	netContainer := container.NewContainer(dotNetBackend.TupperwareURL())
+	netContainer := container.NewContainer(dotNetBackend.TupperwareURL(), "containerhandle")
 	url := dotNetBackend.tupperwareURL + "/api/containers"
 	containerSpecJSON, err := json.Marshal(containerSpec)
 	if err != nil {
@@ -71,15 +72,15 @@ func (dotNetBackend *dotNetBackend) Destroy(handle string) error {
 
 func (dotNetBackend *dotNetBackend) Containers(api.Properties) ([]api.Container, error) {
 	containers := []api.Container{
-		container.NewContainer(dotNetBackend.TupperwareURL()),
-		container.NewContainer(dotNetBackend.TupperwareURL()),
-		container.NewContainer(dotNetBackend.TupperwareURL()),
-		container.NewContainer(dotNetBackend.TupperwareURL()),
+		container.NewContainer(dotNetBackend.TupperwareURL(), "containerhandle"),
+		container.NewContainer(dotNetBackend.TupperwareURL(), "containerhandle"),
+		container.NewContainer(dotNetBackend.TupperwareURL(), "containerhandle"),
+		container.NewContainer(dotNetBackend.TupperwareURL(), "containerhandle"),
 	}
 	return containers, nil
 }
 
 func (dotNetBackend *dotNetBackend) Lookup(handle string) (api.Container, error) {
-	netContainer := container.NewContainer(dotNetBackend.TupperwareURL())
+	netContainer := container.NewContainer(dotNetBackend.TupperwareURL(), handle)
 	return netContainer, nil
 }
