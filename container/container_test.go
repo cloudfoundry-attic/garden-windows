@@ -39,7 +39,7 @@ var _ = Describe("backend", func() {
 		BeforeEach(func() {
 			server.AppendHandlers(
 				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("PUT", "/api/containers/containerhandle/files"),
+					ghttp.VerifyRequest("PUT", "/api/containers/containerhandle/files", "destination=a/path"),
 					func(w http.ResponseWriter, req *http.Request) {
 						body, err := ioutil.ReadAll(req.Body)
 						req.Body.Close()
@@ -51,7 +51,7 @@ var _ = Describe("backend", func() {
 		})
 
 		It("makes a call out to an external service", func() {
-			err := container.StreamIn("/a/path", strings.NewReader("stuff"))
+			err := container.StreamIn("a/path", strings.NewReader("stuff"))
 			Ω(err).NotTo(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})

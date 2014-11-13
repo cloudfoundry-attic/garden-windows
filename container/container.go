@@ -34,7 +34,7 @@ func (container *container) Info() (api.ContainerInfo, error) {
 }
 
 func (container *container) StreamIn(dstPath string, tarStream io.Reader) error {
-	url := container.tupperwareURL + "/api/containers/" + container.Handle() + "/files"
+	url := container.tupperwareURL + "/api/containers/" + container.Handle() + "/files?destination=" + dstPath
 
 	req, err := http.NewRequest("PUT", url, tarStream)
 	if err != nil {
@@ -45,7 +45,7 @@ func (container *container) StreamIn(dstPath string, tarStream io.Reader) error 
 	return err
 }
 func (container *container) StreamOut(srcPath string) (io.ReadCloser, error) {
-	url := container.tupperwareURL + "/api/containers/" + container.Handle() + "/files" + "?source=" + srcPath
+	url := container.tupperwareURL + "/api/containers/" + container.Handle() + "/files?source=" + srcPath
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
