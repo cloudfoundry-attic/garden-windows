@@ -43,11 +43,11 @@ namespace Containerizer.Controllers
             }
         }
 
-        [Route("api/containers/{id}/files/{fileName}")]
+        [Route("api/containers/{id}/files")]
         [HttpGet]
-        public  Task<HttpResponseMessage> StreamOut(string id, string fileName)
+        public  Task<HttpResponseMessage> StreamOut(string id, string source)
         {
-            var outStream = streamOutService.StreamFile(id, fileName);
+            var outStream = streamOutService.StreamFile(id, source);
             var response = Request.CreateResponse();
             response.Content = new StreamContent(outStream);
             return Task.FromResult(response);

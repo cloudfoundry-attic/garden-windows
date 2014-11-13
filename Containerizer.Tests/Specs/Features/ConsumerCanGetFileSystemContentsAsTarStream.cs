@@ -51,7 +51,7 @@ namespace Containerizer.Tests
             {
                 it["streams the file as a tarball"] = () =>
                 {
-                    var getTask = client.GetAsync("/api/containers/" + id + "/files/file.txt").GetAwaiter().GetResult();
+                    var getTask = client.GetAsync("/api/containers/" + id + "/files?source=file.txt").GetAwaiter().GetResult();
                     getTask.IsSuccessStatusCode.should_be_true();
                     var tgzStream = getTask.Content.ReadAsStreamAsync().GetAwaiter().GetResult();
                     using (var tgz = ReaderFactory.Open(tgzStream))
