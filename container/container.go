@@ -2,11 +2,14 @@ package container
 
 import (
 	"io"
-
+	"log"
 	"net/http"
+	"net/url"
 
 	"github.com/cloudfoundry-incubator/garden/api"
 	"github.com/pivotal-cf-experimental/garden-dot-net/process"
+
+	"code.google.com/p/go.net/websocket"
 )
 
 type container struct {
@@ -63,6 +66,7 @@ func (container *container) CurrentBandwidthLimits() (api.BandwidthLimits, error
 func (container *container) LimitCPU(limits api.CPULimits) error {
 	return nil
 }
+
 func (container *container) CurrentCPULimits() (api.CPULimits, error) {
 	return api.CPULimits{}, nil
 }
@@ -89,7 +93,26 @@ func (container *container) NetOut(network string, port uint32) error {
 	return nil
 }
 
-func (container *container) Run(api.ProcessSpec, api.ProcessIO) (api.Process, error) {
+func (container *container) tupperwareWSRun() (string, error) {
+	u, err := url.Parse(container.tupperwareURL + "/api/run")
+	if err != nil {
+		return "", err
+	}
+	u.Scheme = "ws"
+	return u.String(), nil
+}
+
+func (container *container) Run(processSpec api.ProcessSpec, processIO api.ProcessIO) (api.Process, error) {
+	origin := "http://localhost/"
+	wsUri, err := container.tupperwareWSRun()
+	if err != nil {
+		log.Fatal(err)
+	}
+	ws, err := websocket.Dial(wsUri, "", origin)
+	if err != nil {
+		log.Fatal(err)
+	}
+	websocket.JSON.Send(ws, processSpec)
 	return process.DotNetProcess{}, nil
 }
 
