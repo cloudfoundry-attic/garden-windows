@@ -13,11 +13,11 @@ import (
 )
 
 type container struct {
-	tupperwareURL string
+	tupperwareURL url.URL
 	handle        string
 }
 
-func NewContainer(tupperwareURL string, handle string) *container {
+func NewContainer(tupperwareURL url.URL, handle string) *container {
 	return &container{
 		tupperwareURL: tupperwareURL,
 		handle:        handle,
@@ -37,7 +37,7 @@ func (container *container) Info() (api.ContainerInfo, error) {
 }
 
 func (container *container) StreamIn(dstPath string, tarStream io.Reader) error {
-	url := container.tupperwareURL + "/api/containers/" + container.Handle() + "/files?destination=" + dstPath
+	url := container.tupperwareURL.String() + "/api/containers/" + container.Handle() + "/files?destination=" + dstPath
 
 	req, err := http.NewRequest("PUT", url, tarStream)
 	if err != nil {
@@ -48,7 +48,7 @@ func (container *container) StreamIn(dstPath string, tarStream io.Reader) error 
 	return err
 }
 func (container *container) StreamOut(srcPath string) (io.ReadCloser, error) {
-	url := container.tupperwareURL + "/api/containers/" + container.Handle() + "/files?source=" + srcPath
+	url := container.tupperwareURL.String() + "/api/containers/" + container.Handle() + "/files?source=" + srcPath
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
@@ -93,21 +93,15 @@ func (container *container) NetOut(network string, port uint32) error {
 	return nil
 }
 
-func (container *container) tupperwareWSRun() (string, error) {
-	u, err := url.Parse(container.tupperwareURL + "/api/run")
-	if err != nil {
-		return "", err
-	}
-	u.Scheme = "ws"
-	return u.String(), nil
+func (container *container) tupperwareWS() string {
+	u2 := container.tupperwareURL
+	u2.Scheme = "ws"
+	return u2.String()
 }
 
 func (container *container) Run(processSpec api.ProcessSpec, processIO api.ProcessIO) (api.Process, error) {
 	origin := "http://localhost/"
-	wsUri, err := container.tupperwareWSRun()
-	if err != nil {
-		log.Fatal(err)
-	}
+	wsUri := container.tupperwareWS() + "/api/run"
 	ws, err := websocket.Dial(wsUri, "", origin)
 	if err != nil {
 		log.Fatal(err)

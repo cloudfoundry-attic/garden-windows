@@ -18,7 +18,7 @@ var _ = Describe("backend", func() {
 
 	BeforeEach(func() {
 		server = ghttp.NewServer()
-		dotNetBackend = backend.NewDotNetBackend(server.URL())
+		dotNetBackend, _ = backend.NewDotNetBackend(server.URL())
 	})
 
 	AfterEach(func() {

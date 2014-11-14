@@ -3,6 +3,7 @@ package backend
 import (
 	"encoding/json"
 	"net/http"
+	"net/url"
 	"time"
 
 	"strings"
@@ -12,17 +13,21 @@ import (
 )
 
 type dotNetBackend struct {
-	tupperwareURL string
+	tupperwareURL url.URL
 }
 
-func NewDotNetBackend(tupperwareURL string) *dotNetBackend {
-	return &dotNetBackend{
-		tupperwareURL: tupperwareURL,
+func NewDotNetBackend(tupperwareURL string) (*dotNetBackend, error) {
+	u, err := url.Parse(tupperwareURL)
+	if err != nil {
+		return nil, err
 	}
+	return &dotNetBackend{
+		tupperwareURL: *u,
+	}, nil
 }
 
 func (dotNetBackend *dotNetBackend) TupperwareURL() string {
-	return dotNetBackend.tupperwareURL
+	return dotNetBackend.tupperwareURL.String()
 }
 
 func (dotNetBackend *dotNetBackend) Start() error {
@@ -45,8 +50,8 @@ func (dotNetBackend *dotNetBackend) Capacity() (api.Capacity, error) {
 }
 
 func (dotNetBackend *dotNetBackend) Create(containerSpec api.ContainerSpec) (api.Container, error) {
-	netContainer := container.NewContainer(dotNetBackend.TupperwareURL(), "containerhandle")
-	url := dotNetBackend.tupperwareURL + "/api/containers"
+	netContainer := container.NewContainer(dotNetBackend.tupperwareURL, "containerhandle")
+	url := dotNetBackend.tupperwareURL.String() + "/api/containers"
 	containerSpecJSON, err := json.Marshal(containerSpec)
 	if err != nil {
 		return nil, err
@@ -59,7 +64,7 @@ func (dotNetBackend *dotNetBackend) Create(containerSpec api.ContainerSpec) (api
 }
 
 func (dotNetBackend *dotNetBackend) Destroy(handle string) error {
-	url := dotNetBackend.tupperwareURL + "/api/containers/" + handle
+	url := dotNetBackend.tupperwareURL.String() + "/api/containers/" + handle
 
 	req, err := http.NewRequest("DELETE", url, nil)
 	if err != nil {
@@ -72,15 +77,15 @@ func (dotNetBackend *dotNetBackend) Destroy(handle string) error {
 
 func (dotNetBackend *dotNetBackend) Containers(api.Properties) ([]api.Container, error) {
 	containers := []api.Container{
-		container.NewContainer(dotNetBackend.TupperwareURL(), "containerhandle"),
-		container.NewContainer(dotNetBackend.TupperwareURL(), "containerhandle"),
-		container.NewContainer(dotNetBackend.TupperwareURL(), "containerhandle"),
-		container.NewContainer(dotNetBackend.TupperwareURL(), "containerhandle"),
+		container.NewContainer(dotNetBackend.tupperwareURL, "containerhandle"),
+		container.NewContainer(dotNetBackend.tupperwareURL, "containerhandle"),
+		container.NewContainer(dotNetBackend.tupperwareURL, "containerhandle"),
+		container.NewContainer(dotNetBackend.tupperwareURL, "containerhandle"),
 	}
 	return containers, nil
 }
 
 func (dotNetBackend *dotNetBackend) Lookup(handle string) (api.Container, error) {
-	netContainer := container.NewContainer(dotNetBackend.TupperwareURL(), handle)
+	netContainer := container.NewContainer(dotNetBackend.tupperwareURL, handle)
 	return netContainer, nil
 }

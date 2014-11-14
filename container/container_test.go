@@ -17,6 +17,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/url"
 )
 
 func uint64ptr(n uint64) *uint64 {
@@ -29,7 +30,8 @@ var _ = Describe("backend", func() {
 
 	BeforeEach(func() {
 		server = ghttp.NewServer()
-		container = netContainer.NewContainer(server.URL(), "containerhandle")
+		u, _ := url.Parse(server.URL())
+		container = netContainer.NewContainer(*u, "containerhandle")
 	})
 
 	AfterEach(func() {
@@ -105,7 +107,8 @@ var _ = Describe("backend", func() {
 
 			go http.Serve(listener, nil)
 
-			container = netContainer.NewContainer("http://localhost:2000")
+			u, _ := url.Parse("http://localhost:2000")
+			container = netContainer.NewContainer(*u, "containerhandle")
 		})
 
 		It("runs a script via a websocket and also passes rlimits ", func() {
