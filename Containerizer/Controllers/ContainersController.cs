@@ -9,6 +9,8 @@ using System.Web.Http;
 using Newtonsoft.Json;
 using Containerizer.Services.Interfaces;
 using System.Threading.Tasks;
+using System.Web;
+using Microsoft.Web.WebSockets;
 
 namespace Containerizer.Controllers
 {
@@ -50,6 +52,15 @@ namespace Containerizer.Controllers
             var outStream = streamOutService.StreamFile(id, source);
             var response = Request.CreateResponse();
             response.Content = new StreamContent(outStream);
+            return Task.FromResult(response);
+        }
+
+        [Route("api/containers/{id}/run")]
+        [HttpGet]
+        public Task<HttpResponseMessage> Run(string id)
+        {
+            HttpContext.Current.AcceptWebSocketRequest(new WebSocketHandler());
+            var response = Request.CreateResponse(HttpStatusCode.SwitchingProtocols);
             return Task.FromResult(response);
         }
     }

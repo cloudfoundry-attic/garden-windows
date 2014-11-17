@@ -90,7 +90,8 @@
     <Compile Include="DebuggerShim.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Specs\Features\ConsumerCanCreateNewContainerSpec.cs" />
-    <Compile Include="Specs\Features\ConsumerCanGetFileSystemContentsAsTarStream.cs" />
+    <Compile Include="Specs\Features\ConsumerCanGetFileSystemContentsAsTarStreamSpec.cs" />
+    <Compile Include="Specs\Features\ConsumerCanRunAProcessSpec.cs" />
     <Compile Include="Specs\Helpers.cs" />
     <Compile Include="Specs\Services\TarStreamServiceSpec.cs" />
     <Compile Include="Specs\Services\ContainerPathServiceSpec.cs" />

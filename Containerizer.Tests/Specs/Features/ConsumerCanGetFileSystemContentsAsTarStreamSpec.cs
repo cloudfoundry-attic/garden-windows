@@ -13,7 +13,7 @@ using SharpCompress.Reader;
 
 namespace Containerizer.Tests
 {
-    class ConsumerCanGetFileSystemContentsAsTarStream : nspec
+    class ConsumerCanGetFileSystemContentsAsTarStreamSpec : nspec
     {
         string id;
         HttpClient client;

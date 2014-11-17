@@ -13,7 +13,7 @@ namespace Containerizer.Tests
 {
     class ConsumerCanCreateNewContainerSpec : nspec
     {
-        Containerizer.Controllers.ContainersController containersController;
+        // Containerizer.Controllers.ContainersController containersController;
         int port;
         string id;
 
