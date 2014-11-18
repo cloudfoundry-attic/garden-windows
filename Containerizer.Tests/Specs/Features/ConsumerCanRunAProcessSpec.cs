@@ -46,7 +46,9 @@ namespace Containerizer.Tests
 
                 describe["when I send a start request"] = () =>
                 {
-                    it["should run a process"] = () =>
+                    // it["should run a process"] = () => { }
+
+                    it["should upgrade to a websocket"] = () =>
                     {
                         var encoder = new UTF8Encoding();
                         byte[] buffer = encoder.GetBytes("{\"Path\":\"echo\", Args:[\"hello\"]}");

@@ -6,11 +6,13 @@ using System.Net;
 using System.Net.Http;
 using System.Runtime.InteropServices.ComTypes;
 using System.Web.Http;
+using Containerizer.Facades;
 using Newtonsoft.Json;
 using Containerizer.Services.Interfaces;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.Web.WebSockets;
+using Containerizer.Services.Implementations;
 
 namespace Containerizer.Controllers
 {
@@ -59,7 +61,7 @@ namespace Containerizer.Controllers
         [HttpGet]
         public Task<HttpResponseMessage> Run(string id)
         {
-            HttpContext.Current.AcceptWebSocketRequest(new WebSocketHandler());
+            HttpContext.Current.AcceptWebSocketRequest(new ContainerProcessHandler(new ProcessFacade()));
             var response = Request.CreateResponse(HttpStatusCode.SwitchingProtocols);
             return Task.FromResult(response);
         }

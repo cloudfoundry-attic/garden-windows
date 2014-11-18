@@ -99,8 +99,11 @@
   <ItemGroup>
     <Compile Include="App_Start\DependencyResolver.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Controllers\ContainerProcessHandler.cs" />
     <Compile Include="Controllers\ContainersController.cs" />
     <Compile Include="DebuggerShim.cs" />
+    <Compile Include="Facades\IProcessFacade.cs" />
+    <Compile Include="Facades\ProcessFacade.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
