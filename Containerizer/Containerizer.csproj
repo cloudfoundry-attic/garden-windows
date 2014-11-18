@@ -99,6 +99,7 @@
   <ItemGroup>
     <Compile Include="App_Start\DependencyResolver.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Models\ApiProcessSpec.cs" />
     <Compile Include="Controllers\ContainerProcessHandler.cs" />
     <Compile Include="Controllers\ContainersController.cs" />
     <Compile Include="DebuggerShim.cs" />
@@ -129,7 +130,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Models\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

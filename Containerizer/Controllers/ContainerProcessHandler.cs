@@ -1,4 +1,5 @@
 ﻿using Containerizer.Facades;
+using Containerizer.Models;
 using Containerizer.Services.Implementations;
 using Containerizer.Services.Interfaces;
 using Microsoft.Web.WebSockets;
@@ -11,12 +12,6 @@ using System.Web.Script.Serialization;
 
 namespace Containerizer.Controllers
 {
-    public class ApiProcessSpec
-    {
-        public string Path { get; set; }
-        public string[] Args { get; set; }
-    }
-
     public class ContainerProcessHandler : WebSocketHandler
     {
         private readonly IProcessFacade process; 
@@ -34,7 +29,7 @@ namespace Containerizer.Controllers
             process.StartInfo.UseShellExecute = false;
             process.StartInfo.RedirectStandardOutput = true;
             process.StartInfo.FileName = processSpec.Path;
-            process.StartInfo.Arguments = String.Join(" ", processSpec.Args);
+            process.StartInfo.Arguments = processSpec.Arguments();
             process.Start();
         }
     }
