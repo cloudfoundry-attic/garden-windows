@@ -30,6 +30,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -99,6 +100,8 @@
   <ItemGroup>
     <Compile Include="App_Start\DependencyResolver.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Facades\IWebSocketHandler.cs" />
+    <Compile Include="Facades\WebSocketHandlerFacade.cs" />
     <Compile Include="Models\ApiProcessSpec.cs" />
     <Compile Include="Controllers\ContainerProcessHandler.cs" />
     <Compile Include="Controllers\ContainersController.cs" />

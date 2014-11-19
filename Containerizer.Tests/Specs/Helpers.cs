@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Web.Administration;
@@ -81,6 +83,33 @@ namespace Containerizer.Tests
             {
                 throw new Exception("Try running Visual Studio/test runner as Administrator instead.", ex);
             }
+        }
+
+
+
+        public static DataReceivedEventArgs CreateMockDataReceivedEventArgs(string TestData)
+        {
+            DataReceivedEventArgs MockEventArgs =
+                (DataReceivedEventArgs) System.Runtime.Serialization.FormatterServices
+                    .GetUninitializedObject(typeof (DataReceivedEventArgs));
+
+            FieldInfo[] EventFields = typeof (DataReceivedEventArgs)
+                .GetFields(
+                    BindingFlags.NonPublic |
+                    BindingFlags.Instance |
+                    BindingFlags.DeclaredOnly);
+
+            if (EventFields.Count() > 0)
+            {
+                EventFields[0].SetValue(MockEventArgs, TestData);
+            }
+            else
+            {
+                throw new ApplicationException(
+                    "Failed to find _data field!");
+            }
+
+            return MockEventArgs;
         }
     }
 }

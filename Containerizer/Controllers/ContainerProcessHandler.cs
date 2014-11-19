@@ -1,4 +1,5 @@
-﻿using Containerizer.Facades;
+﻿using System.Threading.Tasks;
+using Containerizer.Facades;
 using Containerizer.Models;
 using Containerizer.Services.Implementations;
 using Containerizer.Services.Interfaces;
@@ -30,7 +31,18 @@ namespace Containerizer.Controllers
             process.StartInfo.RedirectStandardOutput = true;
             process.StartInfo.FileName = processSpec.Path;
             process.StartInfo.Arguments = processSpec.Arguments();
+
+            process.OutputDataReceived += OutputDataHandler;
+
             process.Start();
+
+            process.BeginOutputReadLine();
+        }
+
+        private void OutputDataHandler(object sendingProcess, DataReceivedEventArgs outLine)
+        {
+            if (outLine.Data == null) return;
+            this.Send(outLine.Data);
         }
     }
 }
