@@ -47,14 +47,14 @@ namespace Containerizer.Tests
                     it["should upgrade to a websocket"] = () =>
                     {
                         var encoder = new UTF8Encoding();
-                        byte[] buffer = encoder.GetBytes("{\"pspec\":{\"Path\":\"echo\", Args:[\"hello\"]}}");
+                        byte[] buffer = encoder.GetBytes("{\"type\":\"run\", \"pspec\":{\"Path\":\"echo\", Args:[\"hello\"]}}");
                         client.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, CancellationToken.None);
                     };
 
                     it["should run a process"] = () =>
                     {
                         var encoder = new UTF8Encoding();
-                        byte[] buffer = encoder.GetBytes("{\"pspec\":{\"Path\":\"ipconfig.exe\", Args:[\"/all\"]}}");
+                        byte[] buffer = encoder.GetBytes("{\"type\":\"run\", \"pspec\":{\"Path\":\"ipconfig.exe\", Args:[\"/all\"]}}");
                         client.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, CancellationToken.None);
 
                         var receiveBuffer = new byte[1024];

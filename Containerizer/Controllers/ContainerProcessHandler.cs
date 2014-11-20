@@ -18,21 +18,24 @@ namespace Containerizer.Controllers
         public override void OnMessage(string message)
         {
             var streamEvent = JsonConvert.DeserializeObject<ProcessStreamEvent>(message);
-            var processSpec = streamEvent.ApiProcessSpec;
 
-            process.StartInfo.UseShellExecute = false;
-            process.StartInfo.RedirectStandardOutput = true;
-            process.StartInfo.RedirectStandardError = true;
-            process.StartInfo.FileName = processSpec.Path;
-            process.StartInfo.Arguments = processSpec.Arguments();
-
-            process.OutputDataReceived += OutputDataHandler;
-            process.ErrorDataReceived += OutputErrorDataHandler;
-
-            process.Start();
-
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
+            if(streamEvent.MessageType == "run" && streamEvent.ApiProcessSpec != null)
+            {
+                var processSpec = streamEvent.ApiProcessSpec;
+                process.StartInfo.UseShellExecute = false;
+                process.StartInfo.RedirectStandardOutput = true;
+                process.StartInfo.RedirectStandardError = true;
+                process.StartInfo.RedirectStandardInput = true;
+                process.StartInfo.FileName = processSpec.Path;
+                process.StartInfo.Arguments = processSpec.Arguments();
+                process.OutputDataReceived += OutputDataHandler;
+                process.ErrorDataReceived += OutputErrorDataHandler;
+                process.Start();
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+            } else if (streamEvent.MessageType == "stdin") {
+                process.StandardInput.Write(streamEvent.Data);
+            }
         }
 
         private void OutputDataHandler(object sendingProcess, DataReceivedEventArgs outLine)
@@ -41,7 +44,7 @@ namespace Containerizer.Controllers
             string data = JsonConvert.SerializeObject(new ProcessStreamEvent
             {
                 MessageType = "stdout",
-                Message = outLine.Data
+                Data = outLine.Data
             }, Formatting.None);
             this.Send(data);
         }
@@ -52,7 +55,7 @@ namespace Containerizer.Controllers
             string data = JsonConvert.SerializeObject(new ProcessStreamEvent
             {
                 MessageType = "stderr",
-                Message = outLine.Data
+                Data = outLine.Data
             }, Formatting.None);
             this.Send(data);
         }

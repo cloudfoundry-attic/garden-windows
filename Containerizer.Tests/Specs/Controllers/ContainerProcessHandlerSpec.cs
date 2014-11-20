@@ -17,6 +17,7 @@ namespace Containerizer.Tests
         private ContainerProcessHandler handler;
         private Mock<IProcessFacade> mockProcess;
         private ProcessStartInfo startInfo;
+        private byte[] fakeStandardInput;
 
         private void before_each()
         {
@@ -27,9 +28,10 @@ namespace Containerizer.Tests
             mockProcess.Setup(x => x.StartInfo).Returns(startInfo);
             mockProcess.Setup(x => x.Start());
 
-            var bytes = Encoding.UTF8.GetBytes("some text");
-            var stream = new StreamReader(new MemoryStream(bytes));
-            mockProcess.Setup(x => x.StandardOutput).Returns(stream);
+            fakeStandardInput = new byte[4096];
+            var stream = new StreamWriter(new MemoryStream(fakeStandardInput));
+            stream.AutoFlush = true;
+            mockProcess.Setup(x => x.StandardInput).Returns(stream);
         }
 
         private void SendProcessOutputEvent(string message)
@@ -71,7 +73,7 @@ namespace Containerizer.Tests
             {
                 handler.WebSocketContext = new FakeAspNetWebSocketContext();
                 websocket = (FakeWebSocket) handler.WebSocketContext.WebSocket;
-                handler.OnMessage("{\"pspec\":{\"Path\":\"foo.exe\", \"Args\":[\"some\", \"args\"]}}");
+                handler.OnMessage("{\"type\":\"run\", \"pspec\":{\"Path\":\"foo.exe\", \"Args\":[\"some\", \"args\"]}}");
             };
 
             it["sets start info correctly"] = () =>
@@ -83,6 +85,16 @@ namespace Containerizer.Tests
             it["runs something"] = () =>
             {
                 mockProcess.Verify(x => x.Start());
+            };
+
+            describe["standard in"] = () =>
+            {
+                it["writes the data from the socket to the process' stdin"] = () =>
+                {
+                    handler.OnMessage("{\"type\":\"stdin\", \"data\":\"stdin data\"}");
+                    var fakeStdinString = System.Text.Encoding.Default.GetString(fakeStandardInput);
+                    fakeStdinString.should_start_with("stdin data");
+                };
             };
 
             describe["standard out"] = () =>
