@@ -71,7 +71,7 @@ namespace Containerizer.Tests
             {
                 handler.WebSocketContext = new FakeAspNetWebSocketContext();
                 websocket = (FakeWebSocket) handler.WebSocketContext.WebSocket;
-                handler.OnMessage("{\"Path\":\"foo.exe\", \"Args\":[\"some\", \"args\"]}");
+                handler.OnMessage("{\"pspec\":{\"Path\":\"foo.exe\", \"Args\":[\"some\", \"args\"]}}");
             };
 
             it["sets start info correctly"] = () =>

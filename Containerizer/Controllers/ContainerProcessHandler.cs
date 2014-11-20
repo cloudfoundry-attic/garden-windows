@@ -17,7 +17,8 @@ namespace Containerizer.Controllers
 
         public override void OnMessage(string message)
         {
-            var processSpec = JsonConvert.DeserializeObject<ApiProcessSpec>(message);
+            var streamEvent = JsonConvert.DeserializeObject<ProcessStreamEvent>(message);
+            var processSpec = streamEvent.ApiProcessSpec;
 
             process.StartInfo.UseShellExecute = false;
             process.StartInfo.RedirectStandardOutput = true;
