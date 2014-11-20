@@ -1,15 +1,8 @@
-﻿using System.Threading.Tasks;
-using Containerizer.Facades;
+﻿using Containerizer.Facades;
 using Containerizer.Models;
-using Containerizer.Services.Implementations;
-using Containerizer.Services.Interfaces;
 using Microsoft.Web.WebSockets;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Web;
-using System.Web.Script.Serialization;
+using Newtonsoft.Json;
 
 namespace Containerizer.Controllers
 {
@@ -24,25 +17,43 @@ namespace Containerizer.Controllers
 
         public override void OnMessage(string message)
         {
-            var ser = new JavaScriptSerializer();
-            var processSpec = ser.Deserialize<ApiProcessSpec>(message);
+            var processSpec = JsonConvert.DeserializeObject<ApiProcessSpec>(message);
 
             process.StartInfo.UseShellExecute = false;
             process.StartInfo.RedirectStandardOutput = true;
+            process.StartInfo.RedirectStandardError = true;
             process.StartInfo.FileName = processSpec.Path;
             process.StartInfo.Arguments = processSpec.Arguments();
 
             process.OutputDataReceived += OutputDataHandler;
+            process.ErrorDataReceived += OutputErrorDataHandler;
 
             process.Start();
 
             process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
         }
 
         private void OutputDataHandler(object sendingProcess, DataReceivedEventArgs outLine)
         {
             if (outLine.Data == null) return;
-            this.Send(outLine.Data);
+            string data = JsonConvert.SerializeObject(new ProcessStreamEvent
+            {
+                MessageType = "stdout",
+                Message = outLine.Data
+            }, Formatting.None);
+            this.Send(data);
+        }
+
+        private void OutputErrorDataHandler(object sendingProcess, DataReceivedEventArgs outLine)
+        {
+            if (outLine.Data == null) return;
+            string data = JsonConvert.SerializeObject(new ProcessStreamEvent
+            {
+                MessageType = "stderr",
+                Message = outLine.Data
+            }, Formatting.None);
+            this.Send(data);
         }
     }
 }

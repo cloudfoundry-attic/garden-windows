@@ -1,20 +1,14 @@
-﻿using System.Net.Http;
-using System.Reflection;
-using System.Web.WebSockets;
-using Containerizer.Controllers;
+﻿using Containerizer.Controllers;
 using Containerizer.Facades;
-using Containerizer.Services.Interfaces;
 using Containerizer.Tests.Specs.Facades;
 using Moq;
 using NSpec;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Net.WebSockets;
+using System.Threading;
 
 namespace Containerizer.Tests
 {
@@ -42,13 +36,29 @@ namespace Containerizer.Tests
         {
             mockProcess.Raise(mock => mock.OutputDataReceived += null, Helpers.CreateMockDataReceivedEventArgs(message));
         }
+        private void SendProcessErrorEvent(string message)
+        {
+            mockProcess.Raise(mock => mock.ErrorDataReceived += null, Helpers.CreateMockDataReceivedEventArgs(message));
+        }
 
         private string WaitForWebSocketMessage(FakeWebSocket websocket)
         {
-            while (websocket.LastSentBuffer.Array == null)
+
+            var tokenSource = new CancellationTokenSource();
+            CancellationToken token = tokenSource.Token;
+            int timeOut = 100; // 0.1s
+
+            var task = Task.Factory.StartNew(() =>
             {
-                System.Threading.Thread.Yield();
-            }
+                while (websocket.LastSentBuffer.Array == null)
+                {
+                    System.Threading.Thread.Yield();
+                }
+            }, token);
+
+            if (!task.Wait(timeOut, token))
+                return "no message sent (test)";
+
             var byteArray = websocket.LastSentBuffer.Array;
             return System.Text.Encoding.Default.GetString(byteArray);
         }
@@ -75,26 +85,53 @@ namespace Containerizer.Tests
                 mockProcess.Verify(x => x.Start());
             };
 
-            context["when an event with data is triggered"] = () =>
+            describe["standard out"] = () =>
             {
-                it["sends over socket"] = () =>
+                context["when an event with data is triggered"] = () =>
                 {
-                    SendProcessOutputEvent("Hi");
+                    it["sends over socket"] = () =>
+                    {
+                        SendProcessOutputEvent("Hi");
 
-                    var message = WaitForWebSocketMessage(websocket);
-                    message.should_be("Hi");
+                        var message = WaitForWebSocketMessage(websocket);
+                        message.should_be("{\"type\":\"stdout\",\"data\":\"Hi\"}");
+                    };
+                };
+
+                context["when an event without data is triggered"] = () =>
+                {
+                    it["sends an empty string over the socket"] = () =>
+                    {
+                        SendProcessOutputEvent(null);
+
+                        var message = WaitForWebSocketMessage(websocket);
+                        message.should_be("no message sent (test)");
+                    };
                 };
             };
 
-            context["when an event without data is triggered (followed by data)"] = () =>
+            describe["standard error"] = () =>
             {
-                it["sends over socket"] = () =>
+                context["when an event with data is triggered"] = () =>
                 {
-                    SendProcessOutputEvent(null);
-                    SendProcessOutputEvent("Second Event Data");
+                    it["sends over socket"] = () =>
+                    {
+                        SendProcessErrorEvent("Hi");
 
-                    var message = WaitForWebSocketMessage(websocket);
-                    message.should_be("Second Event Data");
+                        var message = WaitForWebSocketMessage(websocket);
+                        message.should_be("{\"type\":\"stderr\",\"data\":\"Hi\"}");
+                    };
+                };
+
+                context["when an event without data is triggered"] = () =>
+                {
+                    it["sends an empty string over the socket"] = () =>
+                    {
+                        SendProcessErrorEvent(null);
+
+                        var message = WaitForWebSocketMessage(websocket);
+                        message.should_be("no message sent (test)");
+                    };
                 };
             };
         }

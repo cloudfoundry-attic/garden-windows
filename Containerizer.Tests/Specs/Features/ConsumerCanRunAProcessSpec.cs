@@ -65,7 +65,14 @@ namespace Containerizer.Tests
                             result = client.ReceiveAsync(receiveBufferSegment, CancellationToken.None).GetAwaiter().GetResult();
                         } while (result.Count == 0);
                         var message = System.Text.Encoding.Default.GetString(receiveBuffer);
-                        message.should_start_with("Windows IP Configuration");
+                        message.should_start_with("{\"type\":\"stdout\",\"data\":\"\"}");
+
+                        do
+                        {
+                            result = client.ReceiveAsync(receiveBufferSegment, CancellationToken.None).GetAwaiter().GetResult();
+                        } while (result.Count == 0);
+                        message = System.Text.Encoding.Default.GetString(receiveBuffer);
+                        message.should_start_with("{\"type\":\"stdout\",\"data\":\"Windows IP Configuration\"}");
                     };
                 };
             };
