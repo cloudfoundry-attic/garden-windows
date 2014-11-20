@@ -17,6 +17,12 @@ type container struct {
 	handle        string
 }
 
+type ProcessStreamEvent struct {
+	MessageType    string
+	ApiProcessSpec api.ProcessSpec
+	Data           string
+}
+
 func NewContainer(tupperwareURL url.URL, handle string) *container {
 	return &container{
 		tupperwareURL: tupperwareURL,
@@ -106,7 +112,10 @@ func (container *container) Run(processSpec api.ProcessSpec, processIO api.Proce
 	if err != nil {
 		log.Fatal(err)
 	}
-	websocket.JSON.Send(ws, processSpec)
+	websocket.JSON.Send(ws, ProcessStreamEvent{
+		MessageType:    "run",
+		ApiProcessSpec: processSpec,
+	})
 	return process.DotNetProcess{}, nil
 }
 

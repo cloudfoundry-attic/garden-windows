@@ -87,7 +87,7 @@ var _ = Describe("backend", func() {
 	})
 
 	Describe("Running", func() {
-		var events []api.ProcessSpec
+		var events []netContainer.ProcessStreamEvent
 
 		BeforeEach(func() {
 			listener, err := net.Listen("tcp", ":2000")
@@ -97,9 +97,9 @@ var _ = Describe("backend", func() {
 
 			testHandler := func(ws *websocket.Conn) {
 				for {
-					var processSpec api.ProcessSpec
-					websocket.JSON.Receive(ws, &processSpec)
-					events = append(events, processSpec)
+					var streamEvent netContainer.ProcessStreamEvent
+					websocket.JSON.Receive(ws, &streamEvent)
+					events = append(events, streamEvent)
 				}
 
 			}
@@ -111,7 +111,7 @@ var _ = Describe("backend", func() {
 			container = netContainer.NewContainer(*u, "containerhandle")
 		})
 
-		It("runs a script via a websocket and also passes rlimits ", func() {
+		It("runs a script via a websocket and also passes rlimits", func() {
 			processSpec := api.ProcessSpec{
 				Path: "/some/script",
 				Args: []string{"arg1", "arg2"},
@@ -136,9 +136,12 @@ var _ = Describe("backend", func() {
 			_, err := container.Run(processSpec, api.ProcessIO{})
 
 			Ω(err).ShouldNot(HaveOccurred())
-			Eventually(func() []api.ProcessSpec {
+			Eventually(func() []netContainer.ProcessStreamEvent {
 				return events
-			}).Should(ContainElement(processSpec))
+			}).Should(ContainElement(netContainer.ProcessStreamEvent{
+				MessageType:    "run",
+				ApiProcessSpec: processSpec,
+			}))
 
 			// ranCmd, _, _ := fakeProcessTracker.RunArgstmForCall(0)
 			// Ω(ranCmd.Path).Should(Equal(containerDir + "/bin/wsh"))
