@@ -46,7 +46,7 @@ namespace Containerizer.Tests
                     actualPath = path;
                     return expectedStream;
                 });
-                stream = streamOutService.StreamFile(id, "file.txt");
+                stream = streamOutService.StreamOutFile(id, "file.txt");
             };
 
             it["returns a stream from the tarstreamer"] = () =>

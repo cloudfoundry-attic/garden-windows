@@ -19,6 +19,7 @@ namespace Containerizer
             var containerBuilder = new ContainerBuilder();
             containerBuilder.RegisterType<CreateContainerService>().As<ICreateContainerService>();
             containerBuilder.RegisterType<ContainerPathService>().As<IContainerPathService>();
+            containerBuilder.RegisterType<StreamInService>().As<IStreamInService>();
             containerBuilder.RegisterType<StreamOutService>().As<IStreamOutService>();
             containerBuilder.RegisterType<TarStreamService>().As<ITarStreamService>();
             containerBuilder.RegisterType<ContainersController>();

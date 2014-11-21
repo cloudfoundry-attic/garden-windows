@@ -1,5 +1,6 @@
 ﻿using Containerizer.Services.Interfaces;
 using SharpCompress.Common;
+using SharpCompress.Reader;
 using SharpCompress.Writer;
 using System;
 using System.Collections.Generic;
@@ -25,7 +26,7 @@ namespace Containerizer
             return memStream;
         }
 
-        private void CreateFromDirectory(string sourceDirectoryName, string destinationArchiveFileName)
+        public void CreateFromDirectory(string sourceDirectoryName, string destinationArchiveFileName)
         {
             var tarPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".tar");
             try
@@ -56,6 +57,19 @@ namespace Containerizer
             finally
             {
                 if (File.Exists(tarPath)) File.Delete(tarPath);
+            }
+        }
+
+
+        public void WriteTarStreamToPath(Stream stream, string filePath)
+        {
+            var reader = ReaderFactory.Open(stream);
+            while (reader.MoveToNextEntry())
+            {
+                if (!reader.Entry.IsDirectory)
+                {
+                    reader.WriteEntryToDirectory(filePath, ExtractOptions.ExtractFullPath | ExtractOptions.Overwrite);
+                }
             }
         }
     }

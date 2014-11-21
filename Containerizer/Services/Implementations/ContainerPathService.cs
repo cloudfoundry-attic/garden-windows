@@ -20,5 +20,10 @@ namespace Containerizer.Services.Implementations
         {
             Directory.CreateDirectory(this.GetContainerRoot(id));
         }
+
+        public string GetSubdirectory(string id, string destination)
+        {
+            return Path.GetFullPath(GetContainerRoot(id) + destination);
+        }
     }
 }
