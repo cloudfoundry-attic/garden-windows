@@ -99,8 +99,10 @@
     <Compile Include="Specs\Facades\FakeAspNetWebSocketContext.cs" />
     <Compile Include="Specs\Features\ConsumerCanCreateNewContainerSpec.cs" />
     <Compile Include="Specs\Features\ConsumerCanGetFileSystemContentsAsTarStreamSpec.cs" />
+    <Compile Include="Specs\Features\ConsumerCanPutFileSystemContentsAsTarStreamSpec.cs" />
     <Compile Include="Specs\Features\ConsumerCanRunAProcessSpec.cs" />
     <Compile Include="Specs\Helpers.cs" />
+    <Compile Include="Specs\Services\StreamInServiceSpec.cs" />
     <Compile Include="Specs\Services\TarStreamServiceSpec.cs" />
     <Compile Include="Specs\Services\ContainerPathServiceSpec.cs" />
     <Compile Include="Specs\Services\StreamOutServiceSpec.cs" />

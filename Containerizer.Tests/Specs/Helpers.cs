@@ -3,15 +3,34 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Web.Administration;
 using System.IO;
+using Newtonsoft.Json.Linq;
 
 namespace Containerizer.Tests
 {
     public static class Helpers
     {
+
+        /// <returns>The newly created container's id.</returns>
+        public static String CreateContainer(int port)
+        {
+            var client = new HttpClient();
+            client.BaseAddress = new Uri("http://localhost:" + port.ToString());
+            var postTask = client.PostAsync("/api/Containers",
+                new FormUrlEncodedContent(new List<KeyValuePair<string, string>>()));
+            postTask.Wait();
+            var postResult = postTask.Result;
+            var readTask = postResult.Content.ReadAsStringAsync();
+            readTask.Wait();
+            var response = readTask.Result;
+            var json = JObject.Parse(response);
+            return json["id"].ToString();
+        }
+
         public static void SetupSiteInIIS(string applicationFolderName, string siteName, string applicationPoolName, int port, bool privleged)
         {
             try
