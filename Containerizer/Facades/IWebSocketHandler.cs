@@ -6,6 +6,9 @@ namespace Containerizer.Facades
 {
     public interface IWebSocketHandler
     {
+        int MaxIncomingMessageSize { get; set; }
+        AspNetWebSocketContext WebSocketContext { get; set; }
+        Exception Error { get; set; }
         void OnOpen();
         void OnMessage(string message);
         void OnMessage(byte[] message);
@@ -15,8 +18,5 @@ namespace Containerizer.Facades
         void Send(byte[] message);
         void Close();
         Task ProcessWebSocketRequestAsync(AspNetWebSocketContext webSocketContext);
-        int MaxIncomingMessageSize { get; set; }
-        AspNetWebSocketContext WebSocketContext { get; set; }
-        Exception Error { get; set; }
     }
 }

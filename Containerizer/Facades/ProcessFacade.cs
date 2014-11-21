@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Runtime.Remoting;
-using System.Web;
 
 #pragma warning disable 618
+
 namespace Containerizer.Facades
 {
     public class ProcessFacade : IProcessFacade
@@ -17,7 +15,7 @@ namespace Containerizer.Facades
 
         public ProcessFacade()
         {
-            this.process = new Process();
+            process = new Process();
         }
 
         public object GetLifetimeService()
@@ -394,4 +392,5 @@ namespace Containerizer.Facades
         }
     }
 }
+
 #pragma warning restore 618

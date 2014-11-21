@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.IO;
 
 namespace Containerizer.Services.Interfaces
 {
     public interface IStreamInService
     {
-       void StreamInFile(Stream steam, string id, string destination);
+        void StreamInFile(Stream steam, string id, string destination);
     }
 }

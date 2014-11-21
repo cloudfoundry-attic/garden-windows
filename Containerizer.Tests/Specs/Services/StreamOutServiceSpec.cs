@@ -1,29 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
-using NSpec;
-using System.Linq;
-using System.Web.Http.Results;
-using System.Net.Http;
-using System.Threading;
-using Newtonsoft.Json.Linq;
-using Containerizer.Services.Interfaces;
-using Containerizer.Services.Implementations;
-using Moq;
-using Microsoft.Web.Administration;
 using System.IO;
+using Containerizer.Services.Implementations;
+using Containerizer.Services.Interfaces;
+using Moq;
+using NSpec;
 
-namespace Containerizer.Tests
+namespace Containerizer.Tests.Specs.Services
 {
-    class StreamOutServiceSpec : nspec
+    internal class StreamOutServiceSpec : nspec
     {
-        StreamOutService streamOutService;
-        private string id;
         private string actualPath;
+        private Stream expectedStream;
+        private string id;
         private Mock<IContainerPathService> mockIContainerPathService;
         private Mock<ITarStreamService> mockITarStreamService;
-        private System.IO.Stream expectedStream;
+        private StreamOutService streamOutService;
 
-        void before_each()
+        private void before_each()
         {
             mockIContainerPathService = new Mock<IContainerPathService>();
             mockITarStreamService = new Mock<ITarStreamService>();
@@ -31,35 +24,28 @@ namespace Containerizer.Tests
             id = Guid.NewGuid().ToString();
         }
 
-        void describe_stream_out()
+        private void describe_stream_out()
         {
-            System.IO.Stream stream = null;
-            
+            Stream stream = null;
+
             before = () =>
             {
                 mockIContainerPathService.Setup(x => x.GetContainerRoot(It.IsAny<string>()))
-                    .Returns(() =>  @"C:\a\path" );
+                    .Returns(() => @"C:\a\path");
                 mockITarStreamService.Setup(x => x.WriteTarToStream(It.IsAny<string>()))
                     .Returns((string path) =>
-                {
-                    expectedStream = new MemoryStream();
-                    actualPath = path;
-                    return expectedStream;
-                });
+                    {
+                        expectedStream = new MemoryStream();
+                        actualPath = path;
+                        return expectedStream;
+                    });
                 stream = streamOutService.StreamOutFile(id, "file.txt");
             };
 
-            it["returns a stream from the tarstreamer"] = () =>
-            {
-                stream.should_be_same(expectedStream);
-            };
+            it["returns a stream from the tarstreamer"] = () => { stream.should_be_same(expectedStream); };
 
-            it["passes the path combined with the id to tarstreamer"] = () =>
-            {
-                actualPath.should_be(Path.Combine(@"C:\a\path", "file.txt"));
-            };
+            it["passes the path combined with the id to tarstreamer"] =
+                () => { actualPath.should_be(Path.Combine(@"C:\a\path", "file.txt")); };
         }
     }
 }
-
-

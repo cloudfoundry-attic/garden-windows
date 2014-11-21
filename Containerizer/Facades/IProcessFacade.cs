@@ -8,10 +8,6 @@ namespace Containerizer.Facades
 {
     public interface IProcessFacade
     {
-        object GetLifetimeService();
-        object InitializeLifetimeService();
-        ObjRef CreateObjRef(Type requestedType);
-        void Dispose();
         ISite Site { get; set; }
         IContainer Container { get; }
         int BasePriority { get; }
@@ -63,6 +59,10 @@ namespace Containerizer.Facades
         StreamReader StandardError { get; }
         int WorkingSet { get; }
         long WorkingSet64 { get; }
+        object GetLifetimeService();
+        object InitializeLifetimeService();
+        ObjRef CreateObjRef(Type requestedType);
+        void Dispose();
         event EventHandler Disposed;
         bool CloseMainWindow();
         void Close();

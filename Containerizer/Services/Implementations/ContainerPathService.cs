@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Web;
+﻿using System.IO;
+using System.Reflection;
 using Containerizer.Services.Interfaces;
 
 namespace Containerizer.Services.Implementations
@@ -11,14 +8,14 @@ namespace Containerizer.Services.Implementations
     {
         public string GetContainerRoot(string id)
         {
-            var rootDir = Directory.GetDirectoryRoot(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location));
+            var rootDir = Directory.GetDirectoryRoot(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
             return Path.Combine(rootDir, "containerizer", id);
         }
 
 
         public void CreateContainerDirectory(string id)
         {
-            Directory.CreateDirectory(this.GetContainerRoot(id));
+            Directory.CreateDirectory(GetContainerRoot(id));
         }
 
         public string GetSubdirectory(string id, string destination)

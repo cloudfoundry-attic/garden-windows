@@ -1,16 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Web.Administration;
 using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Reflection;
+using Microsoft.Web.Administration;
 using Newtonsoft.Json.Linq;
 
-namespace Containerizer.Tests
+namespace Containerizer.Tests.Specs
 {
     public static class Helpers
     {
@@ -18,8 +16,7 @@ namespace Containerizer.Tests
         /// <returns>The newly created container's id.</returns>
         public static String CreateContainer(int port)
         {
-            var client = new HttpClient();
-            client.BaseAddress = new Uri("http://localhost:" + port.ToString());
+            var client = new HttpClient {BaseAddress = new Uri("http://localhost:" + port.ToString())};
             var postTask = client.PostAsync("/api/Containers",
                 new FormUrlEncodedContent(new List<KeyValuePair<string, string>>()));
             postTask.Wait();
@@ -35,10 +32,10 @@ namespace Containerizer.Tests
         {
             try
             {
-                ServerManager serverManager = new ServerManager();
+                var serverManager = new ServerManager();
                 var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, applicationFolderName);
 
-                Helpers.RemoveExistingSite(siteName, applicationPoolName);
+                RemoveExistingSite(siteName, applicationPoolName);
 
                 Site mySite = serverManager.Sites.Add(siteName, path, port);
                 mySite.ServerAutoStart = true;
@@ -61,10 +58,7 @@ namespace Containerizer.Tests
                 {
                     throw new Exception("Please install IIS.", ex);
                 }
-                else
-                {
-                    throw;
-                }
+                throw;
             }
         }
 
@@ -72,7 +66,7 @@ namespace Containerizer.Tests
         {
             try
             {
-                ServerManager serverManager = new ServerManager();
+                var serverManager = new ServerManager();
                 var existingSite = serverManager.Sites.FirstOrDefault(x => x.Name == siteName);
                 if (existingSite != null)
                 {
@@ -93,10 +87,7 @@ namespace Containerizer.Tests
                 {
                     throw new Exception("Please install IIS.", ex);
                 }
-                else
-                {
-                    throw;
-                }
+                throw;
             }
             catch (UnauthorizedAccessException ex)
             {
@@ -108,7 +99,7 @@ namespace Containerizer.Tests
 
         public static DataReceivedEventArgs CreateMockDataReceivedEventArgs(string TestData)
         {
-            DataReceivedEventArgs MockEventArgs =
+            var MockEventArgs =
                 (DataReceivedEventArgs) System.Runtime.Serialization.FormatterServices
                     .GetUninitializedObject(typeof (DataReceivedEventArgs));
 
@@ -118,7 +109,7 @@ namespace Containerizer.Tests
                     BindingFlags.Instance |
                     BindingFlags.DeclaredOnly);
 
-            if (EventFields.Count() > 0)
+            if (EventFields.Any())
             {
                 EventFields[0].SetValue(MockEventArgs, TestData);
             }

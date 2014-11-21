@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Containerizer.Services.Interfaces
@@ -9,13 +6,15 @@ namespace Containerizer.Services.Interfaces
     public interface ICreateContainerService
     {
         /// <exception cref="Containerizer.Services.Interfaces.CouldNotCreateContainerException">
-        /// Thrown when container could not be created.
+        ///     Thrown when container could not be created.
         /// </exception>
         Task<string> CreateContainer();
     }
 
     public class CouldNotCreateContainerException : Exception
     {
-        public CouldNotCreateContainerException(string message, Exception inner) : base(message, inner) { }
-    } 
+        public CouldNotCreateContainerException(string message, Exception inner) : base(message, inner)
+        {
+        }
+    }
 }

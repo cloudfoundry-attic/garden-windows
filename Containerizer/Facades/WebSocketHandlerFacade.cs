@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
 using System.Web.WebSockets;
 using Microsoft.Web.WebSockets;
 
@@ -12,9 +9,9 @@ namespace Containerizer.Facades
     {
         private readonly WebSocketHandler handler;
 
-        WebSocketHandlerFacade()
+        private WebSocketHandlerFacade()
         {
-            this.handler = new WebSocketHandler();
+            handler = new WebSocketHandler();
         }
 
         public void OnOpen()

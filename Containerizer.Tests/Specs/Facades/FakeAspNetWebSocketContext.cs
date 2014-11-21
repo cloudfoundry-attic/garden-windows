@@ -1,49 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.WebSockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.WebSockets;
 
 namespace Containerizer.Tests.Specs.Facades
 {
-    class FakeWebSocket : WebSocket
+    internal class FakeWebSocket : WebSocket
     {
-        public ArraySegment<byte> LastSentBuffer; 
-        
-        public override void Abort()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override Task CloseAsync(WebSocketCloseStatus closeStatus, string statusDescription, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override Task CloseOutputAsync(WebSocketCloseStatus closeStatus, string statusDescription, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Dispose()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override Task<WebSocketReceiveResult> ReceiveAsync(ArraySegment<byte> buffer, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override Task SendAsync(ArraySegment<byte> buffer, WebSocketMessageType messageType, bool endOfMessage,
-            CancellationToken cancellationToken)
-        {
-            LastSentBuffer = buffer;
-            return null;
-        }
+        public ArraySegment<byte> LastSentBuffer;
 
         public override WebSocketCloseStatus? CloseStatus
         {
@@ -65,14 +30,49 @@ namespace Containerizer.Tests.Specs.Facades
             get { throw new NotImplementedException(); }
         }
 
+        public override void Abort()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task CloseAsync(WebSocketCloseStatus closeStatus, string statusDescription,
+            CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task CloseOutputAsync(WebSocketCloseStatus closeStatus, string statusDescription,
+            CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void Dispose()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task<WebSocketReceiveResult> ReceiveAsync(ArraySegment<byte> buffer,
+            CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task SendAsync(ArraySegment<byte> buffer, WebSocketMessageType messageType, bool endOfMessage,
+            CancellationToken cancellationToken)
+        {
+            LastSentBuffer = buffer;
+            return null;
+        }
     }
 
-    class FakeAspNetWebSocketContext : AspNetWebSocketContext
+    internal class FakeAspNetWebSocketContext : AspNetWebSocketContext
     {
         private readonly FakeWebSocket fakeWebSocket;
+
         public FakeAspNetWebSocketContext()
         {
-            this.fakeWebSocket = new FakeWebSocket();
+            fakeWebSocket = new FakeWebSocket();
         }
 
         public override WebSocket WebSocket

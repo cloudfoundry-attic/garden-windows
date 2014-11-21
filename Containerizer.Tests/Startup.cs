@@ -1,14 +1,12 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
+using NUnit.Gui;
 
 namespace Containerizer.Tests
 {
     public class Startup
     {
-        static private void copyAddin()
+        private static void copyAddin()
         {
             if (!Directory.Exists("addins"))
             {
@@ -19,11 +17,11 @@ namespace Containerizer.Tests
         }
 
         [STAThread]
-        static public void Main(string[] args)
+        public static void Main(string[] args)
         {
             copyAddin();
 
-            NUnit.Gui.AppEntry.Main(new string[]
+            AppEntry.Main(new[]
             {
                 "Test.nunit"
             });

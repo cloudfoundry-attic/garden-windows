@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.IO;
 
 namespace Containerizer.Services.Interfaces
 {
     public interface IStreamOutService
     {
-        System.IO.Stream StreamOutFile(string id, string source);
+        Stream StreamOutFile(string id, string source);
     }
 }

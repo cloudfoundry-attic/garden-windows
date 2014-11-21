@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using System.Web.Http.Dependencies;
 using Autofac;
 using Containerizer.Controllers;
@@ -12,7 +10,7 @@ namespace Containerizer
 {
     public class DependencyResolver : IDependencyResolver
     {
-        private IContainer container;
+        private readonly IContainer container;
 
         public DependencyResolver()
         {
@@ -23,7 +21,7 @@ namespace Containerizer
             containerBuilder.RegisterType<StreamOutService>().As<IStreamOutService>();
             containerBuilder.RegisterType<TarStreamService>().As<ITarStreamService>();
             containerBuilder.RegisterType<ContainersController>();
-            this.container = containerBuilder.Build();
+            container = containerBuilder.Build();
         }
 
         IDependencyScope IDependencyResolver.BeginScope()
@@ -38,15 +36,12 @@ namespace Containerizer
 
         IEnumerable<object> IDependencyScope.GetServices(Type serviceType)
         {
-            IEnumerable<object> collection = (IEnumerable<object>)container.ResolveOptional(serviceType);
+            var collection = (IEnumerable<object>) container.ResolveOptional(serviceType);
             if (collection == null)
             {
                 return new List<object>();
             }
-            else
-            {
-                return collection;
-            }
+            return collection;
         }
 
         void IDisposable.Dispose()

@@ -1,14 +1,14 @@
-﻿using Containerizer.Facades;
+﻿using System.Diagnostics;
+using Containerizer.Facades;
 using Containerizer.Models;
 using Microsoft.Web.WebSockets;
-using System.Diagnostics;
 using Newtonsoft.Json;
 
 namespace Containerizer.Controllers
 {
     public class ContainerProcessHandler : WebSocketHandler
     {
-        private readonly IProcessFacade process; 
+        private readonly IProcessFacade process;
 
         public ContainerProcessHandler(IProcessFacade process)
         {
@@ -19,9 +19,9 @@ namespace Containerizer.Controllers
         {
             var streamEvent = JsonConvert.DeserializeObject<ProcessStreamEvent>(message);
 
-            if(streamEvent.MessageType == "run" && streamEvent.ApiProcessSpec != null)
+            if (streamEvent.MessageType == "run" && streamEvent.ApiProcessSpec != null)
             {
-                var processSpec = streamEvent.ApiProcessSpec;
+                ApiProcessSpec processSpec = streamEvent.ApiProcessSpec;
                 process.StartInfo.UseShellExecute = false;
                 process.StartInfo.RedirectStandardOutput = true;
                 process.StartInfo.RedirectStandardError = true;
@@ -33,7 +33,9 @@ namespace Containerizer.Controllers
                 process.Start();
                 process.BeginOutputReadLine();
                 process.BeginErrorReadLine();
-            } else if (streamEvent.MessageType == "stdin") {
+            }
+            else if (streamEvent.MessageType == "stdin")
+            {
                 process.StandardInput.Write(streamEvent.Data);
             }
         }
@@ -46,7 +48,7 @@ namespace Containerizer.Controllers
                 MessageType = "stdout",
                 Data = outLine.Data
             }, Formatting.None);
-            this.Send(data);
+            Send(data);
         }
 
         private void OutputErrorDataHandler(object sendingProcess, DataReceivedEventArgs outLine)
@@ -57,7 +59,7 @@ namespace Containerizer.Controllers
                 MessageType = "stderr",
                 Data = outLine.Data
             }, Formatting.None);
-            this.Send(data);
+            Send(data);
         }
     }
 }

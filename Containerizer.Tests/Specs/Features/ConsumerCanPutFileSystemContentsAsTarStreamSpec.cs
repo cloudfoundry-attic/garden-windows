@@ -1,33 +1,24 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.IO;
+using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
 using Containerizer.Services.Implementations;
 using NSpec;
-using System.Linq;
-using System.Web.Http.Results;
-using System.IO;
-using Microsoft.Web.Administration;
-using System.Net.Http;
-using System.Collections.Specialized;
-using Newtonsoft.Json.Linq;
-using SharpCompress.Reader;
 
-namespace Containerizer.Tests
+namespace Containerizer.Tests.Specs.Features
 {
-
-    class ConsumerCanPutFileSystemContentsAsTarStream : nspec
+    internal class ConsumerCanPutFileSystemContentsAsTarStream : nspec
     {
-        string id;
-        HttpClient client;
-        private int port;
         private string directoryPath;
+        private string id;
+        private int port;
         private string tgzName;
 
-        void before_each()
+        private void before_each()
         {
             port = 8088;
-            Helpers.SetupSiteInIIS("Containerizer", "Containerizer.Tests", "ContainerizerTestsApplicationPool", port, true);
+            Helpers.SetupSiteInIIS("Containerizer", "Containerizer.Tests", "ContainerizerTestsApplicationPool", port,
+                true);
             directoryPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(directoryPath);
             File.WriteAllText(Path.Combine(directoryPath, "file.txt"), "stuff!!!!");
@@ -35,16 +26,15 @@ namespace Containerizer.Tests
             new TarStreamService().CreateFromDirectory(directoryPath, tgzName);
         }
 
-        void after_each()
+        private void after_each()
         {
             Helpers.RemoveExistingSite("Containerizer.Tests", "ContainerizerTestsApplicationPool");
             Helpers.RemoveExistingSite(id, id);
             Directory.Delete(directoryPath, true);
             Directory.Delete(new ContainerPathService().GetContainerRoot(id), true);
-            
         }
 
-        void describe_stream_in()
+        private void describe_stream_in()
         {
             context["given that I'm a consumer of the containerizer api"] = () =>
             {
@@ -52,16 +42,12 @@ namespace Containerizer.Tests
 
                 before = () =>
                 {
-                    client = new HttpClient();
-                    client.BaseAddress = new Uri("http://localhost:" + port.ToString());
+                    client = new HttpClient {BaseAddress = new Uri("http://localhost:" + port)};
                 };
 
                 context["there exists a container with a given id"] = () =>
                 {
-                    before = () =>
-                    {
-                        id = Helpers.CreateContainer(port);
-                    };
+                    before = () => { id = Helpers.CreateContainer(port); };
 
                     context["when I PUT a request to /api/Containers/:id/files?destination=%2F"] = () =>
                     {
@@ -75,31 +61,25 @@ namespace Containerizer.Tests
                             var streamContent = new StreamContent(fileStream);
                             streamContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
                             content.Add(streamContent);
-                            var path = "/api/containers/" + id + "/files?destination=%2F";
+                            string path = "/api/containers/" + id + "/files?destination=%2F";
                             responseMessage = client.PutAsync(path, streamContent).GetAwaiter().GetResult();
-                            var x = 1;
                         };
 
-                        it["returns a successful status code"] = () =>
-                        {
-                            responseMessage.IsSuccessStatusCode.should_be_true();
-                        };
+                        it["returns a successful status code"] =
+                            () => { responseMessage.IsSuccessStatusCode.should_be_true(); };
 
                         it["sees the new file in the container"] = () =>
                         {
-                            var fileContent = File.ReadAllText(Path.Combine(new ContainerPathService().GetContainerRoot(id), "file.txt"));
+                            string fileContent =
+                                File.ReadAllText(Path.Combine(new ContainerPathService().GetContainerRoot(id),
+                                    "file.txt"));
                             fileContent.should_be("stuff!!!!");
                         };
 
-                        after = () =>
-                        {
-                            fileStream.Close();
-                        };
+                        after = () => { fileStream.Close(); };
                     };
                 };
             };
         }
     }
 }
-
-

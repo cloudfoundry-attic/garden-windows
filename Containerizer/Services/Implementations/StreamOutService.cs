@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Web;
-using System.Xml.Linq;
+﻿using System.IO;
 using Containerizer.Services.Interfaces;
 
 namespace Containerizer.Services.Implementations
@@ -11,7 +6,7 @@ namespace Containerizer.Services.Implementations
     public class StreamOutService : IStreamOutService
     {
         private readonly IContainerPathService containerPathService;
-        private ITarStreamService tarStreamService;
+        private readonly ITarStreamService tarStreamService;
 
         public StreamOutService(IContainerPathService containerPathService, ITarStreamService tarStreamService)
         {
@@ -19,11 +14,11 @@ namespace Containerizer.Services.Implementations
             this.tarStreamService = tarStreamService;
         }
 
-        public System.IO.Stream StreamOutFile(string id, string source)
+        public Stream StreamOutFile(string id, string source)
         {
-            var rootDir = containerPathService.GetContainerRoot(id);
-            var path = Path.Combine(rootDir, source);
-            var stream = tarStreamService.WriteTarToStream(path);
+            string rootDir = containerPathService.GetContainerRoot(id);
+            string path = Path.Combine(rootDir, source);
+            Stream stream = tarStreamService.WriteTarToStream(path);
             return stream;
         }
     }

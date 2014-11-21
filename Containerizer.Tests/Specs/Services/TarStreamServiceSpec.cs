@@ -1,36 +1,30 @@
-﻿using System;
-using System.Net.Mime;
+﻿using System.IO;
+using System.Text;
+using Containerizer.Services.Implementations;
 using NSpec;
-using System.IO;
-using System.Diagnostics;
-using System.Linq;
-using Newtonsoft.Json.Linq;
-using Containerizer;
-using SharpCompress.Archive;
 using SharpCompress.Reader;
-using SharpCompress.Common.Tar;
 
-namespace Containerizer.Tests
+namespace Containerizer.Tests.Specs.Services
 {
-    class TarStreamServiceSpec : nspec
+    internal class TarStreamServiceSpec : nspec
     {
-        string tmpDir;
-        Stream tgzStream;
-        TarStreamService tarStreamService;
+        private TarStreamService tarStreamService;
+        private Stream tgzStream;
+        private string tmpDir;
 
-        void before_each()
+        private void before_each()
         {
             tmpDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             Directory.CreateDirectory(tmpDir);
             tarStreamService = new TarStreamService();
         }
 
-        void after_each()
+        private void after_each()
         {
             Directory.Delete(tmpDir, true);
         }
 
-        void describe_WriteTarStreamToPath()
+        private void describe_WriteTarStreamToPath()
         {
             string destinationArchiveFileName = null;
 
@@ -61,7 +55,8 @@ namespace Containerizer.Tests
                 File.Delete(destinationArchiveFileName);
             };
         }
-        void describe_CreateFromDirectory()
+
+        private void describe_CreateFromDirectory()
         {
             before = () =>
             {
@@ -72,14 +67,11 @@ namespace Containerizer.Tests
 
             context["requesting a single file"] = () =>
             {
-                before = () =>
-                {
-                    tgzStream = tarStreamService.WriteTarToStream(Path.Combine(tmpDir, "a_file.txt"));
-                };
+                before = () => { tgzStream = tarStreamService.WriteTarToStream(Path.Combine(tmpDir, "a_file.txt")); };
 
                 it["returns a steam with a single requested file"] = () =>
                 {
-                    using (var tgz = ReaderFactory.Open(tgzStream))
+                    using (IReader tgz = ReaderFactory.Open(tgzStream))
                     {
                         tgz.MoveToNextEntry().should_be_true();
                         tgz.Entry.Key.should_be("a_file.txt");
@@ -87,24 +79,17 @@ namespace Containerizer.Tests
                         tgz.MoveToNextEntry().should_be_false();
                     }
                 };
-
             };
 
             context["requesting a directory"] = () =>
             {
-                before = () =>
-                {
-                    tgzStream = tarStreamService.WriteTarToStream(tmpDir);
-                };
+                before = () => { tgzStream = tarStreamService.WriteTarToStream(tmpDir); };
 
-                it["creates the tgz stream"] = () =>
-                {
-                    ReaderFactory.Open(tgzStream).should_not_be_null();
-                };
+                it["creates the tgz stream"] = () => { ReaderFactory.Open(tgzStream).should_not_be_null(); };
 
                 it["returns a stream with the files inside"] = () =>
                 {
-                    using (var tgz = ReaderFactory.Open(tgzStream))
+                    using (IReader tgz = ReaderFactory.Open(tgzStream))
                     {
                         tgz.MoveToNextEntry().should_be_true();
                         tgz.Entry.Key.should_be("a_file.txt");
@@ -116,7 +101,7 @@ namespace Containerizer.Tests
 
                 it["has content in the files"] = () =>
                 {
-                    using (var tgz = ReaderFactory.Open(tgzStream))
+                    using (IReader tgz = ReaderFactory.Open(tgzStream))
                     {
                         tgz.MoveToNextEntry().should_be_true();
                         tgz.Entry.Key.should_be("a_file.txt");
@@ -126,11 +111,11 @@ namespace Containerizer.Tests
             };
         }
 
-        static string GetString(Stream stream, long size)
+        private static string GetString(Stream stream, long size)
         {
-            byte[] bytes = new byte[size];
+            var bytes = new byte[size];
             stream.Read(bytes, 0, bytes.Length);
-            return System.Text.Encoding.Default.GetString(bytes);
+            return Encoding.Default.GetString(bytes);
         }
     }
 }
