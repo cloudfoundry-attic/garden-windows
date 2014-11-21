@@ -63,14 +63,6 @@ namespace Containerizer.Tests
                     }
                 };
             };
-
-            context["when asking for a directory"] = () =>
-            {
-            };
-
-            context["when tar fails"] = () =>
-            {
-            };
         }
     }
 }
