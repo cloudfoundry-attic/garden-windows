@@ -1,10 +1,13 @@
 package container
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
+
+	"strings"
 
 	"github.com/cloudfoundry-incubator/garden/api"
 	"github.com/pivotal-cf-experimental/garden-dot-net/process"
@@ -92,9 +95,11 @@ func (container *container) CurrentMemoryLimits() (api.MemoryLimits, error) {
 }
 
 func (container *container) NetIn(hostPort, containerPort uint32) (uint32, uint32, error) {
-	// FIXME ; probably not even good for this mock
-	return 80, 80, nil
+	url := container.containerizerURL.String() + "/api/containers/" + container.Handle() + "/net/in"
+	_, err := http.Post(url, "application/json", strings.NewReader(fmt.Sprintf("{hostPort: %v}", hostPort)))
+	return 0, 0, err
 }
+
 func (container *container) NetOut(network string, port uint32) error {
 	return nil
 }

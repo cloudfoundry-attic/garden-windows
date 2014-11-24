@@ -83,7 +83,26 @@ var _ = Describe("backend", func() {
 			Ω(err).NotTo(HaveOccurred())
 			Ω(string(body)).Should(Equal("a tarball"))
 		})
-
+	})
+	Describe("NetIn", func() {
+		It("makes a call out to an external service", func() {
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("POST", "/api/containers/containerhandle/net/in"),
+					func(w http.ResponseWriter, req *http.Request) {
+						body, err := ioutil.ReadAll(req.Body)
+						req.Body.Close()
+						Ω(err).ShouldNot(HaveOccurred())
+						Ω(string(body)).Should(Equal("{hostPort: 1234}"))
+					},
+				),
+			)
+			var hostPort uint32 = 1234
+			var containerPort uint32 = 3456
+			_, _, err := container.NetIn(hostPort, containerPort)
+			Ω(err).NotTo(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
 	})
 
 	Describe("Running", func() {
