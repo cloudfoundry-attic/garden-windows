@@ -17,10 +17,10 @@ var containerGraceTime = flag.Duration(
 	0,
 	"time after which to destroy idle containers",
 )
-var tupperwareURL = flag.String(
-	"tupperwareURL",
+var containerizerURL = flag.String(
+	"containerizerURL",
 	"http://127.0.0.1",
-	"URL for the Tupperware container server",
+	"URL for the Containerizer container server",
 )
 
 func main() {
@@ -43,7 +43,7 @@ func main() {
 
 	logger := cf_lager.New("garden-dotnet")
 
-	netBackend := backend.NewDotNetBackend(*tupperwareURL)
+	netBackend := backend.NewDotNetBackend(*containerizerURL)
 
 	gardenServer := server.New(*listenNetwork, *listenAddr, *containerGraceTime, netBackend, logger)
 	err := gardenServer.Start()

@@ -13,8 +13,8 @@ import (
 )
 
 type container struct {
-	tupperwareURL url.URL
-	handle        string
+	containerizerURL url.URL
+	handle           string
 }
 
 type ProcessStreamEvent struct {
@@ -23,10 +23,10 @@ type ProcessStreamEvent struct {
 	Data           string
 }
 
-func NewContainer(tupperwareURL url.URL, handle string) *container {
+func NewContainer(containerizerURL url.URL, handle string) *container {
 	return &container{
-		tupperwareURL: tupperwareURL,
-		handle:        handle,
+		containerizerURL: containerizerURL,
+		handle:           handle,
 	}
 }
 
@@ -43,7 +43,7 @@ func (container *container) Info() (api.ContainerInfo, error) {
 }
 
 func (container *container) StreamIn(dstPath string, tarStream io.Reader) error {
-	url := container.tupperwareURL.String() + "/api/containers/" + container.Handle() + "/files?destination=" + dstPath
+	url := container.containerizerURL.String() + "/api/containers/" + container.Handle() + "/files?destination=" + dstPath
 
 	req, err := http.NewRequest("PUT", url, tarStream)
 	if err != nil {
@@ -54,7 +54,7 @@ func (container *container) StreamIn(dstPath string, tarStream io.Reader) error 
 	return err
 }
 func (container *container) StreamOut(srcPath string) (io.ReadCloser, error) {
-	url := container.tupperwareURL.String() + "/api/containers/" + container.Handle() + "/files?source=" + srcPath
+	url := container.containerizerURL.String() + "/api/containers/" + container.Handle() + "/files?source=" + srcPath
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
@@ -99,15 +99,15 @@ func (container *container) NetOut(network string, port uint32) error {
 	return nil
 }
 
-func (container *container) tupperwareWS() string {
-	u2 := container.tupperwareURL
+func (container *container) containerizerWS() string {
+	u2 := container.containerizerURL
 	u2.Scheme = "ws"
 	return u2.String()
 }
 
 func (container *container) Run(processSpec api.ProcessSpec, processIO api.ProcessIO) (api.Process, error) {
 	origin := "http://localhost/"
-	wsUri := container.tupperwareWS() + "/api/run"
+	wsUri := container.containerizerWS() + "/api/run"
 	ws, err := websocket.Dial(wsUri, "", origin)
 	if err != nil {
 		log.Fatal(err)
