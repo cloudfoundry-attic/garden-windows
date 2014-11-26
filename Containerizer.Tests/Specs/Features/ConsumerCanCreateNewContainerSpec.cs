@@ -59,7 +59,7 @@ namespace Containerizer.Tests.Specs.Features
 
                     describe["observable IIS side effects"] = () =>
                     {
-                        before = () => { serverManager = new ServerManager(); };
+                        before = () => { serverManager = ServerManager.OpenRemote("localhost"); };
 
                         it["should see a new site with the container's id"] =
                             () => { serverManager.Sites.should_contain(x => x.Name == id); };

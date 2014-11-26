@@ -115,11 +115,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\Implementations\ContainerPathService.cs" />
     <Compile Include="Services\Implementations\CreateContainerService.cs" />
+    <Compile Include="Services\Implementations\NetInService.cs" />
     <Compile Include="Services\Implementations\StreamInService.cs" />
     <Compile Include="Services\Implementations\StreamOutService.cs" />
     <Compile Include="Services\Implementations\TarStreamService.cs" />
     <Compile Include="Services\Interfaces\IContainerPathService.cs" />
     <Compile Include="Services\Interfaces\ICreateContainerService.cs" />
+    <Compile Include="Services\Interfaces\INetInService.cs" />
     <Compile Include="Services\Interfaces\IStreamOutService.cs" />
     <Compile Include="Services\Interfaces\IStreamInService.cs" />
     <Compile Include="Services\Interfaces\ITarStreamService.cs" />

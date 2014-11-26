@@ -47,7 +47,7 @@ namespace Containerizer.Tests.Specs.Features
 
                 context["there exists a container with a given id"] = () =>
                 {
-                    before = () => { id = Helpers.CreateContainer(port); };
+                    before = () => { id = Helpers.CreateContainer(client); };
 
                     context["when I PUT a request to /api/Containers/:id/files?destination=%2F"] = () =>
                     {

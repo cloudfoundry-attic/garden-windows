@@ -96,12 +96,15 @@
     <Compile Include="Specs\Controllers\ContainersControllerSpec.cs" />
     <Compile Include="DebuggerShim.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Specs\ExtensionMethods.cs" />
     <Compile Include="Specs\Facades\FakeAspNetWebSocketContext.cs" />
+    <Compile Include="Specs\Features\ConsumerCanAddAPortOnAContainerSpec.cs" />
     <Compile Include="Specs\Features\ConsumerCanCreateNewContainerSpec.cs" />
     <Compile Include="Specs\Features\ConsumerCanGetFileSystemContentsAsTarStreamSpec.cs" />
     <Compile Include="Specs\Features\ConsumerCanPutFileSystemContentsAsTarStreamSpec.cs" />
     <Compile Include="Specs\Features\ConsumerCanRunAProcessSpec.cs" />
     <Compile Include="Specs\Helpers.cs" />
+    <Compile Include="Specs\Services\NetInServiceSpec.cs" />
     <Compile Include="Specs\Services\StreamInServiceSpec.cs" />
     <Compile Include="Specs\Services\TarStreamServiceSpec.cs" />
     <Compile Include="Specs\Services\ContainerPathServiceSpec.cs" />

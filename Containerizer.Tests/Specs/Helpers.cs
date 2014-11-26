@@ -4,7 +4,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.NetworkInformation;
 using System.Reflection;
+using System.Web.SessionState;
 using Microsoft.Web.Administration;
 using Newtonsoft.Json.Linq;
 
@@ -14,9 +16,8 @@ namespace Containerizer.Tests.Specs
     {
 
         /// <returns>The newly created container's id.</returns>
-        public static String CreateContainer(int port)
+        public static string CreateContainer(HttpClient client)
         {
-            var client = new HttpClient {BaseAddress = new Uri("http://localhost:" + port.ToString())};
             var postTask = client.PostAsync("/api/Containers",
                 new FormUrlEncodedContent(new List<KeyValuePair<string, string>>()));
             postTask.Wait();
@@ -32,7 +33,7 @@ namespace Containerizer.Tests.Specs
         {
             try
             {
-                var serverManager = new ServerManager();
+                var serverManager = ServerManager.OpenRemote("localhost");
                 var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, applicationFolderName);
 
                 RemoveExistingSite(siteName, applicationPoolName);
@@ -66,7 +67,7 @@ namespace Containerizer.Tests.Specs
         {
             try
             {
-                var serverManager = new ServerManager();
+                var serverManager = ServerManager.OpenRemote("localhost");
                 var existingSite = serverManager.Sites.FirstOrDefault(x => x.Name == siteName);
                 if (existingSite != null)
                 {
@@ -120,6 +121,25 @@ namespace Containerizer.Tests.Specs
             }
 
             return MockEventArgs;
+        }
+
+        public static bool PortIsUsed(int port)
+        {
+            var sm = ServerManager.OpenRemote("localhost");
+            var ports = new List<int>();
+
+            foreach (var site in sm.Sites)
+            {
+                if (site.State == ObjectState.Started)
+                {
+                    foreach (var binding in site.Bindings)
+                    {
+                        ports.Add(binding.EndPoint.Port);
+                    }
+                }
+            }
+
+            return ports.Any(x => x == port);
         }
     }
 }

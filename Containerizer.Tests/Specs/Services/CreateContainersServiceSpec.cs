@@ -17,7 +17,7 @@ namespace Containerizer.Tests.Specs.Services
         private void before_each()
         {
             createContainerService = new CreateContainerService();
-            serverManager = new ServerManager();
+            serverManager = ServerManager.OpenRemote("localhost");
         }
 
         private void describe_create_container()
