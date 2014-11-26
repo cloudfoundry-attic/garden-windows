@@ -60,6 +60,16 @@ The acceptance tests spin up containerizer in IIS out of process and communicate
 
 ![debugging in process](https://github.com/pivotal-cf-experimental/containerizer/blob/master/README_images/debugging_in_process.png)
 
+
+quick tips
+==========
+
+If all of the acceptance tests start breaking mysteriously and you recently created a new service, you probably forgot to add the service to the DI container. Assuming you added a service named *Service*, you can do so by adding
+
+     containerBuilder.RegisterType<Service>().As<IService>();
+
+to DependencyResolver.cs.
+
 tests
 =====
 
