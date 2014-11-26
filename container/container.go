@@ -3,10 +3,13 @@ package container
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
 
+	"encoding/json"
+	"errors"
 	"strings"
 
 	"github.com/cloudfoundry-incubator/garden/api"
@@ -18,6 +21,11 @@ import (
 type container struct {
 	containerizerURL url.URL
 	handle           string
+}
+
+type netInResponse struct {
+	HostPort    uint32 `json:"hostPort"`
+	ErrorString string `json:"error"`
 }
 
 type ProcessStreamEvent struct {
@@ -96,8 +104,26 @@ func (container *container) CurrentMemoryLimits() (api.MemoryLimits, error) {
 
 func (container *container) NetIn(hostPort, containerPort uint32) (uint32, uint32, error) {
 	url := container.containerizerURL.String() + "/api/containers/" + container.Handle() + "/net/in"
-	_, err := http.Post(url, "application/json", strings.NewReader(fmt.Sprintf("{hostPort: %v}", hostPort)))
-	return 0, 0, err
+	response, err := http.Post(url, "application/json", strings.NewReader(fmt.Sprintf(`{"hostPort": %v}`, hostPort)))
+	if err != nil {
+		return 0, 0, err
+	}
+	responseBody, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	var responseJSON netInResponse
+	err = json.Unmarshal(responseBody, &responseJSON)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	if responseJSON.ErrorString != "" {
+		return 0, 0, errors.New(responseJSON.ErrorString)
+	}
+
+	return responseJSON.HostPort, containerPort, err
 }
 
 func (container *container) NetOut(network string, port uint32) error {

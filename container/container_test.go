@@ -9,6 +9,7 @@ import (
 
 	"io/ioutil"
 
+	"errors"
 	"strings"
 
 	"code.google.com/p/go.net/websocket"
@@ -89,11 +90,12 @@ var _ = Describe("backend", func() {
 			server.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("POST", "/api/containers/containerhandle/net/in"),
+					ghttp.RespondWith(200, `{"hostPort":1234}`),
 					func(w http.ResponseWriter, req *http.Request) {
 						body, err := ioutil.ReadAll(req.Body)
 						req.Body.Close()
 						Ω(err).ShouldNot(HaveOccurred())
-						Ω(string(body)).Should(Equal("{hostPort: 1234}"))
+						Ω(string(body)).Should(Equal(`{"hostPort": 1234}`))
 					},
 				),
 			)
@@ -102,6 +104,52 @@ var _ = Describe("backend", func() {
 			_, _, err := container.NetIn(hostPort, containerPort)
 			Ω(err).NotTo(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+
+		Context("Containerizer succeeds", func() {
+			It("returns containerizers host port", func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/containers/containerhandle/net/in"),
+						ghttp.RespondWith(200, `{"hostPort":9876}`),
+					),
+				)
+				var containerPort uint32 = 3456
+				returnedHostPort, returnedContainerPort, err := container.NetIn(1234, containerPort)
+				Ω(err).NotTo(HaveOccurred())
+				Ω(returnedHostPort).Should(Equal(uint32(9876)))
+				Ω(returnedContainerPort).Should(Equal(containerPort))
+			})
+		})
+
+		Context("Containerizer has an error", func() {
+			It("returns the error", func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/containers/containerhandle/net/in"),
+						ghttp.RespondWith(200, `{"error":"Port in use"}`),
+					),
+				)
+				returnedHostPort, returnedContainerPort, err := container.NetIn(1234, 3456)
+				Ω(err).Should(MatchError(errors.New("Port in use")))
+				Ω(returnedHostPort).Should(Equal(uint32(0)))
+				Ω(returnedContainerPort).Should(Equal(uint32(0)))
+			})
+		})
+
+		Context("Containerizer returns malformed JSON", func() {
+			It("returns the error", func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/containers/containerhandle/net/in"),
+						ghttp.RespondWith(200, `hi { fred`),
+					),
+				)
+				returnedHostPort, returnedContainerPort, err := container.NetIn(1234, 3456)
+				Ω(err).To(HaveOccurred())
+				Ω(returnedHostPort).Should(Equal(uint32(0)))
+				Ω(returnedContainerPort).Should(Equal(uint32(0)))
+			})
 		})
 	})
 
