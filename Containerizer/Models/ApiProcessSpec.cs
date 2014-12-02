@@ -9,6 +9,8 @@ namespace Containerizer.Models
 
         public string Arguments()
         {
+            if (Args == null) { return null; }
+
             return String.Join(" ", Args);
         }
     }

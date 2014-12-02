@@ -30,9 +30,13 @@ namespace Containerizer.Controllers
                 process.StartInfo.Arguments = processSpec.Arguments();
                 process.OutputDataReceived += OutputDataHandler;
                 process.ErrorDataReceived += OutputErrorDataHandler;
+
                 process.Start();
                 process.BeginOutputReadLine();
                 process.BeginErrorReadLine();
+
+                process.EnableRaisingEvents = true;
+                process.Exited += ProcessExitedHandler;
             }
             else if (streamEvent.MessageType == "stdin")
             {
@@ -46,7 +50,7 @@ namespace Containerizer.Controllers
             string data = JsonConvert.SerializeObject(new ProcessStreamEvent
             {
                 MessageType = "stdout",
-                Data = outLine.Data
+                Data = outLine.Data + "\r\n"
             }, Formatting.None);
             Send(data);
         }
@@ -57,9 +61,20 @@ namespace Containerizer.Controllers
             string data = JsonConvert.SerializeObject(new ProcessStreamEvent
             {
                 MessageType = "stderr",
-                Data = outLine.Data
+                Data = outLine.Data + "\r\n"
             }, Formatting.None);
             Send(data);
+        }
+
+        private void ProcessExitedHandler(object sendingProcess, System.EventArgs e)
+        {
+            string data = JsonConvert.SerializeObject(new ProcessStreamEvent
+            {
+               MessageType = "close"
+            }, Formatting.None);
+            Send(data);
+
+            // this.Close();
         }
     }
 }

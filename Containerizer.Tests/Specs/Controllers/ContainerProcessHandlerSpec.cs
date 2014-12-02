@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -40,6 +41,11 @@ namespace Containerizer.Tests.Specs.Controllers
         private void SendProcessErrorEvent(string message)
         {
             mockProcess.Raise(mock => mock.ErrorDataReceived += null, Helpers.CreateMockDataReceivedEventArgs(message));
+        }
+
+        private void SendProcessExitEvent()
+        {
+            mockProcess.Raise(mock => mock.Exited += null, (EventArgs) null);
         }
 
         private string WaitForWebSocketMessage(FakeWebSocket websocket)
@@ -101,7 +107,7 @@ namespace Containerizer.Tests.Specs.Controllers
                         SendProcessOutputEvent("Hi");
 
                         string message = WaitForWebSocketMessage(websocket);
-                        message.should_be("{\"type\":\"stdout\",\"data\":\"Hi\"}");
+                        message.should_be("{\"type\":\"stdout\",\"data\":\"Hi\\r\\n\"}");
                     };
                 };
 
@@ -126,7 +132,7 @@ namespace Containerizer.Tests.Specs.Controllers
                         SendProcessErrorEvent("Hi");
 
                         string message = WaitForWebSocketMessage(websocket);
-                        message.should_be("{\"type\":\"stderr\",\"data\":\"Hi\"}");
+                        message.should_be("{\"type\":\"stderr\",\"data\":\"Hi\\r\\n\"}");
                     };
                 };
 
@@ -139,6 +145,17 @@ namespace Containerizer.Tests.Specs.Controllers
                         string message = WaitForWebSocketMessage(websocket);
                         message.should_be("no message sent (test)");
                     };
+                };
+            };
+
+            describe["once the process exits"] = () =>
+            {
+                it["sends close event over socket"] = () =>
+                {
+                    SendProcessExitEvent();
+
+                    string message = WaitForWebSocketMessage(websocket);
+                    message.should_be("{\"type\":\"close\"}");
                 };
             };
         }

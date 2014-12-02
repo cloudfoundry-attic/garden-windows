@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
@@ -37,16 +38,9 @@ namespace Containerizer.Tests.Specs.Features
 
                 describe["when I send a start request"] = () =>
                 {
-                    it["should upgrade to a websocket"] = () =>
-                    {
-                        var encoder = new UTF8Encoding();
-                        byte[] buffer =
-                            encoder.GetBytes("{\"type\":\"run\", \"pspec\":{\"Path\":\"echo\", Args:[\"hello\"]}}");
-                        client.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true,
-                            CancellationToken.None);
-                    };
+                    List<String> messages = null;
 
-                    it["should run a process"] = () =>
+                    before = () =>
                     {
                         var encoder = new UTF8Encoding();
                         byte[] buffer =
@@ -55,6 +49,7 @@ namespace Containerizer.Tests.Specs.Features
                         client.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true,
                             CancellationToken.None);
 
+                        messages = new List<string>();
                         var receiveBuffer = new byte[1024];
                         var receiveBufferSegment = new ArraySegment<byte>(receiveBuffer);
                         WebSocketReceiveResult result;
@@ -64,19 +59,18 @@ namespace Containerizer.Tests.Specs.Features
                                 client.ReceiveAsync(receiveBufferSegment, CancellationToken.None)
                                     .GetAwaiter()
                                     .GetResult();
-                        } while (result.Count == 0);
-                        string message = Encoding.Default.GetString(receiveBuffer);
-                        message.should_start_with("{\"type\":\"stdout\",\"data\":\"\"}");
+                            if (result.Count > 0)
+                            {
+                                string message = Encoding.Default.GetString(receiveBuffer);
+                                messages.Add(message.Substring(0, result.Count));
+                            }
+                        } while (messages.Count < 4);
+                    };
 
-                        do
-                        {
-                            result =
-                                client.ReceiveAsync(receiveBufferSegment, CancellationToken.None)
-                                    .GetAwaiter()
-                                    .GetResult();
-                        } while (result.Count == 0);
-                        message = Encoding.Default.GetString(receiveBuffer);
-                        message.should_start_with("{\"type\":\"stdout\",\"data\":\"Windows IP Configuration\"}");
+                    it["should run a process, return stdout and close the socket"] = () =>
+                    {
+                        messages.should_contain("{\"type\":\"stdout\",\"data\":\"Windows IP Configuration\\r\\n\"}");
+                        messages.should_contain("{\"type\":\"close\"}");
                     };
                 };
             };
