@@ -159,7 +159,9 @@ var _ = Describe("container", func() {
 		BeforeEach(func() {
 			testServer = &TestWebSocketServer{}
 			testServer.Start("containerhandle")
+		})
 
+		JustBeforeEach(func() {
 			container = netContainer.NewContainer(*testServer.Url, "containerhandle")
 		})
 
@@ -279,6 +281,19 @@ var _ = Describe("container", func() {
 			})
 
 			Eventually(proc.(process.DotNetProcess).StreamOpen).Should(BeClosed())
+		})
+
+		Context("When the containizer server is down", func() {
+			BeforeEach(func() {
+				testServer.Url = &url.URL{}
+			})
+
+			It("returns the error", func(done Done) {
+				_, err := container.Run(api.ProcessSpec{}, api.ProcessIO{})
+				Ω(err).Should(HaveOccurred())
+
+				close(done)
+			}, 1)
 		})
 	})
 })

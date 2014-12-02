@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 
@@ -141,7 +140,7 @@ func (container *container) Run(processSpec api.ProcessSpec, processIO api.Proce
 	wsUri := container.containerizerWS() + "/api/containers/" + container.handle + "/run"
 	ws, err := websocket.Dial(wsUri, "", origin)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	websocket.JSON.Send(ws, ProcessStreamEvent{
 		MessageType:    "run",
