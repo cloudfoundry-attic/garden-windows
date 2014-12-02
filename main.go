@@ -43,10 +43,14 @@ func main() {
 
 	logger := cf_lager.New("garden-dotnet")
 
-	netBackend := backend.NewDotNetBackend(*containerizerURL)
+	netBackend, err := backend.NewDotNetBackend(*containerizerURL)
+	if err != nil {
+		logger.Fatal("Server Failed to Start", err)
+		os.Exit(1)
+	}
 
 	gardenServer := server.New(*listenNetwork, *listenAddr, *containerGraceTime, netBackend, logger)
-	err := gardenServer.Start()
+	err = gardenServer.Start()
 	if err != nil {
 		logger.Fatal("Server Failed to Start", err)
 		os.Exit(1)

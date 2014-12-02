@@ -6,6 +6,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/garden/api"
 	netContainer "github.com/pivotal-cf-experimental/garden-dot-net/container"
+	"github.com/pivotal-cf-experimental/garden-dot-net/process"
 
 	"io/ioutil"
 
@@ -13,10 +14,9 @@ import (
 	"strings"
 
 	"code.google.com/p/go.net/websocket"
+	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/ghttp"
 
-	"log"
-	"net"
 	"net/http"
 	"net/url"
 )
@@ -25,7 +25,7 @@ func uint64ptr(n uint64) *uint64 {
 	return &n
 }
 
-var _ = Describe("backend", func() {
+var _ = Describe("container", func() {
 	var server *ghttp.Server
 	var container api.Container
 
@@ -153,29 +153,18 @@ var _ = Describe("backend", func() {
 		})
 	})
 
-	Describe("Running", func() {
-		var events []netContainer.ProcessStreamEvent
+	Describe("#Run (and input / output / error streams)", func() {
+		var testServer *TestWebSocketServer
 
 		BeforeEach(func() {
-			listener, err := net.Listen("tcp", ":2000")
-			if err != nil {
-				log.Fatal(err)
-			}
+			testServer = &TestWebSocketServer{}
+			testServer.Start("containerhandle")
 
-			testHandler := func(ws *websocket.Conn) {
-				for {
-					var streamEvent netContainer.ProcessStreamEvent
-					websocket.JSON.Receive(ws, &streamEvent)
-					events = append(events, streamEvent)
-				}
+			container = netContainer.NewContainer(*testServer.Url, "containerhandle")
+		})
 
-			}
-			http.Handle("/api/run", websocket.Handler(testHandler))
-
-			go http.Serve(listener, nil)
-
-			u, _ := url.Parse("http://localhost:2000")
-			container = netContainer.NewContainer(*u, "containerhandle")
+		AfterEach(func() {
+			testServer.Stop()
 		})
 
 		It("runs a script via a websocket and also passes rlimits", func() {
@@ -204,234 +193,103 @@ var _ = Describe("backend", func() {
 
 			Ω(err).ShouldNot(HaveOccurred())
 			Eventually(func() []netContainer.ProcessStreamEvent {
-				return events
+				return testServer.events
 			}).Should(ContainElement(netContainer.ProcessStreamEvent{
 				MessageType:    "run",
 				ApiProcessSpec: processSpec,
 			}))
-
-			// ranCmd, _, _ := fakeProcessTracker.RunArgstmForCall(0)
-			// Ω(ranCmd.Path).Should(Equal(containerDir + "/bin/wsh"))
-
-			// Ω(ranCmd.Args).Should(Equal([]string{
-			// 	containerDir + "/bin/wsh",
-			// 	"--socket", containerDir + "/run/wshd.sock",
-			// 	"--user", "vcap",
-			// 	"--env", "env1=env1Value",
-			// 	"--env", "env2=env2Value",
-			// 	"/some/script",
-			// 	"arg1",
-			// 	"arg2",
-			// }))
-
-			// Ω(ranCmd.Env).Should(Equal([]string{
-			// 	"RLIMIT_AS=1",
-			// 	"RLIMIT_CORE=2",
-			// 	"RLIMIT_CPU=3",
-			// 	"RLIMIT_DATA=4",
-			// 	"RLIMIT_FSIZE=5",
-			// 	"RLIMIT_LOCKS=6",
-			// 	"RLIMIT_MEMLOCK=7",
-			// 	"RLIMIT_MSGQUEUE=8",
-			// 	"RLIMIT_NICE=9",
-			// 	"RLIMIT_NOFILE=10",
-			// 	"RLIMIT_NPROC=11",
-			// 	"RLIMIT_RSS=12",
-			// 	"RLIMIT_RTPRIO=13",
-			// 	"RLIMIT_SIGPENDING=14",
-			// 	"RLIMIT_STACK=15",
-			// }))
 		})
 
-		// It("runs the script with environment variables", func() {
-		// 	_, err := container.Run(api.ProcessSpec{
-		// 		Path: "/some/script",
-		// 		Env:  []string{"ESCAPED=kurt \"russell\"", "UNESCAPED=isaac\nhayes"},
-		// 	}, api.ProcessIO{})
+		It("streams stdout from the websocket back through garden", func() {
+			stdout := gbytes.NewBuffer()
+			_, err := container.Run(api.ProcessSpec{}, api.ProcessIO{
+				Stdout: stdout,
+			})
+			Ω(err).ShouldNot(HaveOccurred())
 
-		// 	Ω(err).ShouldNot(HaveOccurred())
+			websocket.JSON.Send(testServer.handlerWS, netContainer.ProcessStreamEvent{
+				MessageType: "stdout",
+				Data:        "hello from windows",
+			})
+			Eventually(stdout).Should(gbytes.Say("hello from windows"))
+		})
 
-		// 	ranCmd, _, _ := fakeProcessTracker.RunArgsForCall(0)
-		// 	Ω(ranCmd.Args).Should(Equal([]string{
-		// 		containerDir + "/bin/wsh",
-		// 		"--socket", containerDir + "/run/wshd.sock",
-		// 		"--user", "vcap",
-		// 		"--env", "env1=env1Value",
-		// 		"--env", "env2=env2Value",
-		// 		"--env", `ESCAPED=kurt "russell"`,
-		// 		"--env", "UNESCAPED=isaac\nhayes",
-		// 		"/some/script",
-		// 	}))
-		// })
+		It("streams stderr from the websocket back through garden", func() {
+			stderr := gbytes.NewBuffer()
+			_, err := container.Run(api.ProcessSpec{}, api.ProcessIO{
+				Stderr: stderr,
+			})
+			Ω(err).ShouldNot(HaveOccurred())
 
-		// It("runs the script with the working dir set if present", func() {
-		// 	_, err := container.Run(api.ProcessSpec{
-		// 		Path: "/some/script",
-		// 		Dir:  "/some/dir",
-		// 	}, api.ProcessIO{})
+			websocket.JSON.Send(testServer.handlerWS, netContainer.ProcessStreamEvent{
+				MessageType: "stderr",
+				Data:        "error from windows",
+			})
+			Eventually(stderr).Should(gbytes.Say("error from windows"))
+		})
 
-		// 	Ω(err).ShouldNot(HaveOccurred())
+		It("seperates stdout and stderr streams from the websocket", func() {
+			stdout := gbytes.NewBuffer()
+			stderr := gbytes.NewBuffer()
+			_, err := container.Run(api.ProcessSpec{}, api.ProcessIO{
+				Stdout: stdout,
+				Stderr: stderr,
+			})
+			Ω(err).ShouldNot(HaveOccurred())
 
-		// 	ranCmd, _, _ := fakeProcessTracker.RunArgsForCall(0)
-		// 	Ω(ranCmd.Args).Should(Equal([]string{
-		// 		containerDir + "/bin/wsh",
-		// 		"--socket", containerDir + "/run/wshd.sock",
-		// 		"--user", "vcap",
-		// 		"--env", "env1=env1Value",
-		// 		"--env", "env2=env2Value",
-		// 		"--dir", "/some/dir",
-		// 		"/some/script",
-		// 	}))
-		// })
+			websocket.JSON.Send(testServer.handlerWS, netContainer.ProcessStreamEvent{
+				MessageType: "stdout",
+				Data:        "hello from windows",
+			})
+			websocket.JSON.Send(testServer.handlerWS, netContainer.ProcessStreamEvent{
+				MessageType: "stderr",
+				Data:        "error from windows",
+			})
 
-		// It("runs the script with a TTY if present", func() {
-		// 	ttySpec := &api.TTYSpec{
-		// 		WindowSize: &api.WindowSize{
-		// 			Columns: 123,
-		// 			Rows:    456,
-		// 		},
-		// 	}
+			Eventually(stdout).Should(gbytes.Say("hello from windows"))
+			Eventually(stderr).Should(gbytes.Say("error from windows"))
+		})
 
-		// 	_, err := container.Run(api.ProcessSpec{
-		// 		Path: "/some/script",
-		// 		TTY:  ttySpec,
-		// 	}, api.ProcessIO{})
+		It("streams stdin over the websocket", func() {
+			stdin := gbytes.NewBuffer()
 
-		// 	Ω(err).ShouldNot(HaveOccurred())
+			_, err := container.Run(api.ProcessSpec{}, api.ProcessIO{
+				Stdin: stdin,
+			})
+			Ω(err).ShouldNot(HaveOccurred())
 
-		// 	_, _, tty := fakeProcessTracker.RunArgsForCall(0)
-		// 	Ω(tty).Should(Equal(ttySpec))
-		// })
+			stdin.Write([]byte("a message"))
 
-		// Describe("streaming", func() {
-		// 	JustBeforeEach(func() {
-		// 		fakeProcessTracker.RunStub = func(cmd *exec.Cmd, io api.ProcessIO, tty *api.TTYSpec) (api.Process, error) {
-		// 			writing := new(sync.WaitGroup)
-		// 			writing.Add(1)
+			Eventually(func() []netContainer.ProcessStreamEvent {
+				return testServer.events
+			}).Should(ContainElement(netContainer.ProcessStreamEvent{
+				MessageType: "stdin",
+				Data:        "a message",
+			}))
 
-		// 			go func() {
-		// 				defer writing.Done()
-		// 				defer GinkgoRecover()
+			stdin.Close()
+		})
 
-		// 				_, err := fmt.Fprintf(io.Stdout, "hi out\n")
-		// 				Ω(err).ShouldNot(HaveOccurred())
+		It("closes the WebSocketOpen channel on the proc when a close event is received", func() {
+			proc, err := container.Run(api.ProcessSpec{}, api.ProcessIO{})
+			Ω(err).ShouldNot(HaveOccurred())
 
-		// 				_, err = fmt.Fprintf(io.Stderr, "hi err\n")
-		// 				Ω(err).ShouldNot(HaveOccurred())
-		// 			}()
+			websocket.JSON.Send(testServer.handlerWS, netContainer.ProcessStreamEvent{
+				MessageType: "close",
+			})
 
-		// 			process := new(wfakes.FakeProcess)
-
-		// 			process.IDReturns(42)
-
-		// 			process.WaitStub = func() (int, error) {
-		// 				writing.Wait()
-		// 				return 123, nil
-		// 			}
-
-		// 			return process, nil
-		// 		}
-		// 	})
-
-		// 	It("streams stderr and stdout and exit status", func() {
-		// 		stdout := gbytes.NewBuffer()
-		// 		stderr := gbytes.NewBuffer()
-
-		// 		process, err := container.Run(api.ProcessSpec{
-		// 			Path: "/some/script",
-		// 		}, api.ProcessIO{
-		// 			Stdout: stdout,
-		// 			Stderr: stderr,
-		// 		})
-		// 		Ω(err).ShouldNot(HaveOccurred())
-
-		// 		Ω(process.ID()).Should(Equal(uint32(42)))
-
-		// 		Eventually(stdout).Should(gbytes.Say("hi out\n"))
-		// 		Eventually(stderr).Should(gbytes.Say("hi err\n"))
-
-		// 		Ω(process.Wait()).Should(Equal(123))
-		// 	})
-		// })
-
-		// It("only sets the given rlimits", func() {
-		// 	_, err := container.Run(api.ProcessSpec{
-		// 		Path: "/some/script",
-		// 		Limits: api.ResourceLimits{
-		// 			As:      &1,
-		// 			Cpu:     &3,
-		// 			Fsize:   &5,
-		// 			Memlock: &7,
-		// 			Nice:    &9,
-		// 			Nproc:   &11,
-		// 			Rtprio:  &13,
-		// 			Stack:   &15,
-		// 		},
-		// 	}, api.ProcessIO{})
-
-		// 	Ω(err).ShouldNot(HaveOccurred())
-
-		// 	ranCmd, _, _ := fakeProcessTracker.RunArgsForCall(0)
-		// 	Ω(ranCmd.Path).Should(Equal(containerDir + "/bin/wsh"))
-
-		// 	Ω(ranCmd.Args).Should(Equal([]string{
-		// 		containerDir + "/bin/wsh",
-		// 		"--socket", containerDir + "/run/wshd.sock",
-		// 		"--user", "vcap",
-		// 		"--env", "env1=env1Value",
-		// 		"--env", "env2=env2Value",
-		// 		"/some/script",
-		// 	}))
-
-		// 	Ω(ranCmd.Env).Should(Equal([]string{
-		// 		"RLIMIT_AS=1",
-		// 		"RLIMIT_CPU=3",
-		// 		"RLIMIT_FSIZE=5",
-		// 		"RLIMIT_MEMLOCK=7",
-		// 		"RLIMIT_NICE=9",
-		// 		"RLIMIT_NPROC=11",
-		// 		"RLIMIT_RTPRIO=13",
-		// 		"RLIMIT_STACK=15",
-		// 	}))
-		// })
-
-		// Context("with 'privileged' true", func() {
-		// 	It("runs with --user root", func() {
-		// 		_, err := container.Run(api.ProcessSpec{
-		// 			Path:       "/some/script",
-		// 			Privileged: true,
-		// 		}, api.ProcessIO{})
-
-		// 		Ω(err).ToNot(HaveOccurred())
-
-		// 		ranCmd, _, _ := fakeProcessTracker.RunArgsForCall(0)
-		// 		Ω(ranCmd.Path).Should(Equal(containerDir + "/bin/wsh"))
-
-		// 		Ω(ranCmd.Args).Should(Equal([]string{
-		// 			containerDir + "/bin/wsh",
-		// 			"--socket", containerDir + "/run/wshd.sock",
-		// 			"--user", "root",
-		// 			"--env", "env1=env1Value",
-		// 			"--env", "env2=env2Value",
-		// 			"/some/script",
-		// 		}))
-		// 	})
-		// })
-
-		// Context("when spawning fails", func() {
-		// 	disaster := errors.New("oh no!")
-
-		// 	JustBeforeEach(func() {
-		// 		fakeProcessTracker.RunReturns(nil, disaster)
-		// 	})
-
-		// 	It("returns the error", func() {
-		// 		_, err := container.Run(api.ProcessSpec{
-		// 			Path:       "/some/script",
-		// 			Privileged: true,
-		// 		}, api.ProcessIO{})
-		// 		Ω(err).Should(Equal(disaster))
-		// 	})
-		// })
+			Eventually(proc.(process.DotNetProcess).StreamOpen).Should(BeClosed())
+		})
 	})
 })
+
+// It("process.wait returns the exit status", func() {
+
+// Context("with 'privileged' true", func() {
+// 	It("runs with --user root", func() {
+// 	})
+// })
+
+// Context("when spawning fails", func() {
+// 	It("returns the error", func() {
+// })

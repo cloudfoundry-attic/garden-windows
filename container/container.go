@@ -29,9 +29,9 @@ type netInResponse struct {
 }
 
 type ProcessStreamEvent struct {
-	MessageType    string
-	ApiProcessSpec api.ProcessSpec
-	Data           string
+	MessageType    string          `json:"type"`
+	ApiProcessSpec api.ProcessSpec `json:"pspec"`
+	Data           string          `json:"data"`
 }
 
 func NewContainer(containerizerURL url.URL, handle string) *container {
@@ -138,7 +138,7 @@ func (container *container) containerizerWS() string {
 
 func (container *container) Run(processSpec api.ProcessSpec, processIO api.ProcessIO) (api.Process, error) {
 	origin := "http://localhost/"
-	wsUri := container.containerizerWS() + "/api/run"
+	wsUri := container.containerizerWS() + "/api/containers/" + container.handle + "/run"
 	ws, err := websocket.Dial(wsUri, "", origin)
 	if err != nil {
 		log.Fatal(err)
@@ -147,11 +147,20 @@ func (container *container) Run(processSpec api.ProcessSpec, processIO api.Proce
 		MessageType:    "run",
 		ApiProcessSpec: processSpec,
 	})
-	return process.DotNetProcess{}, nil
+
+	proc := process.NewDotNetProcess()
+
+	streamWebsocketIOToContainerizer(ws, processIO)
+	go func() {
+		streamWebsocketIOFromContainerizer(ws, processIO)
+		close(proc.StreamOpen)
+	}()
+
+	return proc, nil
 }
 
 func (container *container) Attach(uint32, api.ProcessIO) (api.Process, error) {
-	return process.DotNetProcess{}, nil
+	return process.NewDotNetProcess(), nil
 }
 
 func (container *container) GetProperty(name string) (string, error) {
@@ -163,4 +172,35 @@ func (container *container) SetProperty(name string, value string) error {
 }
 func (container *container) RemoveProperty(name string) error {
 	return nil
+}
+
+func streamWebsocketIOToContainerizer(ws *websocket.Conn, processIO api.ProcessIO) {
+	if processIO.Stdin != nil {
+		fiw := faninWriter{
+			hasSink: make(chan struct{}),
+		}
+		fiw.AddSink(ws)
+		fiw.AddSource(processIO.Stdin)
+	}
+}
+
+func streamWebsocketIOFromContainerizer(ws *websocket.Conn, processIO api.ProcessIO) {
+	receiveStream := ProcessStreamEvent{}
+	for {
+		err := websocket.JSON.Receive(ws, &receiveStream)
+		if err != nil {
+			return
+		}
+
+		if receiveStream.MessageType == "stdout" && processIO.Stdout != nil {
+			io.WriteString(processIO.Stdout, receiveStream.Data)
+		}
+		if receiveStream.MessageType == "stderr" && processIO.Stderr != nil {
+			io.WriteString(processIO.Stderr, receiveStream.Data)
+		}
+
+		if receiveStream.MessageType == "close" {
+			return
+		}
+	}
 }
