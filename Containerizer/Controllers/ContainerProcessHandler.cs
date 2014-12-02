@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using Containerizer.Facades;
 using Containerizer.Models;
+using Containerizer.Services.Interfaces;
 using Microsoft.Web.WebSockets;
 using Newtonsoft.Json;
 
@@ -9,9 +10,11 @@ namespace Containerizer.Controllers
     public class ContainerProcessHandler : WebSocketHandler
     {
         private readonly IProcessFacade process;
+        private readonly string containerRoot;
 
-        public ContainerProcessHandler(IProcessFacade process)
+        public ContainerProcessHandler(string containerId, IContainerPathService pathService, IProcessFacade process)
         {
+            containerRoot = pathService.GetContainerRoot(containerId);
             this.process = process;
         }
 
@@ -26,7 +29,8 @@ namespace Containerizer.Controllers
                 process.StartInfo.RedirectStandardOutput = true;
                 process.StartInfo.RedirectStandardError = true;
                 process.StartInfo.RedirectStandardInput = true;
-                process.StartInfo.FileName = processSpec.Path;
+                process.StartInfo.WorkingDirectory = containerRoot;
+                process.StartInfo.FileName = containerRoot + '\\' + processSpec.Path;
                 process.StartInfo.Arguments = processSpec.Arguments();
                 process.OutputDataReceived += OutputDataHandler;
                 process.ErrorDataReceived += OutputErrorDataHandler;

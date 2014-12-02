@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
+using Containerizer.Services.Implementations;
 using NSpec;
 
 namespace Containerizer.Tests.Specs.Features
@@ -29,12 +31,21 @@ namespace Containerizer.Tests.Specs.Features
 
             context["given that I am a consumer of the api"] = () =>
             {
+                string containerId = Guid.NewGuid().ToString();
+                string containerPath = null;
+
                 before = () =>
                 {
+                    containerPath = new ContainerPathService().GetContainerRoot(containerId);
+                    Directory.CreateDirectory(containerPath);
+                    File.WriteAllBytes(containerPath + "/myfile.bat", new UTF8Encoding(true).GetBytes("@echo off\r\n@echo Hi Fred\r\n@echo Jane is good\r\n@echo Jill is better\r\n"));
+
                     client = new ClientWebSocket();
-                    client.ConnectAsync(new Uri("ws://localhost:" + port + "/api/containers/AN_ID/run"),
+                    client.ConnectAsync(new Uri("ws://localhost:" + port + "/api/containers/" + containerId + "/run"),
                         CancellationToken.None).GetAwaiter().GetResult();
                 };
+
+                after = () => Directory.Delete(containerPath, true);
 
                 describe["when I send a start request"] = () =>
                 {
@@ -45,7 +56,7 @@ namespace Containerizer.Tests.Specs.Features
                         var encoder = new UTF8Encoding();
                         byte[] buffer =
                             encoder.GetBytes(
-                                "{\"type\":\"run\", \"pspec\":{\"Path\":\"ipconfig.exe\", Args:[\"/all\"]}}");
+                                "{\"type\":\"run\", \"pspec\":{\"Path\":\"myfile.bat\", Args:[\"/all\"]}}");
                         client.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true,
                             CancellationToken.None);
 
@@ -69,7 +80,7 @@ namespace Containerizer.Tests.Specs.Features
 
                     it["should run a process, return stdout and close the socket"] = () =>
                     {
-                        messages.should_contain("{\"type\":\"stdout\",\"data\":\"Windows IP Configuration\\r\\n\"}");
+                        messages.should_contain("{\"type\":\"stdout\",\"data\":\"Hi Fred\\r\\n\"}");
                         messages.should_contain("{\"type\":\"close\"}");
                     };
                 };

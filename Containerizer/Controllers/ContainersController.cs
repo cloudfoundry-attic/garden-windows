@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
 using Containerizer.Facades;
+using Containerizer.Services.Implementations;
 using Containerizer.Services.Interfaces;
 using Microsoft.Web.WebSockets;
 using Newtonsoft.Json;
@@ -66,7 +67,7 @@ namespace Containerizer.Controllers
         [HttpGet]
         public Task<HttpResponseMessage> Run(string id)
         {
-            HttpContext.Current.AcceptWebSocketRequest(new ContainerProcessHandler(new ProcessFacade()));
+            HttpContext.Current.AcceptWebSocketRequest(new ContainerProcessHandler(id, new ContainerPathService(), new ProcessFacade()));
             HttpResponseMessage response = Request.CreateResponse(HttpStatusCode.SwitchingProtocols);
             return Task.FromResult(response);
         }

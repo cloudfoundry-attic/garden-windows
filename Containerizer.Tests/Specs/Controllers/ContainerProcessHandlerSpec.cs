@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Containerizer.Controllers;
 using Containerizer.Facades;
+using Containerizer.Services.Interfaces;
 using Containerizer.Tests.Specs.Facades;
 using Moq;
 using NSpec;
@@ -14,16 +15,21 @@ namespace Containerizer.Tests.Specs.Controllers
 {
     internal class ContainerProcessHandlerSpec : nspec
     {
+        private string containerId = null;
         private byte[] fakeStandardInput;
         private ContainerProcessHandler handler;
+        private Mock<IContainerPathService> mockPathService;
         private Mock<IProcessFacade> mockProcess;
         private ProcessStartInfo startInfo;
 
         private void before_each()
         {
+            containerId = new Guid().ToString();
+            mockPathService = new Mock<IContainerPathService>();
+            mockPathService.Setup(x => x.GetContainerRoot(containerId)).Returns("C:\\A\\Directory");
             mockProcess = new Mock<IProcessFacade>();
             startInfo = new ProcessStartInfo();
-            handler = new ContainerProcessHandler(mockProcess.Object);
+            handler = new ContainerProcessHandler(containerId, mockPathService.Object, mockProcess.Object);
 
             mockProcess.Setup(x => x.StartInfo).Returns(startInfo);
             mockProcess.Setup(x => x.Start());
@@ -80,9 +86,14 @@ namespace Containerizer.Tests.Specs.Controllers
                 handler.OnMessage("{\"type\":\"run\", \"pspec\":{\"Path\":\"foo.exe\", \"Args\":[\"some\", \"args\"]}}");
             };
 
+            it["sets working directory"] = () =>
+            {
+                startInfo.WorkingDirectory.should_be("C:\\A\\Directory");
+            };
+
             it["sets start info correctly"] = () =>
             {
-                startInfo.FileName.should_be("foo.exe");
+                startInfo.FileName.should_be("C:\\A\\Directory\\foo.exe");
                 startInfo.Arguments.should_be("some args");
             };
 
