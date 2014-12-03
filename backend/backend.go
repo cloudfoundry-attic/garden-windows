@@ -2,6 +2,7 @@ package backend
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"time"
@@ -76,11 +77,18 @@ func (dotNetBackend *dotNetBackend) Destroy(handle string) error {
 }
 
 func (dotNetBackend *dotNetBackend) Containers(api.Properties) ([]api.Container, error) {
-	containers := []api.Container{
-		container.NewContainer(dotNetBackend.containerizerURL, "containerhandle"),
-		container.NewContainer(dotNetBackend.containerizerURL, "containerhandle"),
-		container.NewContainer(dotNetBackend.containerizerURL, "containerhandle"),
-		container.NewContainer(dotNetBackend.containerizerURL, "containerhandle"),
+	url := dotNetBackend.containerizerURL.String() + "/api/containers"
+	response, err := http.Get(url)
+	var ids []string
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(body, &ids)
+
+	containers := []api.Container{}
+	for _, containerId := range ids {
+		containers = append(containers, container.NewContainer(dotNetBackend.containerizerURL, containerId))
 	}
 	return containers, nil
 }

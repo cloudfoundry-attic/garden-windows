@@ -1,11 +1,14 @@
 package backend_test
 
 import (
+	"net/url"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
 	"github.com/cloudfoundry-incubator/garden/api"
 	"github.com/pivotal-cf-experimental/garden-dot-net/backend"
+	"github.com/pivotal-cf-experimental/garden-dot-net/container"
 
 	"time"
 
@@ -15,10 +18,12 @@ import (
 var _ = Describe("backend", func() {
 	var server *ghttp.Server
 	var dotNetBackend api.Backend
+	var serverUri *url.URL
 
 	BeforeEach(func() {
 		server = ghttp.NewServer()
 		dotNetBackend, _ = backend.NewDotNetBackend(server.URL())
+		serverUri, _ = url.Parse(server.URL())
 	})
 
 	AfterEach(func() {
@@ -26,6 +31,25 @@ var _ = Describe("backend", func() {
 		if server.HTTPTestServer != nil {
 			server.Close()
 		}
+	})
+
+	Describe("Containers", func() {
+		BeforeEach(func() {
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/containers"),
+					ghttp.RespondWith(200, `["MyFirstContainer","MySecondContainer"]`),
+				),
+			)
+		})
+		It("returns a list of containers", func() {
+			containers, err := dotNetBackend.Containers(nil)
+			Ω(err).NotTo(HaveOccurred())
+			Ω(containers).Should(Equal([]api.Container{
+				container.NewContainer(*serverUri, "MyFirstContainer"),
+				container.NewContainer(*serverUri, "MySecondContainer"),
+			}))
+		})
 	})
 
 	Describe("Create", func() {
