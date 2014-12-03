@@ -8,6 +8,7 @@ using System.Web.Http;
 using Containerizer.Controllers;
 using Containerizer.Services.Interfaces;
 using Moq;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NSpec;
 using Containerizer.Tests.Specs;
@@ -17,6 +18,7 @@ namespace Containerizer.Tests.Specs.Controllers
     internal class ContainersControllerSpec : nspec
     {
         private ContainersController containersController;
+        private Mock<IContainerPathService> mockContainerPathService;
         private Mock<ICreateContainerService> mockCreateContainerService;
         private Mock<IStreamInService> mockStreamInService;
         private Mock<IStreamOutService> mockStreamOutService;
@@ -24,16 +26,49 @@ namespace Containerizer.Tests.Specs.Controllers
 
         private void before_each()
         {
+            mockContainerPathService = new Mock<IContainerPathService>();
             mockCreateContainerService = new Mock<ICreateContainerService>();
             mockStreamOutService = new Mock<IStreamOutService>();
             mockStreamInService = new Mock<IStreamInService>();
             mockNetInService = new Mock<INetInService>();
-            containersController = new ContainersController(mockCreateContainerService.Object,
-                mockStreamInService.Object, mockStreamOutService.Object, mockNetInService.Object)
+            containersController = new ContainersController(mockContainerPathService.Object,
+                mockCreateContainerService.Object, mockStreamInService.Object,
+                mockStreamOutService.Object, mockNetInService.Object)
             {
                 Configuration = new HttpConfiguration(),
                 Request = new HttpRequestMessage()
             };
+        }
+
+        private
+        void describe_list()
+        {
+            HttpResponseMessage result = null;
+
+                before = () =>
+                {
+                    mockContainerPathService.Setup(x => x.ContainerIds()).Returns(new List<string>{ {"MyFirstContainer"}, {"MySecondContainer"}  });
+                   result = containersController.List()
+                       .GetAwaiter()
+                       .GetResult()
+                       .ExecuteAsync(new CancellationToken())
+                       .GetAwaiter()
+                       .GetResult();
+                };
+
+                it["returns a successful status code"] = () =>
+                {
+                    result.IsSuccessStatusCode.should_be_true();
+                };
+
+                it["returns a list of container ids as strings"] = () =>
+                {
+                    var jsonString = result.Content.ReadAsString(); // Json();
+                    var json = JsonConvert.DeserializeObject<string[]>(jsonString);
+                    json.should_contain("MyFirstContainer");
+                    json.should_contain("MySecondContainer");
+                };
+            
         }
 
         private void describe_post()

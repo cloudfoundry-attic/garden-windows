@@ -1,4 +1,6 @@
-﻿namespace Containerizer.Services.Interfaces
+﻿using System.Collections.Generic;
+
+namespace Containerizer.Services.Interfaces
 {
     public interface IContainerPathService
     {
@@ -7,5 +9,7 @@
         void CreateContainerDirectory(string id);
 
         string GetSubdirectory(string id, string destination);
+
+        IEnumerable<string> ContainerIds();
     }
 }

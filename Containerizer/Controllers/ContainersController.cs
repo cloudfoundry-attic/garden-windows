@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -26,13 +27,15 @@ namespace Containerizer.Controllers
 
     public class ContainersController : ApiController
     {
+        private readonly IContainerPathService containerPathService;
         private readonly ICreateContainerService createContainerService;
         private readonly IStreamInService streamInService;
         private readonly IStreamOutService streamOutService;
         private readonly INetInService netInService;
 
-        public ContainersController(ICreateContainerService createContainerService, IStreamInService streamInService, IStreamOutService streamOutService, INetInService netInService)
+        public ContainersController(IContainerPathService containerPathService, ICreateContainerService createContainerService, IStreamInService streamInService, IStreamOutService streamOutService, INetInService netInService)
         {
+            this.containerPathService = containerPathService;
             this.createContainerService = createContainerService;
             this.streamOutService = streamOutService;
             this.streamInService = streamInService;
@@ -40,6 +43,14 @@ namespace Containerizer.Controllers
         }
 
         [Route("api/containers")]
+        [HttpGet]
+        public async Task<IHttpActionResult> List()
+        {
+            return Json(containerPathService.ContainerIds());
+        }
+
+        [Route("api/containers")]
+        [HttpPost]
         public async Task<IHttpActionResult> Post()
         {
             try
