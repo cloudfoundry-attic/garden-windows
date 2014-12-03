@@ -43,12 +43,7 @@ namespace Containerizer.Controllers
                 }
                 catch (Exception e)
                 {
-                    string data = JsonConvert.SerializeObject(new ProcessStreamEvent
-                    {
-                        MessageType = "error",
-                        Data = e.Message
-                    }, Formatting.None);
-                    Send(data);
+                    SendEvent("error", e.Message);
                     return;
                 }
                 process.BeginOutputReadLine();
@@ -63,37 +58,31 @@ namespace Containerizer.Controllers
             }
         }
 
+        private void SendEvent(string messageType, string message)
+        {
+            string data = JsonConvert.SerializeObject(new ProcessStreamEvent
+            {
+                MessageType = messageType,
+                Data = message
+            }, Formatting.None);
+            Send(data);
+        }
+
         private void OutputDataHandler(object sendingProcess, DataReceivedEventArgs outLine)
         {
             if (outLine.Data == null) return;
-            string data = JsonConvert.SerializeObject(new ProcessStreamEvent
-            {
-                MessageType = "stdout",
-                Data = outLine.Data + "\r\n"
-            }, Formatting.None);
-            Send(data);
+            SendEvent("stdout", outLine.Data + "\r\n");
         }
 
         private void OutputErrorDataHandler(object sendingProcess, DataReceivedEventArgs outLine)
         {
             if (outLine.Data == null) return;
-            string data = JsonConvert.SerializeObject(new ProcessStreamEvent
-            {
-                MessageType = "stderr",
-                Data = outLine.Data + "\r\n"
-            }, Formatting.None);
-            Send(data);
+            SendEvent("stderr", outLine.Data + "\r\n");
         }
 
         private void ProcessExitedHandler(object sendingProcess, System.EventArgs e)
         {
-            string data = JsonConvert.SerializeObject(new ProcessStreamEvent
-            {
-               MessageType = "close"
-            }, Formatting.None);
-            Send(data);
-
-            // this.Close();
+            SendEvent("close", null);
         }
     }
 }
