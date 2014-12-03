@@ -283,6 +283,31 @@ var _ = Describe("container", func() {
 			Eventually(proc.(process.DotNetProcess).StreamOpen).Should(BeClosed())
 		})
 
+		Context("when we receive an error on the channel", func() {
+			It("returns the error", func() {
+				proc, err := container.Run(api.ProcessSpec{}, api.ProcessIO{})
+				Ω(err).ShouldNot(HaveOccurred())
+
+				websocket.JSON.Send(testServer.handlerWS, netContainer.ProcessStreamEvent{
+					MessageType: "error",
+					Data:        "An Error Message",
+				})
+
+				Eventually(<-proc.(process.DotNetProcess).StreamOpen).Should(Equal("An Error Message"))
+			})
+
+			It("closes the WebSocketOpen channel on the proc", func() {
+				proc, err := container.Run(api.ProcessSpec{}, api.ProcessIO{})
+				Ω(err).ShouldNot(HaveOccurred())
+
+				websocket.JSON.Send(testServer.handlerWS, netContainer.ProcessStreamEvent{
+					MessageType: "error",
+				})
+
+				Eventually(proc.(process.DotNetProcess).StreamOpen).Should(BeClosed())
+			})
+		})
+
 		Context("When the containizer server is down", func() {
 			BeforeEach(func() {
 				testServer.Url = &url.URL{}

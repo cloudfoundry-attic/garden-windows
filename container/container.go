@@ -151,7 +151,10 @@ func (container *container) Run(processSpec api.ProcessSpec, processIO api.Proce
 
 	streamWebsocketIOToContainerizer(ws, processIO)
 	go func() {
-		streamWebsocketIOFromContainerizer(ws, processIO)
+		err := streamWebsocketIOFromContainerizer(ws, processIO)
+		if err != nil {
+			proc.StreamOpen <- err.Error()
+		}
 		close(proc.StreamOpen)
 	}()
 
@@ -183,12 +186,12 @@ func streamWebsocketIOToContainerizer(ws *websocket.Conn, processIO api.ProcessI
 	}
 }
 
-func streamWebsocketIOFromContainerizer(ws *websocket.Conn, processIO api.ProcessIO) {
+func streamWebsocketIOFromContainerizer(ws *websocket.Conn, processIO api.ProcessIO) error {
 	receiveStream := ProcessStreamEvent{}
 	for {
 		err := websocket.JSON.Receive(ws, &receiveStream)
 		if err != nil {
-			return
+			return err
 		}
 
 		if receiveStream.MessageType == "stdout" && processIO.Stdout != nil {
@@ -198,8 +201,11 @@ func streamWebsocketIOFromContainerizer(ws *websocket.Conn, processIO api.Proces
 			io.WriteString(processIO.Stderr, receiveStream.Data)
 		}
 
+		if receiveStream.MessageType == "error" {
+			return errors.New(receiveStream.Data)
+		}
 		if receiveStream.MessageType == "close" {
-			return
+			return nil
 		}
 	}
 }

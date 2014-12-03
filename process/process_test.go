@@ -1,6 +1,7 @@
 package process_test
 
 import (
+	"errors"
 	"log"
 	"time"
 
@@ -18,21 +19,36 @@ var _ = Describe("process", func() {
 		proc = process.NewDotNetProcess()
 	})
 
+	type IntErrorTuple struct {
+		exitStatus int
+		err        error
+	}
+
 	Describe("Wait", func() {
-		var exitStatusChannel chan int
+		var exitStatusChannel chan IntErrorTuple
 		BeforeEach(func() {
-			exitStatusChannel = make(chan int, 0)
+			exitStatusChannel = make(chan IntErrorTuple, 0)
 			go func() {
 				exitStatus, err := proc.Wait()
-				Ω(err).NotTo(HaveOccurred())
-				exitStatusChannel <- exitStatus
+				exitStatusChannel <- IntErrorTuple{exitStatus: exitStatus, err: err}
 			}()
 		})
 
 		It("waits for the StreamOpen channel to close", func(done Done) {
 			close(proc.(process.DotNetProcess).StreamOpen)
 
-			Ω(<-exitStatusChannel).Should(Equal(0))
+			tuple := <-exitStatusChannel
+			Ω(tuple.exitStatus).Should(Equal(0))
+			Ω(tuple.err).ShouldNot(HaveOccurred())
+
+			close(done)
+		}, 0.1)
+
+		It("returns an erorr if one is sent over StreamOpen channel to close", func(done Done) {
+			proc.(process.DotNetProcess).StreamOpen <- "An Error Message"
+
+			tuple := <-exitStatusChannel
+			Ω(tuple.err).Should(Equal(errors.New("An Error Message")))
 
 			close(done)
 		}, 0.1)
