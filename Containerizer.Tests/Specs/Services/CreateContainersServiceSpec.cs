@@ -28,6 +28,7 @@ namespace Containerizer.Tests.Specs.Services
                 task.Wait();
                 id = task.Result;
             };
+            after = () => Directory.Delete(new ContainerPathService().GetContainerRoot(id), true);
 
             it["creates a new site in IIS named with the given id"] =
                 () => { serverManager.Sites.should_contain(x => x.Name == id); };

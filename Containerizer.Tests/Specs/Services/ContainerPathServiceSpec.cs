@@ -39,6 +39,7 @@ namespace Containerizer.Tests.Specs.Services
             describe["#CreateContainerDirectory"] = () =>
             {
                 before = () => { containerPathService.CreateContainerDirectory(id); };
+                after = () => { Directory.Delete(containerPathService.GetContainerRoot(id), true); };
 
                 it["creates the container's root directory"] =
                     () => { Directory.Exists(expectedPath).should_be_true(); };
