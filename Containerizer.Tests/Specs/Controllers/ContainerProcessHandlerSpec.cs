@@ -83,8 +83,9 @@ namespace Containerizer.Tests.Specs.Controllers
             {
                 handler.WebSocketContext = new FakeAspNetWebSocketContext();
                 websocket = (FakeWebSocket) handler.WebSocketContext.WebSocket;
-                handler.OnMessage("{\"type\":\"run\", \"pspec\":{\"Path\":\"foo.exe\", \"Args\":[\"some\", \"args\"]}}");
             };
+
+            act = () => handler.OnMessage("{\"type\":\"run\", \"pspec\":{\"Path\":\"foo.exe\", \"Args\":[\"some\", \"args\"]}}");
 
             it["sets working directory"] = () =>
             {
@@ -98,6 +99,18 @@ namespace Containerizer.Tests.Specs.Controllers
             };
 
             it["runs something"] = () => { mockProcess.Verify(x => x.Start()); };
+
+
+            context["when process.start raises an error"] = () =>
+            {
+                before = () => mockProcess.Setup(mock => mock.Start()).Throws(new Exception("An Error Message"));
+
+                it["sends the error over the socket"] = () =>
+                {
+                    string message = WaitForWebSocketMessage(websocket);
+                    message.should_be("{\"type\":\"error\",\"data\":\"An Error Message\"}");
+                };
+            } ;
 
             describe["standard in"] = () =>
             {

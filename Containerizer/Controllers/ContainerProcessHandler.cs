@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
+using System.Linq.Expressions;
 using Containerizer.Facades;
 using Containerizer.Models;
 using Containerizer.Services.Interfaces;
@@ -35,7 +37,20 @@ namespace Containerizer.Controllers
                 process.OutputDataReceived += OutputDataHandler;
                 process.ErrorDataReceived += OutputErrorDataHandler;
 
-                process.Start();
+                try
+                {
+                    process.Start();
+                }
+                catch (Exception e)
+                {
+                    string data = JsonConvert.SerializeObject(new ProcessStreamEvent
+                    {
+                        MessageType = "error",
+                        Data = e.Message
+                    }, Formatting.None);
+                    Send(data);
+                    return;
+                }
                 process.BeginOutputReadLine();
                 process.BeginErrorReadLine();
 
