@@ -123,4 +123,34 @@ var _ = Describe("backend", func() {
 		})
 
 	})
+
+	Describe("Ping", func() {
+		BeforeEach(func() {
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/ping"),
+				),
+			)
+		})
+
+		Context("windows containerizer server is up", func() {
+			It("makes a call out to an external service", func() {
+				err := dotNetBackend.Ping()
+				Ω(err).NotTo(HaveOccurred())
+				Ω(server.ReceivedRequests()).Should(HaveLen(1))
+			})
+		})
+
+
+		Context("windows containerizer server is down", func() {
+			BeforeEach(func() {
+				server.Close()
+			})
+			
+			It("returns an error", func() {
+				err := dotNetBackend.Ping()
+				Ω(err).To(HaveOccurred())
+			})
+		})
+	})
 })

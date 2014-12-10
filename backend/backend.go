@@ -42,7 +42,8 @@ func (dotNetBackend *dotNetBackend) GraceTime(api.Container) time.Duration {
 }
 
 func (dotNetBackend *dotNetBackend) Ping() error {
-	return nil
+	_, err := http.Get(dotNetBackend.containerizerURL.String() + "/api/ping")
+	return err
 }
 
 func (dotNetBackend *dotNetBackend) Capacity() (api.Capacity, error) {
