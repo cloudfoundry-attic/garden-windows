@@ -47,12 +47,15 @@ func (dotNetBackend *dotNetBackend) Ping() error {
 }
 
 func (dotNetBackend *dotNetBackend) Capacity() (api.Capacity, error) {
-	capacity := api.Capacity{}
+	capacity := api.Capacity{
+		MemoryInBytes: 8 * 1024 * 1024 * 1024,
+		DiskInBytes:   80 * 1024 * 1024 * 1024,
+		MaxContainers: 100,
+	}
 	return capacity, nil
 }
 
 func (dotNetBackend *dotNetBackend) Create(containerSpec api.ContainerSpec) (api.Container, error) {
-	netContainer := container.NewContainer(dotNetBackend.containerizerURL, "containerhandle")
 	url := dotNetBackend.containerizerURL.String() + "/api/containers"
 	containerSpecJSON, err := json.Marshal(containerSpec)
 	if err != nil {
@@ -60,8 +63,10 @@ func (dotNetBackend *dotNetBackend) Create(containerSpec api.ContainerSpec) (api
 	}
 	_, err = http.Post(url, "application/json", strings.NewReader(string(containerSpecJSON)))
 	if err != nil {
-		return netContainer, err
+		return nil, err
 	}
+
+	netContainer := container.NewContainer(dotNetBackend.containerizerURL, containerSpec.Handle)
 	return netContainer, nil
 }
 
