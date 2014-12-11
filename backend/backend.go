@@ -80,6 +80,10 @@ func (dotNetBackend *dotNetBackend) Destroy(handle string) error {
 func (dotNetBackend *dotNetBackend) Containers(api.Properties) ([]api.Container, error) {
 	url := dotNetBackend.containerizerURL.String() + "/api/containers"
 	response, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+
 	var ids []string
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
