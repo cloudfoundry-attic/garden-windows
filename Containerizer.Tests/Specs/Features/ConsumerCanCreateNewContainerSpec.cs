@@ -45,7 +45,7 @@ namespace Containerizer.Tests.Specs.Features
                     string handle = null;
                     before = () =>
                     {
-                        handle = Guid.NewGuid().ToString();
+                        handle = Guid.NewGuid().ToString() + "-" + Guid.NewGuid().ToString();
                         Task<HttpResponseMessage> postTask = client.PostAsync("/api/Containers",
                             new StringContent("{Handle: \"" + handle + "\"}"));
                         postTask.Wait();
@@ -75,7 +75,7 @@ namespace Containerizer.Tests.Specs.Features
                             () =>
                             {
                                 serverManager.Sites.First(x => x.Name == id).Applications[0].ApplicationPoolName
-                                    .should_be(id);
+                                    .should_be(id.Replace("-", "").Substring(0,64));
                             };
                     };
                 };

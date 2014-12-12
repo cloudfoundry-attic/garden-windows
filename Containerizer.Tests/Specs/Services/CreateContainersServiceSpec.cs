@@ -21,7 +21,7 @@ namespace Containerizer.Tests.Specs.Services
 
                 before = () =>
                 {
-                    passedInId = Guid.NewGuid().ToString();
+                    passedInId = Guid.NewGuid().ToString() + "-" + Guid.NewGuid().ToString();
                     var createContainerService = new CreateContainerService();
                     returnedId = createContainerService.CreateContainer(passedInId).Result;
                     createContainerService = new CreateContainerService();
@@ -39,11 +39,11 @@ namespace Containerizer.Tests.Specs.Services
 
                 it["returns the passed in id"] =
                     () => { returnedId.should_be(passedInId); };
-                it["creates a new associated app pool in IIS named with the passed in id"] =
+                it["creates a new associated app pool in IIS named with the truncated passed in id"] =
                     () =>
                     {
                         serverManager.Sites.First(x => x.Name == returnedId).Applications[0].ApplicationPoolName
-                            .should_be(passedInId);
+                            .should_be(passedInId.Replace("-", "").Substring(0,64));
                     };
 
                 it["creates a site with exactly one application"] =

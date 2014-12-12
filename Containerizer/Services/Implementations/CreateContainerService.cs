@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Containerizer.Services.Interfaces;
 using Microsoft.Web.Administration;
+using System.Linq;
 
 namespace Containerizer.Services.Implementations
 {
@@ -20,11 +21,12 @@ namespace Containerizer.Services.Implementations
                     string rootDir =
                         Directory.GetDirectoryRoot(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
                     string path = Path.Combine(rootDir, "containerizer", containerId);
+                    var appPoolName = string.Join("", containerId.Replace("-", "").Take(64));
                     Site site = serverManager.Sites.Add(containerId, path, 0);
 
-                    serverManager.ApplicationPools.Add(containerId);
-                    site.Applications[0].ApplicationPoolName = containerId;
-                    ApplicationPool appPool = serverManager.ApplicationPools[containerId];
+                    serverManager.ApplicationPools.Add(appPoolName);
+                    site.Applications[0].ApplicationPoolName = appPoolName;
+                    ApplicationPool appPool = serverManager.ApplicationPools[appPoolName];
                     appPool.ManagedPipelineMode = ManagedPipelineMode.Integrated;
 
                     serverManager.CommitChanges();
