@@ -8,12 +8,6 @@ namespace Containerizer.Services.Implementations
 {
     public class ContainerPathService : IContainerPathService
     {
-        private string GetContainerRoot()
-        {
-            var rootDir = Directory.GetDirectoryRoot(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
-            return Path.Combine(rootDir, "containerizer");
-        }
-
         public string GetContainerRoot(string id)
         {
             return Path.Combine(GetContainerRoot(), id);
@@ -31,8 +25,14 @@ namespace Containerizer.Services.Implementations
 
         public IEnumerable<string> ContainerIds()
         {
-            var dirs = Directory.GetDirectories(GetContainerRoot());
+            string[] dirs = Directory.GetDirectories(GetContainerRoot());
             return dirs.Select(Path.GetFileName);
+        }
+
+        private string GetContainerRoot()
+        {
+            string rootDir = Directory.GetDirectoryRoot(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+            return Path.Combine(rootDir, "containerizer");
         }
     }
 }

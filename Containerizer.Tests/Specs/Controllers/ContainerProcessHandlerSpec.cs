@@ -15,7 +15,7 @@ namespace Containerizer.Tests.Specs.Controllers
 {
     internal class ContainerProcessHandlerSpec : nspec
     {
-        private string containerId = null;
+        private string containerId;
         private byte[] fakeStandardInput;
         private ContainerProcessHandler handler;
         private Mock<IContainerPathService> mockPathService;
@@ -85,12 +85,12 @@ namespace Containerizer.Tests.Specs.Controllers
                 websocket = (FakeWebSocket) handler.WebSocketContext.WebSocket;
             };
 
-            act = () => handler.OnMessage("{\"type\":\"run\", \"pspec\":{\"Path\":\"foo.exe\", \"Args\":[\"some\", \"args\"]}}");
+            act =
+                () =>
+                    handler.OnMessage(
+                        "{\"type\":\"run\", \"pspec\":{\"Path\":\"foo.exe\", \"Args\":[\"some\", \"args\"]}}");
 
-            it["sets working directory"] = () =>
-            {
-                startInfo.WorkingDirectory.should_be("C:\\A\\Directory");
-            };
+            it["sets working directory"] = () => { startInfo.WorkingDirectory.should_be("C:\\A\\Directory"); };
 
             it["sets start info correctly"] = () =>
             {
@@ -110,7 +110,7 @@ namespace Containerizer.Tests.Specs.Controllers
                     string message = WaitForWebSocketMessage(websocket);
                     message.should_be("{\"type\":\"error\",\"data\":\"An Error Message\"}");
                 };
-            } ;
+            };
 
             describe["standard in"] = () =>
             {

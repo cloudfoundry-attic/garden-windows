@@ -38,7 +38,9 @@ namespace Containerizer.Tests.Specs.Features
                 {
                     containerPath = new ContainerPathService().GetContainerRoot(containerId);
                     Directory.CreateDirectory(containerPath);
-                    File.WriteAllBytes(containerPath + "/myfile.bat", new UTF8Encoding(true).GetBytes("@echo off\r\n@echo Hi Fred\r\n@echo Jane is good\r\n@echo Jill is better\r\n"));
+                    File.WriteAllBytes(containerPath + "/myfile.bat",
+                        new UTF8Encoding(true).GetBytes(
+                            "@echo off\r\n@echo Hi Fred\r\n@echo Jane is good\r\n@echo Jill is better\r\n"));
 
                     client = new ClientWebSocket();
                     client.ConnectAsync(new Uri("ws://localhost:" + port + "/api/containers/" + containerId + "/run"),

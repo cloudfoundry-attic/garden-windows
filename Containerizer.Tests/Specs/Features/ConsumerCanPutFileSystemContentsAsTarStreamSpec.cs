@@ -40,10 +40,7 @@ namespace Containerizer.Tests.Specs.Features
             {
                 HttpClient client = null;
 
-                before = () =>
-                {
-                    client = new HttpClient {BaseAddress = new Uri("http://localhost:" + port)};
-                };
+                before = () => { client = new HttpClient {BaseAddress = new Uri("http://localhost:" + port)}; };
 
                 context["there exists a container with a given id"] = () =>
                 {

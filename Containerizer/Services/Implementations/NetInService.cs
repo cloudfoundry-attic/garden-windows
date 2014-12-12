@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Containerizer.Services.Interfaces;
 using Microsoft.Web.Administration;
@@ -9,9 +10,8 @@ namespace Containerizer.Services.Implementations
     {
         public int AddPort(int port, string id)
         {
-
-            var serverManager = ServerManager.OpenRemote("localhost");
-            var existingSite = serverManager.Sites.First(x => x.Name == id);
+            ServerManager serverManager = ServerManager.OpenRemote("localhost");
+            Site existingSite = serverManager.Sites.First(x => x.Name == id);
 
             removeInvalidBindings(existingSite);
 
@@ -28,8 +28,8 @@ namespace Containerizer.Services.Implementations
 
         private static void removeInvalidBindings(Site existingSite)
         {
-            var bindings = existingSite.Bindings.Where(x => x.EndPoint.Port == 0).ToList();
-            foreach (var binding in bindings)
+            List<Binding> bindings = existingSite.Bindings.Where(x => x.EndPoint.Port == 0).ToList();
+            foreach (Binding binding in bindings)
             {
                 existingSite.Bindings.Remove(binding);
             }

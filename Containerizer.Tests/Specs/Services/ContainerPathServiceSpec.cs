@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using Containerizer.Services.Implementations;
@@ -34,20 +35,20 @@ namespace Containerizer.Tests.Specs.Services
             {
                 before = () =>
                 {
-                    var rootPath = containerPathService.GetContainerRoot(".");
+                    string rootPath = containerPathService.GetContainerRoot(".");
                     Directory.CreateDirectory(Path.Combine(rootPath, "MyFirstContainer"));
                     Directory.CreateDirectory(Path.Combine(rootPath, "MySecondContainer"));
                 };
                 after = () =>
                 {
-                    var rootPath = containerPathService.GetContainerRoot(".");
+                    string rootPath = containerPathService.GetContainerRoot(".");
                     Directory.Delete(Path.Combine(rootPath, "MyFirstContainer"), true);
                     Directory.Delete(Path.Combine(rootPath, "MySecondContainer"), true);
                 };
 
                 it["returns all the container ids"] = () =>
                 {
-                    var ids = containerPathService.ContainerIds();
+                    IEnumerable<string> ids = containerPathService.ContainerIds();
                     ids.should_contain("MyFirstContainer");
                     ids.should_contain("MySecondContainer");
                 };
