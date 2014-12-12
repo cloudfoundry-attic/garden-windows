@@ -9,7 +9,7 @@ namespace Containerizer.Tests.Specs.Services
     internal class TarStreamServiceSpec : nspec
     {
         private TarStreamService tarStreamService;
-        private Stream tgzStream;
+        private Stream tarStream;
         private string tmpDir;
 
         private void before_each()
@@ -35,15 +35,15 @@ namespace Containerizer.Tests.Specs.Services
                 Directory.CreateDirectory(Path.Combine(tmpDir, "fooDir"));
                 File.WriteAllText(Path.Combine(tmpDir, "content.txt"), "content");
                 File.WriteAllText(Path.Combine(tmpDir, "fooDir", "content.txt"), "MOAR content");
-                new TarStreamService().CreateFromDirectory(tmpDir, destinationArchiveFileName);
-                tgzStream = new FileStream(destinationArchiveFileName, FileMode.Open);
+                new TarStreamService().CreateTarFromDirectory(tmpDir, destinationArchiveFileName);
+                tarStream = new FileStream(destinationArchiveFileName, FileMode.Open);
             };
 
             context["when the tar stream contains files and directories"] = () =>
             {
                 it["writes the file to disk"] = () =>
                 {
-                    tarStreamService.WriteTarStreamToPath(tgzStream, "output");
+                    tarStreamService.WriteTarStreamToPath(tarStream, "output");
                     File.ReadAllLines(Path.Combine("output", "content.txt")).should_be("content");
                     File.ReadAllLines(Path.Combine("output", "fooDir", "content.txt")).should_be("MOAR content");
                 };
@@ -51,7 +51,39 @@ namespace Containerizer.Tests.Specs.Services
 
             after = () =>
             {
-                tgzStream.Close();
+                tarStream.Close();
+                File.Delete(destinationArchiveFileName);
+            };
+        }
+
+        private void describe_WriteTarGzStreamToPath()
+        {
+            string destinationArchiveFileName = null;
+
+            before = () =>
+            {
+                destinationArchiveFileName = Path.GetRandomFileName();
+                Directory.CreateDirectory(tmpDir);
+                Directory.CreateDirectory(Path.Combine(tmpDir, "fooDir"));
+                File.WriteAllText(Path.Combine(tmpDir, "content.txt"), "content");
+                File.WriteAllText(Path.Combine(tmpDir, "fooDir", "content.txt"), "MOAR content");
+                new TarStreamService().CreateTarGzFromDirectory(tmpDir, destinationArchiveFileName);
+                tarStream = new FileStream(destinationArchiveFileName, FileMode.Open);
+            };
+
+            context["when the tar stream contains files and directories"] = () =>
+            {
+                it["writes the file to disk"] = () =>
+                {
+                    tarStreamService.WriteTarStreamToPath(tarStream, "output");
+                    File.ReadAllLines(Path.Combine("output", "content.txt")).should_be("content");
+                    File.ReadAllLines(Path.Combine("output", "fooDir", "content.txt")).should_be("MOAR content");
+                };
+            };
+
+            after = () =>
+            {
+                tarStream.Close();
                 File.Delete(destinationArchiveFileName);
             };
         }
@@ -67,11 +99,11 @@ namespace Containerizer.Tests.Specs.Services
 
             context["requesting a single file"] = () =>
             {
-                before = () => { tgzStream = tarStreamService.WriteTarToStream(Path.Combine(tmpDir, "a_file.txt")); };
+                before = () => { tarStream = tarStreamService.WriteTarToStream(Path.Combine(tmpDir, "a_file.txt")); };
 
                 it["returns a steam with a single requested file"] = () =>
                 {
-                    using (IReader tgz = ReaderFactory.Open(tgzStream))
+                    using (IReader tgz = ReaderFactory.Open(tarStream))
                     {
                         tgz.MoveToNextEntry().should_be_true();
                         tgz.Entry.Key.should_be("a_file.txt");
@@ -83,13 +115,13 @@ namespace Containerizer.Tests.Specs.Services
 
             context["requesting a directory"] = () =>
             {
-                before = () => { tgzStream = tarStreamService.WriteTarToStream(tmpDir); };
+                before = () => { tarStream = tarStreamService.WriteTarToStream(tmpDir); };
 
-                it["creates the tgz stream"] = () => { ReaderFactory.Open(tgzStream).should_not_be_null(); };
+                it["creates the tgz stream"] = () => { ReaderFactory.Open(tarStream).should_not_be_null(); };
 
                 it["returns a stream with the files inside"] = () =>
                 {
-                    using (IReader tgz = ReaderFactory.Open(tgzStream))
+                    using (IReader tgz = ReaderFactory.Open(tarStream))
                     {
                         tgz.MoveToNextEntry().should_be_true();
                         tgz.Entry.Key.should_be("a_file.txt");
@@ -101,7 +133,7 @@ namespace Containerizer.Tests.Specs.Services
 
                 it["has content in the files"] = () =>
                 {
-                    using (IReader tgz = ReaderFactory.Open(tgzStream))
+                    using (IReader tgz = ReaderFactory.Open(tarStream))
                     {
                         tgz.MoveToNextEntry().should_be_true();
                         tgz.Entry.Key.should_be("a_file.txt");

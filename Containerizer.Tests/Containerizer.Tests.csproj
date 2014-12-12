@@ -99,11 +99,12 @@
     <Compile Include="Specs\Controllers\PingControllerSpec.cs" />
     <Compile Include="Specs\ExtensionMethods.cs" />
     <Compile Include="Specs\Facades\FakeAspNetWebSocketContext.cs" />
+    <Compile Include="Specs\Features\ConsumerCanPutFileSystemContentsAsTarStreamSpec.cs" />
     <Compile Include="Specs\Features\PingSpec.cs" />
     <Compile Include="Specs\Features\ConsumerCanAddAPortOnAContainerSpec.cs" />
     <Compile Include="Specs\Features\ConsumerCanCreateNewContainerSpec.cs" />
     <Compile Include="Specs\Features\ConsumerCanGetFileSystemContentsAsTarStreamSpec.cs" />
-    <Compile Include="Specs\Features\ConsumerCanPutFileSystemContentsAsTarStreamSpec.cs" />
+    <Compile Include="Specs\Features\ConsumerCanPutFileSystemContentsAsTarGzStreamSpec.cs" />
     <Compile Include="Specs\Features\ConsumerCanRunAProcessSpec.cs" />
     <Compile Include="Specs\Helpers.cs" />
     <Compile Include="Specs\Services\NetInServiceSpec.cs" />

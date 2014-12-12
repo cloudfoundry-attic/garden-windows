@@ -7,7 +7,7 @@ using NSpec;
 
 namespace Containerizer.Tests.Specs.Features
 {
-    internal class ConsumerCanPutFileSystemContentsAsTarStream : nspec
+    internal class ConsumerCanPutFileSystemContentsAsTarGzStream : nspec
     {
         private string directoryPath;
         private string id;
@@ -24,7 +24,7 @@ namespace Containerizer.Tests.Specs.Features
             Directory.CreateDirectory(directoryPath);
             File.WriteAllText(Path.Combine(directoryPath, "file.txt"), "stuff!!!!");
             tgzName = Guid.NewGuid().ToString();
-            new TarStreamService().CreateTarFromDirectory(directoryPath, tgzName);
+            new TarStreamService().CreateTarGzFromDirectory(directoryPath, tgzName);
         }
 
         private void after_each()
@@ -61,7 +61,6 @@ namespace Containerizer.Tests.Specs.Features
                             content.Add(streamContent);
                             string path = "/api/containers/" + id + "/files?destination=%2F";
                             responseMessage = client.PutAsync(path, streamContent).GetAwaiter().GetResult();
-                            var x = 1;
                         };
 
                         it["returns a successful status code"] =

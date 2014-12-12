@@ -2,6 +2,7 @@
 using Containerizer.Services.Interfaces;
 using SharpCompress.Common;
 using SharpCompress.Reader;
+using SharpCompress.Reader.Tar;
 using SharpCompress.Writer;
 
 namespace Containerizer.Services.Implementations
@@ -11,10 +12,10 @@ namespace Containerizer.Services.Implementations
         public Stream WriteTarToStream(string filePath)
         {
             string gzPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".gz");
-            CreateFromDirectory(filePath, gzPath);
+            CreateTarGzFromDirectory(filePath, gzPath);
             Stream stream = File.OpenRead(gzPath);
             var buffer = new byte[stream.Length];
-            stream.Read(buffer, 0, (int) stream.Length);
+            stream.Read(buffer, 0, (int)stream.Length);
             var memStream = new MemoryStream(buffer);
             stream.Close();
             File.Delete(gzPath);
@@ -24,17 +25,32 @@ namespace Containerizer.Services.Implementations
 
         public void WriteTarStreamToPath(Stream stream, string filePath)
         {
-            IReader reader = ReaderFactory.Open(stream);
-            while (reader.MoveToNextEntry())
+            IReader reader = ReaderFactory.Open(new BufferedStream(stream));
+            reader.WriteAllToDirectory(filePath, ExtractOptions.ExtractFullPath | ExtractOptions.Overwrite);
+        }
+
+        public void CreateTarFromDirectory(string sourceDirectoryName, string destinationArchiveFileName)
+        {
+            using (Stream stream = File.OpenWrite(destinationArchiveFileName))
             {
-                if (!reader.Entry.IsDirectory)
+                using (
+                    IWriter writer = WriterFactory.Open(stream, ArchiveType.Tar,
+                        new CompressionInfo { Type = CompressionType.None }))
                 {
-                    reader.WriteEntryToDirectory(filePath, ExtractOptions.ExtractFullPath | ExtractOptions.Overwrite);
+                    if (File.Exists(sourceDirectoryName))
+                    {
+                        var info = new FileInfo(sourceDirectoryName);
+                        writer.Write(info.Name, info);
+                    }
+                    else
+                    {
+                        writer.WriteAll(sourceDirectoryName, "*", SearchOption.AllDirectories);
+                    }
                 }
             }
         }
 
-        public void CreateFromDirectory(string sourceDirectoryName, string destinationArchiveFileName)
+        public void CreateTarGzFromDirectory(string sourceDirectoryName, string destinationArchiveFileName)
         {
             string tarPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".tar");
             try
@@ -43,7 +59,7 @@ namespace Containerizer.Services.Implementations
                 {
                     using (
                         IWriter writer = WriterFactory.Open(stream, ArchiveType.Tar,
-                            new CompressionInfo {Type = CompressionType.None}))
+                            new CompressionInfo { Type = CompressionType.None }))
                     {
                         if (File.Exists(sourceDirectoryName))
                         {
@@ -60,7 +76,7 @@ namespace Containerizer.Services.Implementations
                 {
                     using (
                         IWriter writer = WriterFactory.Open(stream, ArchiveType.GZip,
-                            new CompressionInfo {Type = CompressionType.GZip}))
+                            new CompressionInfo { Type = CompressionType.GZip }))
                     {
                         writer.Write("Tar.tar", tarPath);
                     }
