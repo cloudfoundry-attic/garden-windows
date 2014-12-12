@@ -23,15 +23,7 @@ namespace Containerizer.Tests.Specs.Features
                 true);
 
             client = new HttpClient {BaseAddress = new Uri("http://localhost:" + port)};
-            Task<HttpResponseMessage> postTask = client.PostAsync("/api/Containers",
-                new FormUrlEncodedContent(new List<KeyValuePair<string, string>>()));
-            postTask.Wait();
-            HttpResponseMessage postResult = postTask.Result;
-            Task<string> readTask = postResult.Content.ReadAsStringAsync();
-            readTask.Wait();
-            string response = readTask.Result;
-            JObject json = JObject.Parse(response);
-            id = json["id"].ToString();
+            id = Helpers.CreateContainer(client);
             containerPath = new ContainerPathService().GetContainerRoot(id);
             File.WriteAllText(Path.Combine(containerPath, "file.txt"), "stuff!!!!");
         }

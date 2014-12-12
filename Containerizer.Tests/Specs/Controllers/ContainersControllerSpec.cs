@@ -80,19 +80,18 @@ namespace Containerizer.Tests.Specs.Controllers
                 before = () =>
                 {
                     containerId = Guid.NewGuid().ToString();
-                    mockCreateContainerService.Setup(x => x.CreateContainer()).ReturnsAsync(containerId);
+                    mockCreateContainerService.Setup(x => x.CreateContainer(It.IsAny<String>())).Returns((String x) => Task.FromResult(x));
+                    containersController.Request.Content = new StringContent("{Handle: \"" + containerId + "\"}");
                 };
 
                 it["returns a successful status code"] = () =>
                 {
-                    Task<IHttpActionResult> postTask = containersController.Post();
-                    postTask.Wait();
-                    Task<HttpResponseMessage> resultTask = postTask.Result.ExecuteAsync(new CancellationToken());
-                    resultTask.Wait();
-                    resultTask.Result.IsSuccessStatusCode.should_be_true();
+                    containersController.Post().Result
+                        .ExecuteAsync(new CancellationToken()).Result
+                        .IsSuccessStatusCode.should_be_true();
                 };
 
-                it["returns the container's id"] = () =>
+                it["returns the passed in container's id"] = () =>
                 {
                     Task<IHttpActionResult> postTask = containersController.Post();
                     postTask.Wait();
@@ -109,8 +108,9 @@ namespace Containerizer.Tests.Specs.Controllers
                 before =
                     () =>
                     {
-                        mockCreateContainerService.Setup(x => x.CreateContainer())
+                        mockCreateContainerService.Setup(x => x.CreateContainer(It.IsAny<String>()))
                             .ThrowsAsync(new CouldNotCreateContainerException(String.Empty, null));
+                        containersController.Request.Content = new StringContent("{Handle: \"guid\"}");
                     };
 
                 it["returns a error status code"] = () =>

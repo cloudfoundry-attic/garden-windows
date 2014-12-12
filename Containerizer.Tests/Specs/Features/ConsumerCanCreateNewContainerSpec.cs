@@ -42,10 +42,12 @@ namespace Containerizer.Tests.Specs.Features
 
                 context["when I post a request"] = () =>
                 {
+                    string handle = null;
                     before = () =>
                     {
+                        handle = Guid.NewGuid().ToString();
                         Task<HttpResponseMessage> postTask = client.PostAsync("/api/Containers",
-                            new FormUrlEncodedContent(new List<KeyValuePair<string, string>>()));
+                            new StringContent("{Handle: \"" + handle + "\"}"));
                         postTask.Wait();
                         HttpResponseMessage postResult = postTask.Result;
                         Task<string> readTask = postResult.Content.ReadAsStringAsync();
@@ -56,6 +58,11 @@ namespace Containerizer.Tests.Specs.Features
                     };
 
                     it["should receive the container's id in the response"] = () => { id.should_not_be_empty(); };
+
+                    it["the response id should equal the passed in handle"] = () =>
+                    {
+                        id.should_be(handle);
+                    };
 
                     describe["observable IIS side effects"] = () =>
                     {

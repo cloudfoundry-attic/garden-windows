@@ -22,7 +22,7 @@ namespace Containerizer.Tests.Specs.Services
                 before = () =>
                 {
                     createContainerService = new CreateContainerService();
-                    containerId = createContainerService.CreateContainer().GetAwaiter().GetResult();
+                    containerId = createContainerService.CreateContainer(Guid.NewGuid().ToString()).GetAwaiter().GetResult();
                     containerId.should_not_be_null();
                 };
 

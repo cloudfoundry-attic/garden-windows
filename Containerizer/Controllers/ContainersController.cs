@@ -10,6 +10,7 @@ using Containerizer.Services.Implementations;
 using Containerizer.Services.Interfaces;
 using Microsoft.Web.WebSockets;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Containerizer.Controllers
 {
@@ -55,7 +56,9 @@ namespace Containerizer.Controllers
         {
             try
             {
-                string id = await createContainerService.CreateContainer();
+                var content = await Request.Content.ReadAsStringAsync();
+                JObject json = JObject.Parse(content);
+                string id = await createContainerService.CreateContainer(json["Handle"].ToString());
                 return Json(new CreateResponse {Id = id});
             }
             catch (CouldNotCreateContainerException ex)

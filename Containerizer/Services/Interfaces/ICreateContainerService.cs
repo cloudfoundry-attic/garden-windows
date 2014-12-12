@@ -8,7 +8,7 @@ namespace Containerizer.Services.Interfaces
         /// <exception cref="Containerizer.Services.Interfaces.CouldNotCreateContainerException">
         ///     Thrown when container could not be created.
         /// </exception>
-        Task<string> CreateContainer();
+        Task<string> CreateContainer(String containerId);
     }
 
     public class CouldNotCreateContainerException : Exception

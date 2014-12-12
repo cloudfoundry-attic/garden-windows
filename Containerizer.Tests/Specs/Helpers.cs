@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.NetworkInformation;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Web.SessionState;
 using Microsoft.Web.Administration;
 using Newtonsoft.Json.Linq;
@@ -18,8 +19,8 @@ namespace Containerizer.Tests.Specs
         /// <returns>The newly created container's id.</returns>
         public static string CreateContainer(HttpClient client)
         {
-            var postTask = client.PostAsync("/api/Containers",
-                new FormUrlEncodedContent(new List<KeyValuePair<string, string>>()));
+            var handle = Guid.NewGuid().ToString();
+            var postTask = client.PostAsync("/api/Containers", new StringContent("{Handle: \"" + handle + "\"}"));
             postTask.Wait();
             var postResult = postTask.Result;
             var readTask = postResult.Content.ReadAsStringAsync();

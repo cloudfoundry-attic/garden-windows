@@ -10,27 +10,26 @@ namespace Containerizer.Services.Implementations
 {
     public class CreateContainerService : ICreateContainerService
     {
-        public Task<string> CreateContainer()
+        public Task<string> CreateContainer(String containerId)
         {
             return Task.Factory.StartNew(() =>
             {
                 try
                 {
-                    string id = Guid.NewGuid().ToString();
                     ServerManager serverManager = ServerManager.OpenRemote("localhost");
                     string rootDir =
                         Directory.GetDirectoryRoot(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
-                    string path = Path.Combine(rootDir, "containerizer", id);
-                    Site site = serverManager.Sites.Add(id, path, 0);
+                    string path = Path.Combine(rootDir, "containerizer", containerId);
+                    Site site = serverManager.Sites.Add(containerId, path, 0);
 
-                    serverManager.ApplicationPools.Add(id);
-                    site.Applications[0].ApplicationPoolName = id;
-                    ApplicationPool appPool = serverManager.ApplicationPools[id];
+                    serverManager.ApplicationPools.Add(containerId);
+                    site.Applications[0].ApplicationPoolName = containerId;
+                    ApplicationPool appPool = serverManager.ApplicationPools[containerId];
                     appPool.ManagedPipelineMode = ManagedPipelineMode.Integrated;
 
                     serverManager.CommitChanges();
                     Directory.CreateDirectory(path);
-                    return id;
+                    return containerId;
                 }
                 catch (COMException ex)
                 {
