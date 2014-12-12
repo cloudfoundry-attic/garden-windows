@@ -77,6 +77,7 @@ var _ = Describe("container", func() {
 
 		It("makes a call out to an external service", func() {
 			stream, err := container.StreamOut("a/path")
+			defer stream.Close()
 			Ω(err).NotTo(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 
@@ -85,6 +86,7 @@ var _ = Describe("container", func() {
 			Ω(string(body)).Should(Equal("a tarball"))
 		})
 	})
+
 	Describe("NetIn", func() {
 		It("makes a call out to an external service", func() {
 			server.AppendHandlers(

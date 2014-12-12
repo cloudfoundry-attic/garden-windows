@@ -65,10 +65,11 @@ func (dotNetBackend *dotNetBackend) Create(containerSpec api.ContainerSpec) (api
 	if err != nil {
 		return nil, err
 	}
-	_, err = http.Post(url, "application/json", strings.NewReader(string(containerSpecJSON)))
+	resp, err := http.Post(url, "application/json", strings.NewReader(string(containerSpecJSON)))
 	if err != nil {
 		return nil, err
 	}
+	resp.Body.Close()
 
 	netContainer := container.NewContainer(dotNetBackend.containerizerURL, containerSpec.Handle)
 	return netContainer, nil

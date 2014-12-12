@@ -55,10 +55,15 @@ func (container *container) Info() (api.ContainerInfo, error) {
 func (container *container) StreamIn(dstPath string, tarStream io.Reader) error {
 	url := container.containerizerURL.String() + "/api/containers/" + container.Handle() + "/files?destination=" + dstPath
 
-	_, err := http.Post(url, "application/octet-stream", tarStream)
+	resp, err := http.Post(url, "application/octet-stream", tarStream)
+	if err != nil {
+		return err
+	}
 
-	return err
+	resp.Body.Close()
+	return nil
 }
+
 func (container *container) StreamOut(srcPath string) (io.ReadCloser, error) {
 	url := container.containerizerURL.String() + "/api/containers/" + container.Handle() + "/files?source=" + srcPath
 	resp, err := http.Get(url)
