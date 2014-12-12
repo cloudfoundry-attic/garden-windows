@@ -46,7 +46,7 @@ var _ = Describe("container", func() {
 		BeforeEach(func() {
 			server.AppendHandlers(
 				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("PUT", "/api/containers/containerhandle/files", "destination=a/path"),
+					ghttp.VerifyRequest("POST", "/api/containers/containerhandle/files", "destination=a/path"),
 					func(w http.ResponseWriter, req *http.Request) {
 						body, err := ioutil.ReadAll(req.Body)
 						req.Body.Close()
