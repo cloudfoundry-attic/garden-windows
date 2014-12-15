@@ -55,7 +55,12 @@ func (container *container) Info() (api.ContainerInfo, error) {
 func (container *container) StreamIn(dstPath string, tarStream io.Reader) error {
 	url := container.containerizerURL.String() + "/api/containers/" + container.Handle() + "/files?destination=" + dstPath
 
-	resp, err := http.Post(url, "application/octet-stream", tarStream)
+	req, err := http.NewRequest("PUT", url, tarStream)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/octet-stream")
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return err
 	}
