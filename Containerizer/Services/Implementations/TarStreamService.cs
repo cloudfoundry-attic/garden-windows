@@ -11,14 +11,14 @@ namespace Containerizer.Services.Implementations
     {
         public Stream WriteTarToStream(string filePath)
         {
-            string gzPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".gz");
-            CreateTarFromDirectory(filePath, gzPath);
-            Stream stream = File.OpenRead(gzPath);
+            string tarPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".gz");
+            CreateTarFromDirectory(filePath, tarPath);
+            Stream stream = File.OpenRead(tarPath);
             var buffer = new byte[stream.Length];
             stream.Read(buffer, 0, (int)stream.Length);
             var memStream = new MemoryStream(buffer);
             stream.Close();
-            File.Delete(gzPath);
+            File.Delete(tarPath);
             return memStream;
         }
 

@@ -42,15 +42,15 @@ namespace Containerizer.Tests.Specs.Features
                 it["streams the file as a tarball"] = () =>
                 {
                     HttpResponseMessage getTask =
-                        client.GetAsync("/api/containers/" + id + "/files?source=file.txt").GetAwaiter().GetResult();
+                        client.GetAsync("/api/containers/" + id + "/files?source=/file.txt").GetAwaiter().GetResult();
                     getTask.IsSuccessStatusCode.should_be_true();
-                    Stream tgzStream = getTask.Content.ReadAsStreamAsync().GetAwaiter().GetResult();
-                    using (IReader tgz = ReaderFactory.Open(tgzStream))
+                    Stream tarStream = getTask.Content.ReadAsStreamAsync().GetAwaiter().GetResult();
+                    using (IReader tar = ReaderFactory.Open(tarStream))
                     {
-                        tgz.MoveToNextEntry().should_be_true();
-                        tgz.Entry.Key.should_be("file.txt");
+                        tar.MoveToNextEntry().should_be_true();
+                        tar.Entry.Key.should_be("file.txt");
 
-                        tgz.MoveToNextEntry().should_be_false();
+                        tar.MoveToNextEntry().should_be_false();
                     }
                 };
             };

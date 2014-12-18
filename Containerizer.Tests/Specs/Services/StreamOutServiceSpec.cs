@@ -39,13 +39,13 @@ namespace Containerizer.Tests.Specs.Services
                         actualPath = path;
                         return expectedStream;
                     });
-                stream = streamOutService.StreamOutFile(id, "file.txt");
+                stream = streamOutService.StreamOutFile(id, "/file.txt");
             };
 
             it["returns a stream from the tarstreamer"] = () => { stream.should_be_same(expectedStream); };
 
             it["passes the path combined with the id to tarstreamer"] =
-                () => { actualPath.should_be(Path.Combine(@"C:\a\path", "file.txt")); };
+                () => { actualPath.should_be(@"C:\a\path/file.txt"); };
         }
     }
 }
