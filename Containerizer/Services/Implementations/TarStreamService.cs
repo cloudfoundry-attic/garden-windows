@@ -12,7 +12,7 @@ namespace Containerizer.Services.Implementations
         public Stream WriteTarToStream(string filePath)
         {
             string gzPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".gz");
-            CreateTarGzFromDirectory(filePath, gzPath);
+            CreateTarFromDirectory(filePath, gzPath);
             Stream stream = File.OpenRead(gzPath);
             var buffer = new byte[stream.Length];
             stream.Read(buffer, 0, (int)stream.Length);
