@@ -323,6 +323,60 @@ var _ = Describe("container", func() {
 			}, 1)
 		})
 	})
+
+	Describe("GetProperty", func() {
+		BeforeEach(func() {
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/containers/containerhandle/properties/key"),
+					ghttp.RespondWith(200, "a value"),
+				),
+			)
+		})
+
+		It("makes a call out to an external service", func() {
+			property, err := container.GetProperty("key")
+			Ω(err).NotTo(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+
+			Ω(property).Should(Equal("a value"))
+		})
+	})
+
+	Describe("SetProperty", func() {
+		BeforeEach(func() {
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("PUT", "/api/containers/containerhandle/properties/key"),
+					ghttp.VerifyJSON("[\"value\"]"),
+					ghttp.RespondWith(200, "a body that doesn't matter"),
+				),
+			)
+		})
+
+		It("makes a call out to an external service", func() {
+			err := container.SetProperty("key", "value")
+			Ω(err).NotTo(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+	})
+
+	Describe("RemoveProperty", func() {
+		BeforeEach(func() {
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("DELETE", "/api/containers/containerhandle/properties/key"),
+					ghttp.RespondWith(204, ""),
+				),
+			)
+		})
+
+		It("makes a call out to an external service", func() {
+			err := container.RemoveProperty("key")
+			Ω(err).NotTo(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+	})
 })
 
 // It("process.wait returns the exit status", func() {

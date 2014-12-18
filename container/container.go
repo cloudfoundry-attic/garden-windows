@@ -172,13 +172,49 @@ func (container *container) Attach(uint32, api.ProcessIO) (api.Process, error) {
 }
 
 func (container *container) GetProperty(name string) (string, error) {
-	return "A Property Value", nil
+	url := container.containerizerURL.String() + "/api/containers/" + container.Handle() + "/properties/" + name
+	response, err := http.Get(url)
+	defer response.Body.Close()
+	if err != nil {
+		return "", err
+	}
+	property, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return "", err
+	}
+	return string(property), nil
 }
 
 func (container *container) SetProperty(name string, value string) error {
+	url := container.containerizerURL.String() + "/api/containers/" + container.Handle() + "/properties/" + name
+
+	request, err := http.NewRequest("PUT", url, strings.NewReader("[\""+value+"\"]"))
+	if err != nil {
+		return err
+	}
+	request.Header.Set("Content-Type", "application/json")
+	response, err := http.DefaultClient.Do(request)
+	if err != nil {
+		return err
+	}
+
+	response.Body.Close()
 	return nil
 }
+
 func (container *container) RemoveProperty(name string) error {
+	url := container.containerizerURL.String() + "/api/containers/" + container.Handle() + "/properties/" + name
+
+	request, err := http.NewRequest("DELETE", url, strings.NewReader(""))
+	if err != nil {
+		return err
+	}
+	response, err := http.DefaultClient.Do(request)
+	if err != nil {
+		return err
+	}
+
+	response.Body.Close()
 	return nil
 }
 
