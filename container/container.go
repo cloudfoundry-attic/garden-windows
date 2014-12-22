@@ -236,7 +236,7 @@ func (container *container) SetProperty(name string, value string) error {
 		"property": name,
 		"url":      requestUrl,
 	})
-	request, err := http.NewRequest("PUT", requestUrl.String(), strings.NewReader("[\""+value+"\"]"))
+	request, err := http.NewRequest("PUT", requestUrl.String(), strings.NewReader(value))
 	if err != nil {
 		return err
 	}

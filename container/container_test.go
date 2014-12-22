@@ -367,18 +367,26 @@ var _ = Describe("container", func() {
 	})
 
 	Describe("SetProperty", func() {
+		payloadText := "value"
+
 		BeforeEach(func() {
 			server.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("PUT", "/api/containers/containerhandle/properties/key"),
-					ghttp.VerifyJSON("[\"value\"]"),
+					func() http.HandlerFunc {
+						return func(w http.ResponseWriter, req *http.Request) {
+							body, err := ioutil.ReadAll(req.Body)
+							Ω(err).NotTo(HaveOccurred())
+							Ω(string(body)).Should(Equal(payloadText))
+						}
+					}(),
 					ghttp.RespondWith(200, "a body that doesn't matter"),
 				),
 			)
 		})
 
 		It("makes a call out to an external service", func() {
-			err := container.SetProperty("key", "value")
+			err := container.SetProperty("key", payloadText)
 			Ω(err).NotTo(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
