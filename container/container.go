@@ -15,11 +15,13 @@ import (
 	"github.com/pivotal-cf-experimental/garden-dot-net/process"
 
 	"code.google.com/p/go.net/websocket"
+	"github.com/pivotal-golang/lager"
 )
 
 type container struct {
 	containerizerURL url.URL
 	handle           string
+	logger           lager.Logger
 }
 
 type netInResponse struct {
@@ -33,10 +35,11 @@ type ProcessStreamEvent struct {
 	Data           string          `json:"data"`
 }
 
-func NewContainer(containerizerURL url.URL, handle string) *container {
+func NewContainer(containerizerURL url.URL, handle string, logger lager.Logger) *container {
 	return &container{
 		containerizerURL: containerizerURL,
 		handle:           handle,
+		logger:           logger,
 	}
 }
 
@@ -50,8 +53,14 @@ func (container *container) Stop(kill bool) error {
 
 func (container *container) Info() (api.ContainerInfo, error) {
 	url := container.containerizerURL.String() + "/api/containers/" + container.Handle() + "/properties"
+	container.logger.Info("GETTING INFO", lager.Data{
+		"url": url,
+	})
 	response, err := http.Get(url)
 	if err != nil {
+		container.logger.Info("ERROR GETTING PROPERTIES", lager.Data{
+			"error": err,
+		})
 		return api.ContainerInfo{}, err
 	}
 	defer response.Body.Close()
@@ -62,9 +71,15 @@ func (container *container) Info() (api.ContainerInfo, error) {
 	properties := api.Properties{}
 	err = json.Unmarshal(rawJSON, &properties)
 	if err != nil {
+		container.logger.Info("ERROR UNMARSHALING PROPERTIES", lager.Data{
+			"error": err,
+		})
 		return api.ContainerInfo{}, nil
 	}
 	containerInfo := api.ContainerInfo{Properties: properties}
+	container.logger.Info("CONTAINER INFO", lager.Data{
+		"containerInfo": containerInfo,
+	})
 
 	return containerInfo, nil
 }
@@ -205,6 +220,9 @@ func (container *container) GetProperty(name string) (string, error) {
 func (container *container) SetProperty(name string, value string) error {
 	url := container.containerizerURL.String() + "/api/containers/" + container.Handle() + "/properties/" + name
 
+	container.logger.Info("SETTING PROPERTY", lager.Data{
+		"url": url,
+	})
 	request, err := http.NewRequest("PUT", url, strings.NewReader("[\""+value+"\"]"))
 	if err != nil {
 		return err

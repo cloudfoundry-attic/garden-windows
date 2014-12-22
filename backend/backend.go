@@ -11,19 +11,22 @@ import (
 
 	"github.com/cloudfoundry-incubator/garden/api"
 	"github.com/pivotal-cf-experimental/garden-dot-net/container"
+	"github.com/pivotal-golang/lager"
 )
 
 type dotNetBackend struct {
 	containerizerURL url.URL
+        logger lager.Logger 
 }
 
-func NewDotNetBackend(containerizerURL string) (*dotNetBackend, error) {
+func NewDotNetBackend(containerizerURL string, logger lager.Logger) (*dotNetBackend, error) {
 	u, err := url.Parse(containerizerURL)
 	if err != nil {
 		return nil, err
 	}
 	return &dotNetBackend{
 		containerizerURL: *u,
+		logger: logger,
 	}, nil
 }
 
@@ -71,7 +74,7 @@ func (dotNetBackend *dotNetBackend) Create(containerSpec api.ContainerSpec) (api
 	}
 	resp.Body.Close()
 
-	netContainer := container.NewContainer(dotNetBackend.containerizerURL, containerSpec.Handle)
+	netContainer := container.NewContainer(dotNetBackend.containerizerURL, containerSpec.Handle, dotNetBackend.logger)
 	return netContainer, nil
 }
 
@@ -103,12 +106,12 @@ func (dotNetBackend *dotNetBackend) Containers(api.Properties) ([]api.Container,
 
 	containers := []api.Container{}
 	for _, containerId := range ids {
-		containers = append(containers, container.NewContainer(dotNetBackend.containerizerURL, containerId))
+		containers = append(containers, container.NewContainer(dotNetBackend.containerizerURL, containerId, dotNetBackend.logger))
 	}
 	return containers, nil
 }
 
 func (dotNetBackend *dotNetBackend) Lookup(handle string) (api.Container, error) {
-	netContainer := container.NewContainer(dotNetBackend.containerizerURL, handle)
+	netContainer := container.NewContainer(dotNetBackend.containerizerURL, handle, dotNetBackend.logger)
 	return netContainer, nil
 }

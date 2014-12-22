@@ -9,6 +9,7 @@ import (
 	"github.com/cloudfoundry-incubator/garden/api"
 	"github.com/pivotal-cf-experimental/garden-dot-net/backend"
 	"github.com/pivotal-cf-experimental/garden-dot-net/container"
+	"github.com/pivotal-golang/lager/lagertest"
 
 	"time"
 
@@ -19,10 +20,12 @@ var _ = Describe("backend", func() {
 	var server *ghttp.Server
 	var dotNetBackend api.Backend
 	var serverUri *url.URL
+	var logger *lagertest.TestLogger
 
 	BeforeEach(func() {
 		server = ghttp.NewServer()
-		dotNetBackend, _ = backend.NewDotNetBackend(server.URL())
+		logger = lagertest.NewTestLogger("backend")
+		dotNetBackend, _ = backend.NewDotNetBackend(server.URL(), logger)
 		serverUri, _ = url.Parse(server.URL())
 	})
 
@@ -46,8 +49,8 @@ var _ = Describe("backend", func() {
 			containers, err := dotNetBackend.Containers(nil)
 			Ω(err).NotTo(HaveOccurred())
 			Ω(containers).Should(Equal([]api.Container{
-				container.NewContainer(*serverUri, "MyFirstContainer"),
-				container.NewContainer(*serverUri, "MySecondContainer"),
+				container.NewContainer(*serverUri, "MyFirstContainer", logger),
+				container.NewContainer(*serverUri, "MySecondContainer", logger),
 			}))
 		})
 	})

@@ -16,6 +16,7 @@ import (
 	"code.google.com/p/go.net/websocket"
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/ghttp"
+	"github.com/pivotal-golang/lager/lagertest"
 
 	"net/http"
 	"net/url"
@@ -28,11 +29,13 @@ func uint64ptr(n uint64) *uint64 {
 var _ = Describe("container", func() {
 	var server *ghttp.Server
 	var container api.Container
+	var logger *lagertest.TestLogger
 
 	BeforeEach(func() {
 		server = ghttp.NewServer()
 		u, _ := url.Parse(server.URL())
-		container = netContainer.NewContainer(*u, "containerhandle")
+		logger = lagertest.NewTestLogger("container")
+		container = netContainer.NewContainer(*u, "containerhandle", logger)
 	})
 
 	AfterEach(func() {
@@ -184,7 +187,7 @@ var _ = Describe("container", func() {
 		})
 
 		JustBeforeEach(func() {
-			container = netContainer.NewContainer(*testServer.Url, "containerhandle")
+			container = netContainer.NewContainer(*testServer.Url, "containerhandle", logger)
 		})
 
 		AfterEach(func() {
