@@ -141,12 +141,11 @@ var _ = Describe("backend", func() {
 			})
 		})
 
-
 		Context("windows containerizer server is down", func() {
 			BeforeEach(func() {
 				server.Close()
 			})
-			
+
 			It("returns an error", func() {
 				err := dotNetBackend.Ping()
 				Ω(err).To(HaveOccurred())

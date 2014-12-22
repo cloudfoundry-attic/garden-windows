@@ -1,13 +1,13 @@
 package container
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 
-	"encoding/json"
 	"errors"
 	"strings"
 
@@ -49,7 +49,24 @@ func (container *container) Stop(kill bool) error {
 }
 
 func (container *container) Info() (api.ContainerInfo, error) {
-	return api.ContainerInfo{}, nil
+	url := container.containerizerURL.String() + "/api/containers/" + container.Handle() + "/properties"
+	response, err := http.Get(url)
+	if err != nil {
+		return api.ContainerInfo{}, err
+	}
+	defer response.Body.Close()
+	rawJSON, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return api.ContainerInfo{}, err
+	}
+	properties := api.Properties{}
+	err = json.Unmarshal(rawJSON, &properties)
+	if err != nil {
+		return api.ContainerInfo{}, nil
+	}
+	containerInfo := api.ContainerInfo{Properties: properties}
+
+	return containerInfo, nil
 }
 
 func (container *container) StreamIn(dstPath string, tarStream io.Reader) error {
