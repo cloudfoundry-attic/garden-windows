@@ -204,10 +204,20 @@ func (container *container) Attach(uint32, api.ProcessIO) (api.Process, error) {
 }
 
 func (container *container) GetProperty(name string) (string, error) {
-	url := container.containerizerURL.String() + "/api/containers/" + container.Handle() + "/properties/" + name
-	response, err := http.Get(url)
+	name = strings.Replace(name, ":", "♥", -1)
+	requestUrl := container.containerizerURL
+	requestUrl.Path += "/api/containers/" + container.Handle() + "/properties/" + name
+	container.logger.Info("GET PROPERTY", lager.Data{
+		"property": name,
+		"url":      requestUrl,
+	})
+	response, err := http.Get(requestUrl.String())
 	defer response.Body.Close()
+
 	if err != nil {
+		container.logger.Info("NO GET FOR YOU!", lager.Data{
+			"error": err,
+		})
 		return "", err
 	}
 	property, err := ioutil.ReadAll(response.Body)
@@ -218,12 +228,14 @@ func (container *container) GetProperty(name string) (string, error) {
 }
 
 func (container *container) SetProperty(name string, value string) error {
-	url := container.containerizerURL.String() + "/api/containers/" + container.Handle() + "/properties/" + name
-
-	container.logger.Info("SETTING PROPERTY", lager.Data{
-		"url": url,
+	name = strings.Replace(name, ":", "♥", -1)
+	requestUrl := container.containerizerURL
+	requestUrl.Path += "/api/containers/" + container.Handle() + "/properties/" + name
+	container.logger.Info("SET PROPERTY", lager.Data{
+		"property": name,
+		"url":      requestUrl,
 	})
-	request, err := http.NewRequest("PUT", url, strings.NewReader("[\""+value+"\"]"))
+	request, err := http.NewRequest("PUT", requestUrl.String(), strings.NewReader("[\""+value+"\"]"))
 	if err != nil {
 		return err
 	}
@@ -238,9 +250,14 @@ func (container *container) SetProperty(name string, value string) error {
 }
 
 func (container *container) RemoveProperty(name string) error {
-	url := container.containerizerURL.String() + "/api/containers/" + container.Handle() + "/properties/" + name
-
-	request, err := http.NewRequest("DELETE", url, strings.NewReader(""))
+	name = strings.Replace(name, ":", "♥", -1)
+	requestUrl := container.containerizerURL
+	requestUrl.Path += "/api/containers/" + container.Handle() + "/properties/" + name
+	container.logger.Info("REMOVING PROPERTY", lager.Data{
+		"property": name,
+		"url":      requestUrl,
+	})
+	request, err := http.NewRequest("DELETE", requestUrl.String(), strings.NewReader(""))
 	if err != nil {
 		return err
 	}
