@@ -228,6 +228,7 @@ func (container *container) GetProperty(name string) (string, error) {
 }
 
 func (container *container) SetProperty(name string, value string) error {
+	//We need to substitute colons with something else, otherwise IIS treats the last part of the URL as a port definition
 	name = strings.Replace(name, ":", "♥", -1)
 	requestUrl := container.containerizerURL
 	requestUrl.Path += "/api/containers/" + container.Handle() + "/properties/" + name
@@ -250,6 +251,7 @@ func (container *container) SetProperty(name string, value string) error {
 }
 
 func (container *container) RemoveProperty(name string) error {
+	//We need to substitute colons with something else, otherwise IIS treats the last part of the URL as a port definition
 	name = strings.Replace(name, ":", "♥", -1)
 	requestUrl := container.containerizerURL
 	requestUrl.Path += "/api/containers/" + container.Handle() + "/properties/" + name
