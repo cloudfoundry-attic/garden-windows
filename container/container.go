@@ -76,7 +76,17 @@ func (container *container) Info() (api.ContainerInfo, error) {
 		})
 		return api.ContainerInfo{}, nil
 	}
-	containerInfo := api.ContainerInfo{Properties: properties}
+	mappedPorts := api.PortMapping{
+		HostPort:      8080,
+		ContainerPort: 8080,
+	}
+	containerInfo := api.ContainerInfo{
+		Properties:  properties,
+		HostIP:      "HOST_IP",
+		ContainerIP: "CONTAINER_IP",
+		ExternalIP:  "EXTERNAL_IP",
+		MappedPorts: []api.PortMapping{mappedPorts},
+	}
 	container.logger.Info("CONTAINER INFO", lager.Data{
 		"containerInfo": containerInfo,
 	})
