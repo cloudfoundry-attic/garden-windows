@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Web.Administration;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 using NSpec;
 
 namespace Containerizer.Tests.Specs.Features
@@ -43,11 +44,15 @@ namespace Containerizer.Tests.Specs.Features
                 context["when I post a request"] = () =>
                 {
                     string handle = null;
+                    string propertyKey = "awesome";
+                    string propertyValue = "sauce";
+
                     before = () =>
                     {
                         handle = Guid.NewGuid().ToString() + "-" + Guid.NewGuid().ToString();
                         Task<HttpResponseMessage> postTask = client.PostAsync("/api/Containers",
-                            new StringContent("{Handle: \"" + handle + "\"}"));
+                            new StringContent(
+                                "{\"Handle\": \"" + handle + "\", \"Properties\":{\""+ propertyKey + "\":\"" + propertyValue + "\"}}"));
                         postTask.Wait();
                         HttpResponseMessage postResult = postTask.Result;
                         Task<string> readTask = postResult.Content.ReadAsStringAsync();
@@ -57,26 +62,17 @@ namespace Containerizer.Tests.Specs.Features
                         id = json["id"].ToString();
                     };
 
-                    it["should receive the container's id in the response"] = () => { id.should_not_be_empty(); };
-
-                    it["the response id should equal the passed in handle"] = () =>
+                    it["creates the container"] = () =>
                     {
                         id.should_be(handle);
-                    };
 
-                    describe["observable IIS side effects"] = () =>
-                    {
-                        before = () => { serverManager = ServerManager.OpenRemote("localhost"); };
+                        var listResponse = client.GetAsync("/api/Containers").Result.Content.ReadAsJsonArray();
+                        listResponse.Values<string>().Contains(handle).should_be_true();
 
-                        it["should see a new site with the container's id"] =
-                            () => { serverManager.Sites.should_contain(x => x.Name == id); };
-
-                        it["the site should have a new app pool with same name as the container's id"] =
-                            () =>
-                            {
-                                serverManager.Sites.First(x => x.Name == id).Applications[0].ApplicationPoolName
-                                    .should_be(id.Replace("-", "").Substring(0,64));
-                            };
+                        var propertyResponse =
+                            client.GetAsync("/api/Containers/" + handle + "/properties/" + propertyKey)
+                                .Result.Content.ReadAsJson();
+                        propertyResponse["value"].ToString().should_be(propertyValue);
                     };
                 };
             };

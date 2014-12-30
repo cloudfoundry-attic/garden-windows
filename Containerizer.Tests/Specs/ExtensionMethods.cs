@@ -21,5 +21,10 @@ namespace Containerizer.Tests.Specs
         {
             return JObject.Parse(content.ReadAsString());
         }
+
+        public static JArray ReadAsJsonArray(this HttpContent content)
+        {
+            return JArray.Parse(content.ReadAsString());
+        }
     }
 }

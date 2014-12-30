@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Http;
 using Containerizer.Controllers;
 using Containerizer.Services.Interfaces;
@@ -12,6 +14,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NSpec;
 using Containerizer.Tests.Specs;
+using Microsoft.Web.Administration;
 
 namespace Containerizer.Tests.Specs.Controllers
 {
@@ -23,6 +26,7 @@ namespace Containerizer.Tests.Specs.Controllers
         private Mock<IStreamInService> mockStreamInService;
         private Mock<IStreamOutService> mockStreamOutService;
         private Mock<INetInService> mockNetInService;
+        private Mock<IMetadataService> mockMetadataService;
 
         private void before_each()
         {
@@ -31,9 +35,10 @@ namespace Containerizer.Tests.Specs.Controllers
             mockStreamOutService = new Mock<IStreamOutService>();
             mockStreamInService = new Mock<IStreamInService>();
             mockNetInService = new Mock<INetInService>();
+            mockMetadataService = new Mock<IMetadataService>();
             containersController = new ContainersController(mockContainerPathService.Object,
                 mockCreateContainerService.Object, mockStreamInService.Object,
-                mockStreamOutService.Object, mockNetInService.Object)
+                mockStreamOutService.Object, mockNetInService.Object, mockMetadataService.Object)
             {
                 Configuration = new HttpConfiguration(),
                 Request = new HttpRequestMessage()
@@ -45,43 +50,53 @@ namespace Containerizer.Tests.Specs.Controllers
         {
             HttpResponseMessage result = null;
 
-                before = () =>
-                {
-                    mockContainerPathService.Setup(x => x.ContainerIds()).Returns(new List<string>{ {"MyFirstContainer"}, {"MySecondContainer"}  });
-                   result = containersController.List()
-                       .GetAwaiter()
-                       .GetResult()
-                       .ExecuteAsync(new CancellationToken())
-                       .GetAwaiter()
-                       .GetResult();
-                };
+            before = () =>
+            {
+                mockContainerPathService.Setup(x => x.ContainerIds()).Returns(new List<string> { { "MyFirstContainer" }, { "MySecondContainer" } });
+                result = containersController.List()
+                    .GetAwaiter()
+                    .GetResult()
+                    .ExecuteAsync(new CancellationToken())
+                    .GetAwaiter()
+                    .GetResult();
+            };
 
-                it["returns a successful status code"] = () =>
-                {
-                    result.IsSuccessStatusCode.should_be_true();
-                };
+            it["returns a successful status code"] = () =>
+            {
+                result.IsSuccessStatusCode.should_be_true();
+            };
 
-                it["returns a list of container ids as strings"] = () =>
-                {
-                    var jsonString = result.Content.ReadAsString(); // Json();
-                    var json = JsonConvert.DeserializeObject<string[]>(jsonString);
-                    json.should_contain("MyFirstContainer");
-                    json.should_contain("MySecondContainer");
-                };
-            
+            it["returns a list of container ids as strings"] = () =>
+            {
+                var jsonString = result.Content.ReadAsString(); // Json();
+                var json = JsonConvert.DeserializeObject<string[]>(jsonString);
+                json.should_contain("MyFirstContainer");
+                json.should_contain("MySecondContainer");
+            };
         }
 
         private void describe_post()
         {
             context["when the container is created successfully"] = () =>
             {
-                string containerId = null;
-
+                string containerHandle = null;
+                Dictionary<string, string> properties = null;
+                string key = null;
+                string value = null;
+                
                 before = () =>
                 {
-                    containerId = Guid.NewGuid().ToString();
+                    containerHandle = Guid.NewGuid().ToString();
+                    key = "hiwillyou";
+                    value = "bemyfriend";
+                    properties = new Dictionary<string, string>()
+                    {
+                        {key, value}
+                    };
+
                     mockCreateContainerService.Setup(x => x.CreateContainer(It.IsAny<String>())).Returns((String x) => Task.FromResult(x));
-                    containersController.Request.Content = new StringContent("{Handle: \"" + containerId + "\"}");
+                    containersController.Request.Content = 
+                        new StringContent("{Handle: \"" + containerHandle + "\", Properties:{\"" + key + "\": \"" + value + "\"}}");
                 };
 
                 it["returns a successful status code"] = () =>
@@ -100,7 +115,13 @@ namespace Containerizer.Tests.Specs.Controllers
                     Task<string> readTask = resultTask.Result.Content.ReadAsStringAsync();
                     readTask.Wait();
                     JObject json = JObject.Parse(readTask.Result);
-                    json["id"].ToString().should_be(containerId);
+                    json["id"].ToString().should_be(containerHandle);
+                };
+
+                it["sets metadata"] = () =>
+                {
+                    containersController.Post().Wait();
+                    mockMetadataService.Verify(x => x.BulkSetMetadata(containerHandle, It.Is((Dictionary<string,string> y) => y[key] == value)));
                 };
             };
             context["when the container is not created successfully"] = () =>
@@ -121,6 +142,27 @@ namespace Containerizer.Tests.Specs.Controllers
                     resultTask.Wait();
                     resultTask.Result.IsSuccessStatusCode.should_be_false();
                 };
+            };
+
+            context["when metadata properties are not passed to the endpoint"] = () =>
+            {
+                before = () =>
+                {
+                    string containerHandle = null;
+                    containerHandle = Guid.NewGuid().ToString();
+
+                    mockCreateContainerService.Setup(x => x.CreateContainer(It.IsAny<String>())).Returns((String x) => Task.FromResult(x));
+                    containersController.Request.Content = 
+                        new StringContent("{Handle: \"" + containerHandle + "\"}");
+                };
+
+                it["returns a successful status code"] = () =>
+                {
+                    containersController.Post().Result
+                        .ExecuteAsync(new CancellationToken()).Result
+                        .IsSuccessStatusCode.should_be_true();
+                };
+
             };
         }
 
@@ -201,7 +243,7 @@ namespace Containerizer.Tests.Specs.Controllers
 
             act = () =>
             {
-                containersController.Request.Content = new FormUrlEncodedContent(new List<KeyValuePair<string,string>>
+                containersController.Request.Content = new FormUrlEncodedContent(new List<KeyValuePair<string, string>>
                 {
                     new KeyValuePair<string, string>("hostPort", requestedContainerPort.ToString())
                 });
@@ -234,6 +276,39 @@ namespace Containerizer.Tests.Specs.Controllers
                     JObject json = result.Content.ReadAsJson();
                     json["hostPort"].ToObject<int>().should_be(8765);
                 };
+            };
+        }
+
+        private void describe_get_property()
+        {
+            string containerId = null;
+            IHttpActionResult result = null;
+            string propertyValue = null;
+
+            before = () =>
+            {
+                containerId = Guid.NewGuid().ToString();
+                propertyValue = "a lion, a hippo, the number 25";
+                mockMetadataService.Setup(x => x.GetMetadata(It.IsIn(new []{containerId}), It.IsIn(new []{"key"})))
+                    .Returns(() =>
+                    {
+                        return propertyValue;
+                    });
+
+                result = containersController
+                    .GetProperty(containerId, "key").GetAwaiter().GetResult();
+            };
+
+
+            it["returns a successful status code"] = () =>
+            {
+                result.ExecuteAsync(new CancellationToken()).Result.IsSuccessStatusCode.should_be_true();
+            };
+
+            it["returns the correct property value"] = () =>
+            {
+                result.ExecuteAsync(new CancellationToken()).Result.Content.ReadAsJson()["value"].ToString().should_be(
+                    propertyValue);
             };
         }
     }

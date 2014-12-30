@@ -21,6 +21,7 @@ namespace Containerizer
             containerBuilder.RegisterType<StreamInService>().As<IStreamInService>();
             containerBuilder.RegisterType<StreamOutService>().As<IStreamOutService>();
             containerBuilder.RegisterType<TarStreamService>().As<ITarStreamService>();
+            containerBuilder.RegisterType<MetadataService>().As<IMetadataService>();
             containerBuilder.RegisterType<ContainersController>();
             container = containerBuilder.Build();
         }

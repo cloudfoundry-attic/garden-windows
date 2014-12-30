@@ -1,7 +1,11 @@
-﻿using System.Collections.Generic;
+﻿#region
+
+using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
@@ -10,7 +14,10 @@ using Containerizer.Services.Implementations;
 using Containerizer.Services.Interfaces;
 using Microsoft.Web.WebSockets;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
+
+#endregion
 
 namespace Containerizer.Controllers
 {
@@ -26,21 +33,32 @@ namespace Containerizer.Controllers
         public int HostPort { get; set; }
     }
 
+    public class GetPropertyResponse
+    {
+        [JsonProperty("value")]
+        public string Value { get; set; }
+    }
+
     public class ContainersController : ApiController
     {
         private readonly IContainerPathService containerPathService;
         private readonly ICreateContainerService createContainerService;
+        private readonly INetInService netInService;
         private readonly IStreamInService streamInService;
         private readonly IStreamOutService streamOutService;
-        private readonly INetInService netInService;
+        private IMetadataService metadataService;
 
-        public ContainersController(IContainerPathService containerPathService, ICreateContainerService createContainerService, IStreamInService streamInService, IStreamOutService streamOutService, INetInService netInService)
+
+        public ContainersController(IContainerPathService containerPathService,
+            ICreateContainerService createContainerService, IStreamInService streamInService,
+            IStreamOutService streamOutService, INetInService netInService, IMetadataService metadataService)
         {
             this.containerPathService = containerPathService;
             this.createContainerService = createContainerService;
             this.streamOutService = streamOutService;
             this.streamInService = streamInService;
             this.netInService = netInService;
+            this.metadataService = metadataService;
         }
 
         [Route("api/containers")]
@@ -56,10 +74,16 @@ namespace Containerizer.Controllers
         {
             try
             {
-                var content = await Request.Content.ReadAsStringAsync();
+                string content = await Request.Content.ReadAsStringAsync();
                 JObject json = JObject.Parse(content);
                 string id = await createContainerService.CreateContainer(json["Handle"].ToString());
-                return Json(new CreateResponse {Id = id});
+
+                if (json["Properties"] != null)
+                {
+                    var properties = JsonConvert.DeserializeObject<Dictionary<string, string>>(json["Properties"].ToString());
+                    metadataService.BulkSetMetadata(id, properties);
+                }
+                return Json(new CreateResponse { Id = id });
             }
             catch (CouldNotCreateContainerException ex)
             {
@@ -81,7 +105,8 @@ namespace Containerizer.Controllers
         [HttpGet]
         public Task<HttpResponseMessage> Run(string id)
         {
-            HttpContext.Current.AcceptWebSocketRequest(new ContainerProcessHandler(id, new ContainerPathService(), new ProcessFacade()));
+            HttpContext.Current.AcceptWebSocketRequest(new ContainerProcessHandler(id, new ContainerPathService(),
+                new ProcessFacade()));
             HttpResponseMessage response = Request.CreateResponse(HttpStatusCode.SwitchingProtocols);
             return Task.FromResult(response);
         }
@@ -100,12 +125,86 @@ namespace Containerizer.Controllers
         [HttpPost]
         public async Task<IHttpActionResult> NetIn(string id)
         {
-            var formData = await Request.Content.ReadAsFormDataAsync();
+            NameValueCollection formData = await Request.Content.ReadAsFormDataAsync();
 
-            var hostPort = int.Parse(formData.Get("hostPort"));
+            int hostPort = int.Parse(formData.Get("hostPort"));
             hostPort = netInService.AddPort(hostPort, id);
-            return Json(new NetInResponse {HostPort = hostPort});
+            return Json(new NetInResponse { HostPort = hostPort });
         }
 
+        [Route("api/containers/{handle}/properties/{propertyKey}")]
+        [HttpGet]
+        public async Task<IHttpActionResult> GetProperty(string handle, string propertyKey)
+        {
+            return
+                Json(new GetPropertyResponse
+                {
+                    Value = metadataService.GetMetadata(handle, propertyKey),
+                });
+        }
+
+        [Route("api/containers/{id}/properties/{propertyKey}")]
+        [HttpPut]
+        public async Task<IHttpActionResult> SetProperty(string id, string propertyKey)
+        {
+            propertyKey = propertyKey.Replace("♥", ":");
+            string requestBody = await Request.Content.ReadAsStringAsync();
+            HttpApplicationState application = HttpContext.Current.Application;
+            if (application[id] == null)
+            {
+                application[id] = new Dictionary<string, string>();
+                ((Dictionary<string, string>)application[id])["tag:foo"] = "bar";
+            }
+            ((Dictionary<string, string>)HttpContext.Current.Application[id])[propertyKey] = requestBody;
+            return Json(new GetPropertyResponse { Value = "I did a thing" });
+        }
+
+        [Route("api/containers/{id}/properties")]
+        [HttpGet]
+        public Task<HttpResponseMessage> GetProperties(string id)
+        {
+            var dictionary = (Dictionary<string, string>)HttpContext.Current.Application[id];
+            if (dictionary == null)
+            {
+                string ourJson = "{}";
+                var emptyResponse = new HttpResponseMessage
+                {
+                    Content = new StringContent(
+                        ourJson,
+                        Encoding.UTF8,
+                        "application/json"
+                        )
+                };
+                return Task.FromResult(emptyResponse);
+            }
+            string jsonDictionary = JsonConvert.SerializeObject(dictionary, new KeyValuePairConverter());
+
+            var response = new HttpResponseMessage
+            {
+                Content = new StringContent(
+                    jsonDictionary,
+                    Encoding.UTF8,
+                    "application/json"
+                    )
+            };
+            return Task.FromResult(response);
+        }
+
+        [Route("api/containers/{id}/properties/{propertyKey}")]
+        [HttpDelete]
+        public async Task<HttpResponseMessage> RemoveProperty(string id, string propertyKey)
+        {
+            return Request.CreateResponse(HttpStatusCode.OK);
+        }
+
+        [Route("api/containers/{id}")]
+        [HttpDelete]
+        public async Task<HttpResponseMessage> DeleteContainer(string id)
+        {
+            //ServerManager serverManager = ServerManager.OpenRemote("localhost");
+            //Site site = serverManager.Sites[id];
+            //site.Stop();
+            return Request.CreateResponse(HttpStatusCode.OK);
+        }
     }
 }
