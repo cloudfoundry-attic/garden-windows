@@ -351,14 +351,14 @@ var _ = Describe("container", func() {
 		BeforeEach(func() {
 			server.AppendHandlers(
 				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/api/containers/containerhandle/properties/key"),
+					ghttp.VerifyRequest("GET", "/api/containers/containerhandle/properties/key%3Aval"),
 					ghttp.RespondWith(200, "a value"),
 				),
 			)
 		})
 
 		It("makes a call out to an external service", func() {
-			property, err := container.GetProperty("key")
+			property, err := container.GetProperty("key:val")
 			Ω(err).NotTo(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 

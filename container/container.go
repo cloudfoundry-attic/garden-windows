@@ -43,6 +43,12 @@ func NewContainer(containerizerURL url.URL, handle string, logger lager.Logger) 
 	}
 }
 
+func (container *container) sanitizeUrl(url string) string {
+	//We need to substitute colons with something else, otherwise IIS treats the last part of the URL as a port definition
+	url = strings.Replace(url, ":", "%3A", -1)
+	return url
+}
+
 func (container *container) Handle() string {
 	return container.handle
 }
@@ -214,7 +220,7 @@ func (container *container) Attach(uint32, api.ProcessIO) (api.Process, error) {
 }
 
 func (container *container) GetProperty(name string) (string, error) {
-	name = strings.Replace(name, ":", "♥", -1)
+	name = container.sanitizeUrl(name)
 	requestUrl := container.containerizerURL
 	requestUrl.Path += "/api/containers/" + container.Handle() + "/properties/" + name
 	container.logger.Info("GET PROPERTY", lager.Data{
@@ -238,8 +244,7 @@ func (container *container) GetProperty(name string) (string, error) {
 }
 
 func (container *container) SetProperty(name string, value string) error {
-	//We need to substitute colons with something else, otherwise IIS treats the last part of the URL as a port definition
-	name = strings.Replace(name, ":", "♥", -1)
+	name = container.sanitizeUrl(name)
 	requestUrl := container.containerizerURL
 	requestUrl.Path += "/api/containers/" + container.Handle() + "/properties/" + name
 	container.logger.Info("SET PROPERTY", lager.Data{
@@ -261,8 +266,7 @@ func (container *container) SetProperty(name string, value string) error {
 }
 
 func (container *container) RemoveProperty(name string) error {
-	//We need to substitute colons with something else, otherwise IIS treats the last part of the URL as a port definition
-	name = strings.Replace(name, ":", "♥", -1)
+	name = container.sanitizeUrl(name)
 	requestUrl := container.containerizerURL
 	requestUrl.Path += "/api/containers/" + container.Handle() + "/properties/" + name
 	container.logger.Info("REMOVING PROPERTY", lager.Data{
