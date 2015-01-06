@@ -46,7 +46,6 @@ namespace Containerizer.Controllers
         [HttpPut]
         public async Task<IHttpActionResult> Update(string id, string propertyKey)
         {
-            propertyKey = propertyKey.Replace("♥", ":");
             string requestBody = await Request.Content.ReadAsStringAsync();
             HttpApplicationState application = HttpContext.Current.Application;
             if (application[id] == null)
