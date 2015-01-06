@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Web.Http;
 using Containerizer.Controllers;
+using Containerizer.Services.Implementations;
 using Containerizer.Services.Interfaces;
 using Moq;
 using NSpec;
@@ -27,6 +28,23 @@ namespace Containerizer.Tests.Specs.Controllers
 
             };
 
+            Mock<IMetadataService> mockMetadataService = null;
+            PropertiesController propertiesController = null;
+            string containerHandle = null;
+            string key = null;
+
+            before = () =>
+            {
+                mockMetadataService = new Mock<IMetadataService>();
+                propertiesController = new PropertiesController(mockMetadataService.Object)
+                {
+                    Configuration = new HttpConfiguration(),
+                    Request = new HttpRequestMessage()
+                };
+                containerHandle = Guid.NewGuid().ToString();
+                key = "some:key";
+            };
+
             describe["Show"] = () =>
             {
                 IHttpActionResult result = null;
@@ -34,22 +52,14 @@ namespace Containerizer.Tests.Specs.Controllers
 
                 before = () =>
                 {
-                    var mockMetadataService = new Mock<IMetadataService>();
-                    var propertiesController = new PropertiesController(mockMetadataService.Object)
-                    {
-                        Configuration = new HttpConfiguration(),
-                        Request = new HttpRequestMessage()
-                    };
-                    string containerId = Guid.NewGuid().ToString();
                     propertyValue = "a lion, a hippo, the number 25";
-                    mockMetadataService.Setup(x => x.GetMetadata(It.IsIn(new[] { containerId }), It.IsIn(new[] { "key" })))
+                    mockMetadataService.Setup(x => x.GetMetadata(It.IsIn(new[] { containerHandle }), It.IsIn(new[] { key })))
                         .Returns(() =>
                         {
                             return propertyValue;
                         });
 
-                    result = propertiesController
-                        .Show(containerId, "key").GetAwaiter().GetResult();
+                    result = propertiesController.Show(containerHandle, key).GetAwaiter().GetResult();
                 };
 
 
@@ -77,9 +87,12 @@ namespace Containerizer.Tests.Specs.Controllers
 
             describe["Destroy"] = () =>
             {
-
+                it["calls the propertyService destroy method"] = () =>
+                {
+                    propertiesController.Destroy(containerHandle, key).Wait();
+                    mockMetadataService.Verify(x => x.Destroy(containerHandle, key));
+                };
             };
-
         }
     }
 }

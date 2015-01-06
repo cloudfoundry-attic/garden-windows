@@ -11,5 +11,6 @@ namespace Containerizer.Services.Interfaces
         string GetMetadata(string handle, string key);
         void SetMetadata(string handle, string key, string value);
         void BulkSetMetadata(string handle, Dictionary<string, string> properties);
+        void Destroy(string handle, string key);
     }
 }

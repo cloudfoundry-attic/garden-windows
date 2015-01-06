@@ -25,5 +25,10 @@ namespace Containerizer.Services.Implementations
         {
             HttpContext.Current.Application[handle] = properties;
         }
+
+        public void Destroy(string handle, string key)
+        {
+            ((Dictionary<string, string>) HttpContext.Current.Application[handle]).Remove(key);
+        }
     }
 }

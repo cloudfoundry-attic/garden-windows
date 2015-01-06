@@ -51,7 +51,6 @@ namespace Containerizer.Controllers
             if (application[id] == null)
             {
                 application[id] = new Dictionary<string, string>();
-                ((Dictionary<string, string>) application[id])["tag:foo"] = "bar";
             }
             ((Dictionary<string, string>) HttpContext.Current.Application[id])[propertyKey] = requestBody;
             return Json(new GetPropertyResponse {Value = "I did a thing"});
@@ -88,10 +87,12 @@ namespace Containerizer.Controllers
             return Task.FromResult(response);
         }
 
-        [Route("api/containers/{id}/properties/{propertyKey}")]
+        [Route("api/containers/{handle}/properties/{key}")]
         [HttpDelete]
-        public async Task<HttpResponseMessage> Destroy(string id, string propertyKey)
+        public async Task<HttpResponseMessage> Destroy(string handle, string key)
         {
+
+            metadataService.Destroy(handle, key);
             return Request.CreateResponse(HttpStatusCode.OK);
         }
     }
