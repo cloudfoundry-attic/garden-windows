@@ -1,4 +1,6 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.WebSockets;
@@ -6,6 +8,8 @@ using System.Text;
 using System.Threading;
 using Containerizer.Services.Implementations;
 using NSpec;
+
+#endregion
 
 namespace Containerizer.Tests.Specs.Features
 {

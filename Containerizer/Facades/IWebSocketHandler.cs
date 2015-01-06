@@ -1,6 +1,10 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.Threading.Tasks;
 using System.Web.WebSockets;
+
+#endregion
 
 namespace Containerizer.Facades
 {

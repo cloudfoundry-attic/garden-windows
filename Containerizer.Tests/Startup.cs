@@ -1,6 +1,10 @@
+#region
+
 using System;
 using System.IO;
 using NUnit.Gui;
+
+#endregion
 
 namespace Containerizer.Tests
 {

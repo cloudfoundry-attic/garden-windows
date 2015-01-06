@@ -1,9 +1,13 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using Containerizer.Services.Implementations;
 using NSpec;
+
+#endregion
 
 namespace Containerizer.Tests.Specs.Features
 {
@@ -41,11 +45,17 @@ namespace Containerizer.Tests.Specs.Features
             {
                 HttpClient client = null;
 
-                before = () => { client = new HttpClient {BaseAddress = new Uri("http://localhost:" + port)}; };
+                before = () =>
+                {
+                    client = new HttpClient {BaseAddress = new Uri("http://localhost:" + port)};
+                };
 
                 context["there exists a container with a given id"] = () =>
                 {
-                    before = () => { id = Helpers.CreateContainer(client); };
+                    before = () =>
+                    {
+                        id = Helpers.CreateContainer(client);
+                    };
 
                     context["when I PUT a request to /api/Containers/:id/files?destination=%2F"] = () =>
                     {
@@ -64,7 +74,10 @@ namespace Containerizer.Tests.Specs.Features
                         };
 
                         it["returns a successful status code"] =
-                            () => { responseMessage.IsSuccessStatusCode.should_be_true(); };
+                            () =>
+                            {
+                                responseMessage.IsSuccessStatusCode.should_be_true();
+                            };
 
                         it["sees the new file in the container"] = () =>
                         {
@@ -74,7 +87,10 @@ namespace Containerizer.Tests.Specs.Features
                             fileContent.should_be("stuff!!!!");
                         };
 
-                        after = () => { fileStream.Close(); };
+                        after = () =>
+                        {
+                            fileStream.Close();
+                        };
                     };
                 };
             };

@@ -1,6 +1,10 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.Net.Http;
 using NSpec;
+
+#endregion
 
 namespace Containerizer.Tests.Specs.Features
 {

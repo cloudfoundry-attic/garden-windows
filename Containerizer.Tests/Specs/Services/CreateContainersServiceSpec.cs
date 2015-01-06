@@ -1,11 +1,14 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using Containerizer.Services.Implementations;
 using Microsoft.Web.Administration;
 using NSpec;
+
+#endregion
 
 namespace Containerizer.Tests.Specs.Services
 {
@@ -21,7 +24,7 @@ namespace Containerizer.Tests.Specs.Services
 
                 before = () =>
                 {
-                    passedInId = Guid.NewGuid().ToString() + "-" + Guid.NewGuid().ToString();
+                    passedInId = Guid.NewGuid() + "-" + Guid.NewGuid();
                     var createContainerService = new CreateContainerService();
                     returnedId = createContainerService.CreateContainer(passedInId).Result;
                     createContainerService = new CreateContainerService();
@@ -35,19 +38,28 @@ namespace Containerizer.Tests.Specs.Services
                 };
 
                 it["creates a new site in IIS named with the given id"] =
-                    () => { serverManager.Sites.should_contain(x => x.Name == returnedId); };
+                    () =>
+                    {
+                        serverManager.Sites.should_contain(x => x.Name == returnedId);
+                    };
 
                 it["returns the passed in id"] =
-                    () => { returnedId.should_be(passedInId); };
+                    () =>
+                    {
+                        returnedId.should_be(passedInId);
+                    };
                 it["creates a new associated app pool in IIS named with the truncated passed in id"] =
                     () =>
                     {
                         serverManager.Sites.First(x => x.Name == returnedId).Applications[0].ApplicationPoolName
-                            .should_be(passedInId.Replace("-", "").Substring(0,64));
+                            .should_be(passedInId.Replace("-", "").Substring(0, 64));
                     };
 
                 it["creates a site with exactly one application"] =
-                    () => { serverManager.Sites.First(x => x.Name == returnedId).Applications.Count.should_be(1); };
+                    () =>
+                    {
+                        serverManager.Sites.First(x => x.Name == returnedId).Applications.Count.should_be(1);
+                    };
 
                 it["creates a site with an application mapped to the root virtual directory"] =
                     () =>
@@ -69,7 +81,10 @@ namespace Containerizer.Tests.Specs.Services
 
                     it[
                         @"creates a folder on the file system in the folder 'containerizer' in the root directory (e.g. C:\containerizer\38272f66-ae9c-4369-bfe4-4d8a1152c1ce)"
-                        ] = () => { Directory.Exists(expectedPath).should_be_true(); };
+                        ] = () =>
+                        {
+                            Directory.Exists(expectedPath).should_be_true();
+                        };
 
                     it[
                         @"associates the site with a folder in the folder 'containerizer' the root directory (e.g. C:\containerizer\38272f66-ae9c-4369-bfe4-4d8a1152c1ce)"

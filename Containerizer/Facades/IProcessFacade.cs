@@ -1,8 +1,12 @@
+#region
+
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.Remoting;
+
+#endregion
 
 namespace Containerizer.Facades
 {

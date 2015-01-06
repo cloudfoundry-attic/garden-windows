@@ -1,8 +1,12 @@
-﻿using System.Net.Http;
+﻿#region
+
+using System.Net.Http;
 using System.Threading;
 using System.Web.Http;
 using Containerizer.Controllers;
 using NSpec;
+
+#endregion
 
 namespace Containerizer.Tests.Specs.Controllers
 {
@@ -32,7 +36,10 @@ namespace Containerizer.Tests.Specs.Controllers
                     .GetResult();
             };
 
-            it["returns a successful status code"] = () => { result.IsSuccessStatusCode.should_be_true(); };
+            it["returns a successful status code"] = () =>
+            {
+                result.IsSuccessStatusCode.should_be_true();
+            };
 
             it["returns OK"] = () =>
             {

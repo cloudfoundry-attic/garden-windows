@@ -93,6 +93,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Specs\Controllers\ContainerProcessHandlerSpec.cs" />
+    <Compile Include="Specs\Controllers\PropertiesControllerSpec.cs" />
+    <Compile Include="Specs\Controllers\NetControllerSpec.cs" />
+    <Compile Include="Specs\Controllers\RunControllerSpec.cs" />
+    <Compile Include="Specs\Controllers\FilesControllerSpec.cs" />
     <Compile Include="Specs\Controllers\ContainersControllerSpec.cs" />
     <Compile Include="DebuggerShim.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

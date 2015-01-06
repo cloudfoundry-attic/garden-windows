@@ -1,9 +1,13 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.IO;
 using Containerizer.Services.Implementations;
 using Containerizer.Services.Interfaces;
 using Moq;
 using NSpec;
+
+#endregion
 
 namespace Containerizer.Tests.Specs.Services
 {
@@ -36,9 +40,15 @@ namespace Containerizer.Tests.Specs.Services
 
             it["passes through its stream and combined path to tarstreamer"] = () =>
             {
-                Func<Stream, bool> verifyStream = x => { return stream.Equals(x); };
+                Func<Stream, bool> verifyStream = x =>
+                {
+                    return stream.Equals(x);
+                };
 
-                Func<String, bool> verifyPath = x => { return x.Equals(Path.Combine(@"C:\a\path", "file.txt")); };
+                Func<String, bool> verifyPath = x =>
+                {
+                    return x.Equals(Path.Combine(@"C:\a\path", "file.txt"));
+                };
 
                 mockITarStreamService.Verify(x => x.WriteTarStreamToPath(
                     It.Is((Stream y) => verifyStream(y)),

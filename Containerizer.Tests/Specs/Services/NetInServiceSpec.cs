@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿#region
+
+using System;
 using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
 using Containerizer.Services.Implementations;
 using Microsoft.Web.Administration;
-using Newtonsoft.Json.Linq;
 using NSpec;
+
+#endregion
 
 namespace Containerizer.Tests.Specs.Services
 {
@@ -22,7 +22,8 @@ namespace Containerizer.Tests.Specs.Services
                 before = () =>
                 {
                     createContainerService = new CreateContainerService();
-                    containerId = createContainerService.CreateContainer(Guid.NewGuid().ToString()).GetAwaiter().GetResult();
+                    containerId =
+                        createContainerService.CreateContainer(Guid.NewGuid().ToString()).GetAwaiter().GetResult();
                     containerId.should_not_be_null();
                 };
 
@@ -60,7 +61,6 @@ namespace Containerizer.Tests.Specs.Services
                         var port = new NetInService().AddPort(0, containerId);
                         port.should_not_be(0);
                     };
-
                 };
             };
         }

@@ -1,8 +1,12 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.WebSockets;
+
+#endregion
 
 namespace Containerizer.Tests.Specs.Facades
 {

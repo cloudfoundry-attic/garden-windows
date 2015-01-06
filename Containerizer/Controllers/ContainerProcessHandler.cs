@@ -1,18 +1,21 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.Diagnostics;
-using System.Linq.Expressions;
 using Containerizer.Facades;
 using Containerizer.Models;
 using Containerizer.Services.Interfaces;
 using Microsoft.Web.WebSockets;
 using Newtonsoft.Json;
 
+#endregion
+
 namespace Containerizer.Controllers
 {
     public class ContainerProcessHandler : WebSocketHandler
     {
-        private readonly IProcessFacade process;
         private readonly string containerRoot;
+        private readonly IProcessFacade process;
 
         public ContainerProcessHandler(string containerId, IContainerPathService pathService, IProcessFacade process)
         {
@@ -80,7 +83,7 @@ namespace Containerizer.Controllers
             SendEvent("stderr", outLine.Data + "\r\n");
         }
 
-        private void ProcessExitedHandler(object sendingProcess, System.EventArgs e)
+        private void ProcessExitedHandler(object sendingProcess, EventArgs e)
         {
             SendEvent("close", null);
         }

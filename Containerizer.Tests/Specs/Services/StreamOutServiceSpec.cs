@@ -1,9 +1,13 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.IO;
 using Containerizer.Services.Implementations;
 using Containerizer.Services.Interfaces;
 using Moq;
 using NSpec;
+
+#endregion
 
 namespace Containerizer.Tests.Specs.Services
 {
@@ -42,10 +46,16 @@ namespace Containerizer.Tests.Specs.Services
                 stream = streamOutService.StreamOutFile(id, "/file.txt");
             };
 
-            it["returns a stream from the tarstreamer"] = () => { stream.should_be_same(expectedStream); };
+            it["returns a stream from the tarstreamer"] = () =>
+            {
+                stream.should_be_same(expectedStream);
+            };
 
             it["passes the path combined with the id to tarstreamer"] =
-                () => { actualPath.should_be(@"C:\a\path/file.txt"); };
+                () =>
+                {
+                    actualPath.should_be(@"C:\a\path/file.txt");
+                };
         }
     }
 }

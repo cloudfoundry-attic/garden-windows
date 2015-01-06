@@ -1,12 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿#region
+
+using System;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Web.Administration;
 using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
 using NSpec;
+
+#endregion
 
 namespace Containerizer.Tests.Specs.Features
 {
@@ -49,10 +51,11 @@ namespace Containerizer.Tests.Specs.Features
 
                     before = () =>
                     {
-                        handle = Guid.NewGuid().ToString() + "-" + Guid.NewGuid().ToString();
+                        handle = Guid.NewGuid() + "-" + Guid.NewGuid();
                         Task<HttpResponseMessage> postTask = client.PostAsync("/api/Containers",
                             new StringContent(
-                                "{\"Handle\": \"" + handle + "\", \"Properties\":{\""+ propertyKey + "\":\"" + propertyValue + "\"}}"));
+                                "{\"Handle\": \"" + handle + "\", \"Properties\":{\"" + propertyKey + "\":\"" +
+                                propertyValue + "\"}}"));
                         postTask.Wait();
                         HttpResponseMessage postResult = postTask.Result;
                         Task<string> readTask = postResult.Content.ReadAsStringAsync();

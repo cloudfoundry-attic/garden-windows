@@ -1,10 +1,14 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using Microsoft.Web.Administration;
 using Newtonsoft.Json.Linq;
 using NSpec;
+
+#endregion
 
 namespace Containerizer.Tests.Specs.Features
 {
@@ -25,18 +29,30 @@ namespace Containerizer.Tests.Specs.Features
                 };
 
                 after =
-                    () => { Helpers.RemoveExistingSite("Containerizer.Tests", "ContainerizerTestsApplicationPool"); };
+                    () =>
+                    {
+                        Helpers.RemoveExistingSite("Containerizer.Tests", "ContainerizerTestsApplicationPool");
+                    };
 
                 context["And there exists a container with a given id"] = () =>
                 {
                     string containerId = null;
                     int containerPort = 5656;
-                    before = () => { containerId = Helpers.CreateContainer(client); };
-                    after = () => { Helpers.RemoveExistingSite(containerId, containerId); };
+                    before = () =>
+                    {
+                        containerId = Helpers.CreateContainer(client);
+                    };
+                    after = () =>
+                    {
+                        Helpers.RemoveExistingSite(containerId, containerId);
+                    };
 
                     context["And there is no service listening on a given port"] = () =>
                     {
-                        before = () => { Helpers.PortIsUsed(containerPort).should_be_false(); };
+                        before = () =>
+                        {
+                            Helpers.PortIsUsed(containerPort).should_be_false();
+                        };
 
                         context["When I POST a request to /api/containers/:id/net/in with a given port in the body"] =
                             () =>
@@ -61,7 +77,10 @@ namespace Containerizer.Tests.Specs.Features
                                 };
 
                                 it["And I receive a successful code as a response"] =
-                                    () => { postResult.IsSuccessStatusCode.should_be_true(); };
+                                    () =>
+                                    {
+                                        postResult.IsSuccessStatusCode.should_be_true();
+                                    };
 
                                 context["When I start the server process (FIXME ; should I be needed?)"] = () =>
                                 {
@@ -74,7 +93,10 @@ namespace Containerizer.Tests.Specs.Features
                                     };
 
                                     it["Then I can connect to the server listening on the given port"] =
-                                        () => { Helpers.PortIsUsed(containerPort).should_be_true(); };
+                                        () =>
+                                        {
+                                            Helpers.PortIsUsed(containerPort).should_be_true();
+                                        };
                                 };
                             };
                     };

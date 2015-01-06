@@ -1,21 +1,23 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Net.NetworkInformation;
 using System.Reflection;
-using System.Threading.Tasks;
-using System.Web.SessionState;
+using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
 using Microsoft.Web.Administration;
 using Newtonsoft.Json.Linq;
+
+#endregion
 
 namespace Containerizer.Tests.Specs
 {
     public static class Helpers
     {
-
         /// <returns>The newly created container's id.</returns>
         public static string CreateContainer(HttpClient client)
         {
@@ -30,7 +32,8 @@ namespace Containerizer.Tests.Specs
             return json["id"].ToString();
         }
 
-        public static void SetupSiteInIIS(string applicationFolderName, string siteName, string applicationPoolName, int port, bool privleged)
+        public static void SetupSiteInIIS(string applicationFolderName, string siteName, string applicationPoolName,
+            int port, bool privleged)
         {
             try
             {
@@ -54,7 +57,7 @@ namespace Containerizer.Tests.Specs
 
                 serverManager.CommitChanges();
             }
-            catch (System.Runtime.InteropServices.COMException ex)
+            catch (COMException ex)
             {
                 if (ex.Message.Contains("2B72133B-3F5B-4602-8952-803546CE3344"))
                 {
@@ -83,7 +86,7 @@ namespace Containerizer.Tests.Specs
                     serverManager.CommitChanges();
                 }
             }
-            catch (System.Runtime.InteropServices.COMException ex)
+            catch (COMException ex)
             {
                 if (ex.Message.Contains("2B72133B-3F5B-4602-8952-803546CE3344"))
                 {
@@ -98,11 +101,10 @@ namespace Containerizer.Tests.Specs
         }
 
 
-
         public static DataReceivedEventArgs CreateMockDataReceivedEventArgs(string TestData)
         {
             var MockEventArgs =
-                (DataReceivedEventArgs) System.Runtime.Serialization.FormatterServices
+                (DataReceivedEventArgs) FormatterServices
                     .GetUninitializedObject(typeof (DataReceivedEventArgs));
 
             FieldInfo[] EventFields = typeof (DataReceivedEventArgs)

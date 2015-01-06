@@ -1,7 +1,11 @@
-﻿using System.Net.Http;
+﻿#region
+
+using System.Net.Http;
 using System.Threading;
 using System.Web.Http;
 using Newtonsoft.Json.Linq;
+
+#endregion
 
 namespace Containerizer.Tests.Specs
 {

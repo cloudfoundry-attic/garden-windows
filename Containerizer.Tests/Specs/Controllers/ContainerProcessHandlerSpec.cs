@@ -1,4 +1,6 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -10,6 +12,8 @@ using Containerizer.Services.Interfaces;
 using Containerizer.Tests.Specs.Facades;
 using Moq;
 using NSpec;
+
+#endregion
 
 namespace Containerizer.Tests.Specs.Controllers
 {
@@ -90,7 +94,10 @@ namespace Containerizer.Tests.Specs.Controllers
                     handler.OnMessage(
                         "{\"type\":\"run\", \"pspec\":{\"Path\":\"foo.exe\", \"Args\":[\"some\", \"args\"]}}");
 
-            it["sets working directory"] = () => { startInfo.WorkingDirectory.should_be("C:\\A\\Directory"); };
+            it["sets working directory"] = () =>
+            {
+                startInfo.WorkingDirectory.should_be("C:\\A\\Directory");
+            };
 
             it["sets start info correctly"] = () =>
             {
@@ -98,7 +105,10 @@ namespace Containerizer.Tests.Specs.Controllers
                 startInfo.Arguments.should_be("some args");
             };
 
-            it["runs something"] = () => { mockProcess.Verify(x => x.Start()); };
+            it["runs something"] = () =>
+            {
+                mockProcess.Verify(x => x.Start());
+            };
 
 
             context["when process.start raises an error"] = () =>

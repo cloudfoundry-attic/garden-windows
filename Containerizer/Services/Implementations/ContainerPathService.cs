@@ -1,8 +1,12 @@
-﻿using System.Collections.Generic;
+﻿#region
+
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using Containerizer.Services.Interfaces;
+
+#endregion
 
 namespace Containerizer.Services.Implementations
 {

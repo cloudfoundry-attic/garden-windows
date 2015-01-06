@@ -1,9 +1,12 @@
-﻿using System.IO;
+﻿#region
+
+using System.IO;
 using Containerizer.Services.Interfaces;
 using SharpCompress.Common;
 using SharpCompress.Reader;
-using SharpCompress.Reader.Tar;
 using SharpCompress.Writer;
+
+#endregion
 
 namespace Containerizer.Services.Implementations
 {
@@ -15,7 +18,7 @@ namespace Containerizer.Services.Implementations
             CreateTarFromDirectory(filePath, tarPath);
             Stream stream = File.OpenRead(tarPath);
             var buffer = new byte[stream.Length];
-            stream.Read(buffer, 0, (int)stream.Length);
+            stream.Read(buffer, 0, (int) stream.Length);
             var memStream = new MemoryStream(buffer);
             stream.Close();
             File.Delete(tarPath);
@@ -35,7 +38,7 @@ namespace Containerizer.Services.Implementations
             {
                 using (
                     IWriter writer = WriterFactory.Open(stream, ArchiveType.Tar,
-                        new CompressionInfo { Type = CompressionType.None }))
+                        new CompressionInfo {Type = CompressionType.None}))
                 {
                     if (File.Exists(sourceDirectoryName))
                     {
@@ -59,7 +62,7 @@ namespace Containerizer.Services.Implementations
                 {
                     using (
                         IWriter writer = WriterFactory.Open(stream, ArchiveType.Tar,
-                            new CompressionInfo { Type = CompressionType.None }))
+                            new CompressionInfo {Type = CompressionType.None}))
                     {
                         if (File.Exists(sourceDirectoryName))
                         {
@@ -76,7 +79,7 @@ namespace Containerizer.Services.Implementations
                 {
                     using (
                         IWriter writer = WriterFactory.Open(stream, ArchiveType.GZip,
-                            new CompressionInfo { Type = CompressionType.GZip }))
+                            new CompressionInfo {Type = CompressionType.GZip}))
                     {
                         writer.Write("Tar.tar", tarPath);
                     }

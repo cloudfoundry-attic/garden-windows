@@ -1,9 +1,13 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using Containerizer.Services.Implementations;
 using NSpec;
+
+#endregion
 
 namespace Containerizer.Tests.Specs.Services
 {
@@ -56,21 +60,39 @@ namespace Containerizer.Tests.Specs.Services
 
             describe["#GetContainerRoot"] = () =>
             {
-                before = () => { returnedPath = containerPathService.GetContainerRoot(id); };
+                before = () =>
+                {
+                    returnedPath = containerPathService.GetContainerRoot(id);
+                };
 
                 it["returns the path to the container's root directory"] =
-                    () => { returnedPath.should_be(expectedPath); };
+                    () =>
+                    {
+                        returnedPath.should_be(expectedPath);
+                    };
             };
 
             describe["#CreateContainerDirectory"] = () =>
             {
-                before = () => { containerPathService.CreateContainerDirectory(id); };
-                after = () => { Directory.Delete(containerPathService.GetContainerRoot(id), true); };
+                before = () =>
+                {
+                    containerPathService.CreateContainerDirectory(id);
+                };
+                after = () =>
+                {
+                    Directory.Delete(containerPathService.GetContainerRoot(id), true);
+                };
 
                 it["creates the container's root directory"] =
-                    () => { Directory.Exists(expectedPath).should_be_true(); };
+                    () =>
+                    {
+                        Directory.Exists(expectedPath).should_be_true();
+                    };
 
-                after = () => { Directory.Delete(expectedPath); };
+                after = () =>
+                {
+                    Directory.Delete(expectedPath);
+                };
             };
         }
     }

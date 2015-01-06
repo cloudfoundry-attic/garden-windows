@@ -1,8 +1,12 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Containerizer.Services.Interfaces;
 using Microsoft.Web.Administration;
+
+#endregion
 
 namespace Containerizer.Services.Implementations
 {

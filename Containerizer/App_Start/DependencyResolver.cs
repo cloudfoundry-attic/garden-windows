@@ -1,10 +1,14 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.Collections.Generic;
 using System.Web.Http.Dependencies;
 using Autofac;
 using Containerizer.Controllers;
 using Containerizer.Services.Implementations;
 using Containerizer.Services.Interfaces;
+
+#endregion
 
 namespace Containerizer
 {
@@ -23,6 +27,10 @@ namespace Containerizer
             containerBuilder.RegisterType<TarStreamService>().As<ITarStreamService>();
             containerBuilder.RegisterType<MetadataService>().As<IMetadataService>();
             containerBuilder.RegisterType<ContainersController>();
+            containerBuilder.RegisterType<FilesController>();
+            containerBuilder.RegisterType<NetController>();
+            containerBuilder.RegisterType<PropertiesController>();
+            containerBuilder.RegisterType<RunController>();
             container = containerBuilder.Build();
         }
 

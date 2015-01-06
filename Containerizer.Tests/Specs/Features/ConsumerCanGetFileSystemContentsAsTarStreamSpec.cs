@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿#region
+
+using System;
 using System.IO;
 using System.Net.Http;
-using System.Threading.Tasks;
 using Containerizer.Services.Implementations;
-using Newtonsoft.Json.Linq;
 using NSpec;
 using SharpCompress.Reader;
+
+#endregion
 
 namespace Containerizer.Tests.Specs.Features
 {
