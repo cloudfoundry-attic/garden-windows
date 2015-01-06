@@ -49,7 +49,7 @@ namespace Containerizer.Tests.Specs.Controllers
                         "MyFirstContainer",
                         "MySecondContainer"
                     });
-                result = containersController.List()
+                result = containersController.Index()
                     .GetAwaiter()
                     .GetResult()
                     .ExecuteAsync(new CancellationToken())
@@ -99,14 +99,14 @@ namespace Containerizer.Tests.Specs.Controllers
 
                 it["returns a successful status code"] = () =>
                 {
-                    containersController.Post().Result
+                    containersController.Create().Result
                         .ExecuteAsync(new CancellationToken()).Result
                         .IsSuccessStatusCode.should_be_true();
                 };
 
                 it["returns the passed in container's id"] = () =>
                 {
-                    Task<IHttpActionResult> postTask = containersController.Post();
+                    Task<IHttpActionResult> postTask = containersController.Create();
                     postTask.Wait();
                     Task<HttpResponseMessage> resultTask = postTask.Result.ExecuteAsync(new CancellationToken());
                     resultTask.Wait();
@@ -118,7 +118,7 @@ namespace Containerizer.Tests.Specs.Controllers
 
                 it["sets metadata"] = () =>
                 {
-                    containersController.Post().Wait();
+                    containersController.Create().Wait();
                     mockMetadataService.Verify(
                         x =>
                             x.BulkSetMetadata(containerHandle, It.Is((Dictionary<string, string> y) => y[key] == value)));
@@ -136,7 +136,7 @@ namespace Containerizer.Tests.Specs.Controllers
 
                 it["returns a error status code"] = () =>
                 {
-                    Task<IHttpActionResult> postTask = containersController.Post();
+                    Task<IHttpActionResult> postTask = containersController.Create();
                     postTask.Wait();
                     Task<HttpResponseMessage> resultTask = postTask.Result.ExecuteAsync(new CancellationToken());
                     resultTask.Wait();
@@ -159,7 +159,7 @@ namespace Containerizer.Tests.Specs.Controllers
 
                 it["returns a successful status code"] = () =>
                 {
-                    containersController.Post().Result
+                    containersController.Create().Result
                         .ExecuteAsync(new CancellationToken()).Result
                         .IsSuccessStatusCode.should_be_true();
                 };

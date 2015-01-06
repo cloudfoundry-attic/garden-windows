@@ -17,7 +17,7 @@ namespace Containerizer.Controllers
     {
         [Route("api/containers/{id}/run")]
         [HttpGet]
-        public Task<HttpResponseMessage> Run(string id)
+        public Task<HttpResponseMessage> Index(string id)
         {
             HttpContext.Current.AcceptWebSocketRequest(new ContainerProcessHandler(id, new ContainerPathService(),
                 new ProcessFacade()));

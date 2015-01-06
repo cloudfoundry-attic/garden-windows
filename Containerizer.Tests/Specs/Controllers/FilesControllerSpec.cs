@@ -49,7 +49,7 @@ namespace Containerizer.Tests.Specs.Controllers
                         });
 
                     result = filesController
-                        .StreamOut("guid", "file.txt").GetAwaiter().GetResult();
+                        .Show("guid", "file.txt").GetAwaiter().GetResult();
                 };
 
 
@@ -79,7 +79,7 @@ namespace Containerizer.Tests.Specs.Controllers
                     sr.Flush();
                     stream.Seek(0, SeekOrigin.Begin);
                     filesController.Request.Content = new StreamContent(stream);
-                    result = filesController.StreamIn(id, fileName).GetAwaiter().GetResult();
+                    result = filesController.Create(id, fileName).GetAwaiter().GetResult();
                 };
 
                 it["calls the stream in service with the correct stream, passed in id, and file name query parameter"] =

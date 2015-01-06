@@ -25,7 +25,7 @@ namespace Containerizer.Controllers
 
         [Route("api/containers/{id}/files")]
         [HttpGet]
-        public Task<HttpResponseMessage> StreamOut(string id, string source)
+        public Task<HttpResponseMessage> Show(string id, string source)
         {
             Stream outStream = streamOutService.StreamOutFile(id, source);
             HttpResponseMessage response = Request.CreateResponse();
@@ -35,7 +35,7 @@ namespace Containerizer.Controllers
 
         [Route("api/containers/{id}/files")]
         [HttpPut]
-        public async Task<HttpResponseMessage> StreamIn(string id, string destination)
+        public async Task<HttpResponseMessage> Create(string id, string destination)
         {
             Stream stream = await Request.Content.ReadAsStreamAsync();
             streamInService.StreamInFile(stream, id, destination);

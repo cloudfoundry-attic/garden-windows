@@ -36,14 +36,14 @@ namespace Containerizer.Controllers
 
         [Route("api/containers")]
         [HttpGet]
-        public async Task<IHttpActionResult> List()
+        public async Task<IHttpActionResult> Index()
         {
             return Json(containerPathService.ContainerIds());
         }
 
         [Route("api/containers")]
         [HttpPost]
-        public async Task<IHttpActionResult> Post()
+        public async Task<IHttpActionResult> Create()
         {
             try
             {
@@ -67,7 +67,7 @@ namespace Containerizer.Controllers
 
         [Route("api/containers/{id}")]
         [HttpDelete]
-        public async Task<HttpResponseMessage> DeleteContainer(string id)
+        public async Task<HttpResponseMessage> Destroy(string id)
         {
             //ServerManager serverManager = ServerManager.OpenRemote("localhost");
             //Site site = serverManager.Sites[id];

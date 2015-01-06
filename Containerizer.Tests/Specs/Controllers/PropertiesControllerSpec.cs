@@ -45,7 +45,7 @@ namespace Containerizer.Tests.Specs.Controllers
                     });
 
                 result = propertiesController
-                    .GetProperty(containerId, "key").GetAwaiter().GetResult();
+                    .Show(containerId, "key").GetAwaiter().GetResult();
             };
 
 

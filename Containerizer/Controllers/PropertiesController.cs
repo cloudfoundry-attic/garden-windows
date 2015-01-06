@@ -33,7 +33,7 @@ namespace Containerizer.Controllers
 
         [Route("api/containers/{handle}/properties/{propertyKey}")]
         [HttpGet]
-        public async Task<IHttpActionResult> GetProperty(string handle, string propertyKey)
+        public async Task<IHttpActionResult> Show(string handle, string propertyKey)
         {
             return
                 Json(new GetPropertyResponse
@@ -44,7 +44,7 @@ namespace Containerizer.Controllers
 
         [Route("api/containers/{id}/properties/{propertyKey}")]
         [HttpPut]
-        public async Task<IHttpActionResult> SetProperty(string id, string propertyKey)
+        public async Task<IHttpActionResult> Update(string id, string propertyKey)
         {
             propertyKey = propertyKey.Replace("♥", ":");
             string requestBody = await Request.Content.ReadAsStringAsync();
@@ -60,7 +60,7 @@ namespace Containerizer.Controllers
 
         [Route("api/containers/{id}/properties")]
         [HttpGet]
-        public Task<HttpResponseMessage> GetProperties(string id)
+        public Task<HttpResponseMessage> Index(string id)
         {
             var dictionary = (Dictionary<string, string>) HttpContext.Current.Application[id];
             if (dictionary == null)
@@ -91,7 +91,7 @@ namespace Containerizer.Controllers
 
         [Route("api/containers/{id}/properties/{propertyKey}")]
         [HttpDelete]
-        public async Task<HttpResponseMessage> RemoveProperty(string id, string propertyKey)
+        public async Task<HttpResponseMessage> Destroy(string id, string propertyKey)
         {
             return Request.CreateResponse(HttpStatusCode.OK);
         }

@@ -50,7 +50,7 @@ namespace Containerizer.Tests.Specs.Controllers
                 });
 
                 result =
-                    netController.NetIn(containerId)
+                    netController.Create(containerId)
                         .GetAwaiter()
                         .GetResult()
                         .ExecuteAsync(new CancellationToken())

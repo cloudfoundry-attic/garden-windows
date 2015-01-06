@@ -29,7 +29,7 @@ namespace Containerizer.Controllers
 
         [Route("api/containers/{id}/net/in")]
         [HttpPost]
-        public async Task<IHttpActionResult> NetIn(string id)
+        public async Task<IHttpActionResult> Create(string id)
         {
             NameValueCollection formData = await Request.Content.ReadAsFormDataAsync();
 
