@@ -15,51 +15,71 @@ namespace Containerizer.Tests.Specs.Controllers
 {
     internal class PropertiesControllerSpec : nspec
     {
-        private Mock<IMetadataService> mockMetadataService;
-        private PropertiesController propertiesController;
-
-        private void before_each()
+        private void describe_()
         {
-            mockMetadataService = new Mock<IMetadataService>();
-            propertiesController = new PropertiesController(mockMetadataService.Object)
-            {
-                Configuration = new HttpConfiguration(),
-                Request = new HttpRequestMessage()
-            };
-        }
-
-        private void describe_get_property()
-        {
-            string containerId = null;
-            IHttpActionResult result = null;
-            string propertyValue = null;
-
             before = () =>
             {
-                containerId = Guid.NewGuid().ToString();
-                propertyValue = "a lion, a hippo, the number 25";
-                mockMetadataService.Setup(x => x.GetMetadata(It.IsIn(new[] {containerId}), It.IsIn(new[] {"key"})))
-                    .Returns(() =>
-                    {
-                        return propertyValue;
-                    });
 
-                result = propertiesController
-                    .Show(containerId, "key").GetAwaiter().GetResult();
             };
 
+            describe["Index"] = () =>
+            {
 
-            it["returns a successful status code"] =
-                () =>
+            };
+
+            describe["Show"] = () =>
+            {
+                IHttpActionResult result = null;
+                string propertyValue = null;
+
+                before = () =>
+                {
+                    var mockMetadataService = new Mock<IMetadataService>();
+                    var propertiesController = new PropertiesController(mockMetadataService.Object)
+                    {
+                        Configuration = new HttpConfiguration(),
+                        Request = new HttpRequestMessage()
+                    };
+                    string containerId = Guid.NewGuid().ToString();
+                    propertyValue = "a lion, a hippo, the number 25";
+                    mockMetadataService.Setup(x => x.GetMetadata(It.IsIn(new[] { containerId }), It.IsIn(new[] { "key" })))
+                        .Returns(() =>
+                        {
+                            return propertyValue;
+                        });
+
+                    result = propertiesController
+                        .Show(containerId, "key").GetAwaiter().GetResult();
+                };
+
+
+                it["returns a successful status code"] = () =>
                 {
                     result.ExecuteAsync(new CancellationToken()).Result.IsSuccessStatusCode.should_be_true();
                 };
 
-            it["returns the correct property value"] = () =>
-            {
-                result.ExecuteAsync(new CancellationToken()).Result.Content.ReadAsJson()["value"].ToString().should_be(
-                    propertyValue);
+                it["returns the correct property value"] = () =>
+                {
+                    result
+                        .ExecuteAsync(new CancellationToken())
+                        .Result
+                        .Content
+                        .ReadAsJson()["value"]
+                        .ToString()
+                        .should_be(propertyValue);
+                };
             };
+
+            describe["Update"] = () =>
+            {
+
+            };
+
+            describe["Destroy"] = () =>
+            {
+
+            };
+
         }
     }
 }
