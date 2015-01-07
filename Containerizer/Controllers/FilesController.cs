@@ -35,12 +35,11 @@ namespace Containerizer.Controllers
 
         [Route("api/containers/{id}/files")]
         [HttpPut]
-        public async Task<HttpResponseMessage> Create(string id, string destination)
+        public async Task<IHttpActionResult> Update(string id, string destination)
         {
             Stream stream = await Request.Content.ReadAsStreamAsync();
             streamInService.StreamInFile(stream, id, destination);
-
-            return Request.CreateResponse(HttpStatusCode.OK);
+            return Ok();
         }
     }
 }

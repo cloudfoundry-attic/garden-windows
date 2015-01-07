@@ -15,75 +15,76 @@ namespace Containerizer.Tests.Specs.Controllers
 {
     internal class FilesControllerSpec : nspec
     {
-        private FilesController filesController;
-        private Mock<IStreamInService> mockStreamInService;
-        private Mock<IStreamOutService> mockStreamOutService;
-
-        private void before_each()
+        private void describe_()
         {
-            mockStreamOutService = new Mock<IStreamOutService>();
-            mockStreamInService = new Mock<IStreamInService>();
-            filesController = new FilesController(mockStreamInService.Object, mockStreamOutService.Object)
+            FilesController filesController = null;
+            Mock<IStreamInService> mockStreamInService = null;
+            Mock<IStreamOutService> mockStreamOutService = null;
+
+            before = () =>
             {
-                Configuration = new HttpConfiguration(),
-                Request = new HttpRequestMessage()
-            };
-        }
-
-        private void describe_get_files()
-        {
-            context["when the file exists"] = () =>
-            {
-                HttpResponseMessage result = null;
-                before = () =>
+                mockStreamOutService = new Mock<IStreamOutService>();
+                mockStreamInService = new Mock<IStreamInService>();
+                filesController = new FilesController(mockStreamInService.Object, mockStreamOutService.Object)
                 {
-                    mockStreamOutService.Setup(x => x.StreamOutFile(It.IsAny<string>(), It.IsAny<string>()))
-                        .Returns(() =>
-                        {
-                            var stream = new MemoryStream();
-                            var writer = new StreamWriter(stream);
-                            writer.Write("hello");
-                            writer.Flush();
-                            stream.Position = 0;
-                            return stream;
-                        });
-
-                    result = filesController
-                        .Show("guid", "file.txt").GetAwaiter().GetResult();
-                };
-
-
-                it["returns a successful status code"] = () =>
-                {
-                    result.IsSuccessStatusCode.should_be_true();
+                    Configuration = new HttpConfiguration(),
+                    Request = new HttpRequestMessage()
                 };
             };
-        }
 
-        private void describe_put_files()
-        {
-            context["when it receives a new file"] = () =>
+            describe[Controller.Show] = () =>
             {
-                string id = null;
-                const string fileName = "file.txt";
-                HttpResponseMessage result = null;
-                string content = null;
-
-                before = () =>
+                context["when the file exists"] = () =>
                 {
-                    id = Guid.NewGuid().ToString();
-                    Stream stream = new MemoryStream();
-                    var sr = new StreamWriter(stream);
-                    content = Guid.NewGuid().ToString();
-                    sr.Write(content);
-                    sr.Flush();
-                    stream.Seek(0, SeekOrigin.Begin);
-                    filesController.Request.Content = new StreamContent(stream);
-                    result = filesController.Create(id, fileName).GetAwaiter().GetResult();
-                };
+                    HttpResponseMessage result = null;
+                    before = () =>
+                    {
+                        mockStreamOutService.Setup(x => x.StreamOutFile(It.IsAny<string>(), It.IsAny<string>()))
+                            .Returns(() =>
+                            {
+                                var stream = new MemoryStream();
+                                var writer = new StreamWriter(stream);
+                                writer.Write("hello");
+                                writer.Flush();
+                                stream.Position = 0;
+                                return stream;
+                            });
 
-                it["calls the stream in service with the correct stream, passed in id, and file name query parameter"] =
-                    () =>
+                        result = filesController
+                            .Show("guid", "file.txt").GetAwaiter().GetResult();
+                    };
+
+
+                    it["returns a successful status code"] = () =>
+                    {
+                        result.VerifiesSuccessfulStatusCode();
+                    };
+                };
+            };
+
+            describe[Controller.Update] = () =>
+            {
+                context["when it receives a new file"] = () =>
+                {
+                    string id = null;
+                    const string fileName = "file.txt";
+                    IHttpActionResult result = null;
+                    string content = null;
+
+                    before = () =>
+                    {
+                        id = Guid.NewGuid().ToString();
+                        Stream stream = new MemoryStream();
+                        var sr = new StreamWriter(stream);
+                        content = Guid.NewGuid().ToString();
+                        sr.Write(content);
+                        sr.Flush();
+                        stream.Seek(0, SeekOrigin.Begin);
+                        filesController.Request.Content = new StreamContent(stream);
+                        result = filesController.Update(id, fileName).Result;
+                    };
+
+                    it["calls the stream in service with the correct paramaters"] = () =>
                     {
                         mockStreamInService.Verify(x => x.StreamInFile(
                             It.Is((Stream y) => new StreamReader(y).ReadToEnd() == content),
@@ -92,9 +93,10 @@ namespace Containerizer.Tests.Specs.Controllers
                     };
 
 
-                it["returns a successful status code"] = () =>
-                {
-                    result.IsSuccessStatusCode.should_be_true();
+                    it["returns a successful status code"] = () =>
+                    {
+                        result.VerifiesSuccessfulStatusCode();
+                    };
                 };
             };
         }

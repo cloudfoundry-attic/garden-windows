@@ -10,7 +10,7 @@ namespace Containerizer.Controllers
     {
         [Route("api/ping")]
         [HttpGet]
-        public IHttpActionResult Ping()
+        public IHttpActionResult Show()
         {
             return Json("OK");
         }

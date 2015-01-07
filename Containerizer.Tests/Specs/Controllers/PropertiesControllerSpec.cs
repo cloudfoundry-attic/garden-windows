@@ -95,7 +95,6 @@ namespace Containerizer.Tests.Specs.Controllers
                     result = propertiesController.Show(containerHandle, key).GetAwaiter().GetResult();
                 };
 
-
                 it["returns a successful status code"] = () =>
                 {
                     result.VerifiesSuccessfulStatusCode();

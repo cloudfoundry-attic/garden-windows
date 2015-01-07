@@ -1,9 +1,19 @@
 ﻿#region
 
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Web.Http;
 using Containerizer.Controllers;
+using NSpec;
+
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Web.Http;
+using Containerizer.Controllers;
+using Containerizer.Services.Interfaces;
+using Moq;
 using NSpec;
 
 #endregion
@@ -12,39 +22,38 @@ namespace Containerizer.Tests.Specs.Controllers
 {
     internal class PingControllerSpec : nspec
     {
-        private PingController pingController;
 
-        private void before_each()
+        private void describe_()
         {
-            pingController = new PingController
-            {
-                Configuration = new HttpConfiguration(),
-                Request = new HttpRequestMessage()
-            };
-        }
-
-        private
-            void describe_ping()
-        {
-            HttpResponseMessage result = null;
-
+            PingController pingController = null;
             before = () =>
             {
-                result = pingController.Ping()
-                    .ExecuteAsync(new CancellationToken())
-                    .GetAwaiter()
-                    .GetResult();
+                pingController = new PingController
+                {
+                    Configuration = new HttpConfiguration(),
+                    Request = new HttpRequestMessage()
+                };
+
             };
 
-            it["returns a successful status code"] = () =>
+            describe[Controller.Show] = () =>
             {
-                result.IsSuccessStatusCode.should_be_true();
-            };
+                IHttpActionResult result = null;
+                before = () =>
+                {
+                    result = pingController.Show();
+                };
 
-            it["returns OK"] = () =>
-            {
-                string jsonString = result.Content.ReadAsString(); // Json();
-                jsonString.should_be("\"OK\"");
+                it["returns a successful status code"] = () =>
+                {
+                    result.VerifiesSuccessfulStatusCode();
+                };
+
+                it["returns OK"] = () =>
+                {
+                    string jsonString = result.ExecuteAsync(new CancellationToken()).Result.Content.ReadAsString();
+                    jsonString.should_be("\"OK\"");
+                };
             };
         }
     }

@@ -19,130 +19,128 @@ namespace Containerizer.Tests.Specs.Controllers
 {
     internal class ContainersControllerSpec : nspec
     {
-        private ContainersController containersController;
-        private Mock<IContainerPathService> mockContainerPathService;
-        private Mock<ICreateContainerService> mockCreateContainerService;
-        private Mock<IPropertyService> mockPropertyService;
-
-        private void before_each()
+        private void describe_()
         {
-            mockContainerPathService = new Mock<IContainerPathService>();
-            mockCreateContainerService = new Mock<ICreateContainerService>();
-            mockPropertyService = new Mock<IPropertyService>();
-            containersController = new ContainersController(mockContainerPathService.Object,
-                mockCreateContainerService.Object, mockPropertyService.Object)
-            {
-                Configuration = new HttpConfiguration(),
-                Request = new HttpRequestMessage()
-            };
-        }
-
-        private void describe_list()
-        {
-            HttpResponseMessage result = null;
+            ContainersController containersController = null;
+            Mock<IContainerPathService> mockContainerPathService = null;
+            Mock<ICreateContainerService> mockCreateContainerService = null;
+            Mock<IPropertyService> mockPropertyService = null;
 
             before = () =>
             {
-                mockContainerPathService.Setup(x => x.ContainerIds())
-                    .Returns(new List<string>
-                    {
-                        "MyFirstContainer",
-                        "MySecondContainer"
-                    });
-                result = containersController.Index()
-                    .GetAwaiter()
-                    .GetResult()
-                    .ExecuteAsync(new CancellationToken())
-                    .GetAwaiter()
-                    .GetResult();
+                mockContainerPathService = new Mock<IContainerPathService>();
+                mockCreateContainerService = new Mock<ICreateContainerService>();
+                mockPropertyService = new Mock<IPropertyService>();
+                containersController = new ContainersController(mockContainerPathService.Object,
+                    mockCreateContainerService.Object, mockPropertyService.Object)
+                {
+                    Configuration = new HttpConfiguration(),
+                    Request = new HttpRequestMessage()
+                };
+
             };
 
-            it["returns a successful status code"] = () =>
+            describe[Controller.Index] = () =>
             {
-                result.IsSuccessStatusCode.should_be_true();
-            };
-
-            it["returns a list of container ids as strings"] = () =>
-            {
-                var jsonString = result.Content.ReadAsString(); // Json();
-                var json = JsonConvert.DeserializeObject<string[]>(jsonString);
-                json.should_contain("MyFirstContainer");
-                json.should_contain("MySecondContainer");
-            };
-        }
-
-        private void describe_post()
-        {
-            context["when the container is created successfully"] = () =>
-            {
-                string containerHandle = null;
-                Dictionary<string, string> properties = null;
-                string key = null;
-                string value = null;
+                HttpResponseMessage result = null;
 
                 before = () =>
                 {
-                    containerHandle = Guid.NewGuid().ToString();
-                    key = "hiwillyou";
-                    value = "bemyfriend";
-                    properties = new Dictionary<string, string>
-                    {
-                        {key, value}
-                    };
-
-                    mockCreateContainerService.Setup(x => x.CreateContainer(It.IsAny<String>()))
-                        .Returns((String x) => x);
-                    containersController.Request.Content =
-                        new StringContent("{Handle: \"" + containerHandle + "\", Properties:{\"" + key + "\": \"" +
-                                          value + "\"}}");
+                    mockContainerPathService.Setup(x => x.ContainerIds())
+                        .Returns(new List<string>
+                        {
+                            "MyFirstContainer",
+                            "MySecondContainer"
+                        });
+                    result = containersController.Index()
+                        .GetAwaiter()
+                        .GetResult()
+                        .ExecuteAsync(new CancellationToken())
+                        .GetAwaiter()
+                        .GetResult();
                 };
 
                 it["returns a successful status code"] = () =>
                 {
-                    containersController.Create().Result
-                        .ExecuteAsync(new CancellationToken()).Result
-                        .IsSuccessStatusCode.should_be_true();
+                    result.VerifiesSuccessfulStatusCode();
                 };
 
-                it["returns the passed in container's id"] = () =>
+                it["returns a list of container ids as strings"] = () =>
                 {
-                    Task<IHttpActionResult> postTask = containersController.Create();
-                    postTask.Wait();
-                    Task<HttpResponseMessage> resultTask = postTask.Result.ExecuteAsync(new CancellationToken());
-                    resultTask.Wait();
-                    Task<string> readTask = resultTask.Result.Content.ReadAsStringAsync();
-                    readTask.Wait();
-                    JObject json = JObject.Parse(readTask.Result);
-                    json["id"].ToString().should_be(containerHandle);
-                };
-
-                it["sets properties"] = () =>
-                {
-                    containersController.Create().Wait();
-                    mockPropertyService.Verify(
-                        x =>
-                            x.BulkSet(containerHandle, It.Is((Dictionary<string, string> y) => y[key] == value)));
+                    var jsonString = result.Content.ReadAsString(); // Json();
+                    var json = JsonConvert.DeserializeObject<string[]>(jsonString);
+                    json.should_contain("MyFirstContainer");
+                    json.should_contain("MySecondContainer");
                 };
             };
 
-            context["when  properties are not passed to the endpoint"] = () =>
+            describe[Controller.Update] = () =>
             {
-                before = () =>
+                context["when the container is created successfully"] = () =>
                 {
                     string containerHandle = null;
-                    containerHandle = Guid.NewGuid().ToString();
+                    Dictionary<string, string> properties = null;
+                    string key = null;
+                    string value = null;
+                    IHttpActionResult result = null;
 
-                    mockCreateContainerService.Setup(x => x.CreateContainer(It.IsAny<String>()))
-                        .Returns((String x) => x);
-                    containersController.Request.Content =
-                        new StringContent("{Handle: \"" + containerHandle + "\"}");
+                    before = () =>
+                    {
+                        containerHandle = Guid.NewGuid().ToString();
+                        key = "hiwillyou";
+                        value = "bemyfriend";
+                        properties = new Dictionary<string, string>
+                        {
+                            {key, value}
+                        };
+
+                        mockCreateContainerService.Setup(x => x.CreateContainer(It.IsAny<String>()))
+                            .Returns((String x) => x);
+                        containersController.Request.Content =
+                            new StringContent("{Handle: \"" + containerHandle + "\", Properties:{\"" + key + "\": \"" +
+                                              value + "\"}}");
+                        result = containersController.Create().Result;
+                    };
+
+                    it["returns a successful status code"] = () =>
+                    {
+                        result.VerifiesSuccessfulStatusCode();
+                    };
+
+                    it["returns the passed in container's id"] = () =>
+                    {
+                        result.ReadContentAsJson()["id"].ToString().should_be(containerHandle);
+                    };
+
+                    it["sets properties"] = () =>
+                    {
+                        mockPropertyService.Verify(
+                            x =>
+                                x.BulkSet(containerHandle, It.Is((Dictionary<string, string> y) => y[key] == value)));
+                    };
                 };
 
-                it["returns a successful status code"] = () =>
+                context["when properties are not passed to the endpoint"] = () =>
                 {
-                    containersController.Create().Result
-                        .ExecuteAsync(new CancellationToken()).Result
-                        .IsSuccessStatusCode.should_be_true();
+                    IHttpActionResult result = null;
+
+                    before = () =>
+                    {
+                        string containerHandle = null;
+                        containerHandle = Guid.NewGuid().ToString();
+
+                        mockCreateContainerService.Setup(x => x.CreateContainer(It.IsAny<String>()))
+                            .Returns((String x) => x);
+                        containersController.Request.Content =
+                            new StringContent("{Handle: \"" + containerHandle + "\"}");
+
+                        result = containersController.Create().Result;
+                    };
+
+                    it["returns a successful status code"] = () =>
+                    {
+                        result.VerifiesSuccessfulStatusCode();
+                    };
                 };
             };
         }
