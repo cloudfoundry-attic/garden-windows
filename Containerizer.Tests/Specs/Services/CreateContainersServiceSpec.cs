@@ -26,7 +26,7 @@ namespace Containerizer.Tests.Specs.Services
                 {
                     passedInId = Guid.NewGuid() + "-" + Guid.NewGuid();
                     var createContainerService = new CreateContainerService();
-                    returnedId = createContainerService.CreateContainer(passedInId).Result;
+                    returnedId = createContainerService.CreateContainer(passedInId);
                     createContainerService = new CreateContainerService();
                     serverManager = ServerManager.OpenRemote("localhost");
                 };

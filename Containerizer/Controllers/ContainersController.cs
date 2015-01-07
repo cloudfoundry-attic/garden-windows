@@ -16,7 +16,11 @@ namespace Containerizer.Controllers
     public class CreateResponse
     {
         [JsonProperty("id")]
-        public string Id { get; set; }
+        public string Id
+        {
+            get;
+            set;
+        }
     }
 
     public class ContainersController : ApiController
@@ -45,24 +49,20 @@ namespace Containerizer.Controllers
         [HttpPost]
         public async Task<IHttpActionResult> Create()
         {
-            try
-            {
-                string content = await Request.Content.ReadAsStringAsync();
-                JObject json = JObject.Parse(content);
-                string id = await createContainerService.CreateContainer(json["Handle"].ToString());
+            string content = await Request.Content.ReadAsStringAsync();
+            JObject json = JObject.Parse(content);
+            string id = createContainerService.CreateContainer(json["Handle"].ToString());
 
-                if (json["Properties"] != null)
-                {
-                    var properties =
-                        JsonConvert.DeserializeObject<Dictionary<string, string>>(json["Properties"].ToString());
-                    propertyService.BulkSet(id, properties);
-                }
-                return Json(new CreateResponse {Id = id});
-            }
-            catch (CouldNotCreateContainerException ex)
+            if (json["Properties"] != null)
             {
-                return InternalServerError(ex);
+                var properties =
+                    JsonConvert.DeserializeObject<Dictionary<string, string>>(json["Properties"].ToString());
+                propertyService.BulkSet(id, properties);
             }
+            return Json(new CreateResponse
+            {
+                Id = id
+            });
         }
 
         [Route("api/containers/{id}")]

@@ -91,7 +91,7 @@ namespace Containerizer.Tests.Specs.Controllers
                     };
 
                     mockCreateContainerService.Setup(x => x.CreateContainer(It.IsAny<String>()))
-                        .Returns((String x) => Task.FromResult(x));
+                        .Returns((String x) => x);
                     containersController.Request.Content =
                         new StringContent("{Handle: \"" + containerHandle + "\", Properties:{\"" + key + "\": \"" +
                                           value + "\"}}");
@@ -124,25 +124,6 @@ namespace Containerizer.Tests.Specs.Controllers
                             x.BulkSet(containerHandle, It.Is((Dictionary<string, string> y) => y[key] == value)));
                 };
             };
-            context["when the container is not created successfully"] = () =>
-            {
-                before =
-                    () =>
-                    {
-                        mockCreateContainerService.Setup(x => x.CreateContainer(It.IsAny<String>()))
-                            .ThrowsAsync(new CouldNotCreateContainerException(String.Empty, null));
-                        containersController.Request.Content = new StringContent("{Handle: \"guid\"}");
-                    };
-
-                it["returns a error status code"] = () =>
-                {
-                    Task<IHttpActionResult> postTask = containersController.Create();
-                    postTask.Wait();
-                    Task<HttpResponseMessage> resultTask = postTask.Result.ExecuteAsync(new CancellationToken());
-                    resultTask.Wait();
-                    resultTask.Result.IsSuccessStatusCode.should_be_false();
-                };
-            };
 
             context["when  properties are not passed to the endpoint"] = () =>
             {
@@ -152,7 +133,7 @@ namespace Containerizer.Tests.Specs.Controllers
                     containerHandle = Guid.NewGuid().ToString();
 
                     mockCreateContainerService.Setup(x => x.CreateContainer(It.IsAny<String>()))
-                        .Returns((String x) => Task.FromResult(x));
+                        .Returns((String x) => x);
                     containersController.Request.Content =
                         new StringContent("{Handle: \"" + containerHandle + "\"}");
                 };
