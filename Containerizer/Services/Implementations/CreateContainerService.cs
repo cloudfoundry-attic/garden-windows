@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using Containerizer.Services.Interfaces;
 using Microsoft.Web.Administration;
 
@@ -41,10 +40,7 @@ namespace Containerizer.Services.Implementations
                 {
                     throw new Exception("Please install IIS.", ex);
                 }
-                else
-                {
-                    throw;
-                }
+                throw;
             }
         }
     }

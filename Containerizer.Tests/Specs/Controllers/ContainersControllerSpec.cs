@@ -4,13 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Web.Http;
 using Containerizer.Controllers;
 using Containerizer.Services.Interfaces;
 using Moq;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using NSpec;
 
 #endregion
@@ -37,7 +35,6 @@ namespace Containerizer.Tests.Specs.Controllers
                     Configuration = new HttpConfiguration(),
                     Request = new HttpRequestMessage()
                 };
-
             };
 
             describe[Controller.Index] = () =>

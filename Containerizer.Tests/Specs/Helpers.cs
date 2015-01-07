@@ -142,7 +142,18 @@ namespace Containerizer.Tests.Specs
 
             foreach (var site in sm.Sites)
             {
-                if (site.State == ObjectState.Started)
+                Boolean isStarted;
+                try
+                {
+                    isStarted = site.State == ObjectState.Started;
+                }
+
+                catch(UnauthorizedAccessException ex)
+                {
+                   throw new Exception("Try restarting Visual Studio in Administrator mode.", ex); 
+                }
+
+                if (isStarted)
                 {
                     foreach (var binding in site.Bindings)
                     {

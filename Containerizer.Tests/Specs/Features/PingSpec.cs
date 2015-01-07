@@ -11,8 +11,6 @@ namespace Containerizer.Tests.Specs.Features
     internal class PingSpec : nspec
     {
         private HttpClient client;
-        private string containerPath;
-        private string id;
         private int port;
 
         private void before_each()

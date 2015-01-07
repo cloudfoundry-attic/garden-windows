@@ -5,7 +5,6 @@ using System.Threading;
 using System.Web.Http;
 using Newtonsoft.Json.Linq;
 using NSpec;
-using NUnit.Core.Filters;
 
 #endregion
 

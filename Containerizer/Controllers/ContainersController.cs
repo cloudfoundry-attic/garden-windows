@@ -16,11 +16,7 @@ namespace Containerizer.Controllers
     public class CreateResponse
     {
         [JsonProperty("id")]
-        public string Id
-        {
-            get;
-            set;
-        }
+        public string Id { get; set; }
     }
 
     public class ContainersController : ApiController
@@ -40,9 +36,9 @@ namespace Containerizer.Controllers
 
         [Route("api/containers")]
         [HttpGet]
-        public async Task<IHttpActionResult> Index()
+        public Task<IHttpActionResult> Index()
         {
-            return Json(containerPathService.ContainerIds());
+            return Task.FromResult((IHttpActionResult) Json(containerPathService.ContainerIds()));
         }
 
         [Route("api/containers")]
@@ -67,12 +63,12 @@ namespace Containerizer.Controllers
 
         [Route("api/containers/{id}")]
         [HttpDelete]
-        public async Task<HttpResponseMessage> Destroy(string id)
+        public Task<HttpResponseMessage> Destroy(string id)
         {
             //ServerManager serverManager = ServerManager.OpenRemote("localhost");
             //Site site = serverManager.Sites[id];
             //site.Stop();
-            return Request.CreateResponse(HttpStatusCode.OK);
+            return Task.FromResult(Request.CreateResponse(HttpStatusCode.OK));
         }
     }
 }

@@ -34,7 +34,6 @@ namespace Containerizer.Tests.Specs.Features
         private void describe_consumer_can_create_new_container()
         {
             HttpClient client = null;
-            ServerManager serverManager = null;
 
             context["given that I am a consumer of the api"] = () =>
             {

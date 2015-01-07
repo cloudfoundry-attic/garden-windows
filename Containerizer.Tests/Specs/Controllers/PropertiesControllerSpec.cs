@@ -6,7 +6,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Web.Http;
 using Containerizer.Controllers;
-using Containerizer.Services.Implementations;
 using Containerizer.Services.Interfaces;
 using Moq;
 using NSpec;
@@ -41,7 +40,7 @@ namespace Containerizer.Tests.Specs.Controllers
             describe[Controller.Index] = () =>
             {
                 HttpResponseMessage result = null;
-                Dictionary<string,string> properties = null;
+                Dictionary<string, string> properties = null;
                 string key1 = null;
                 string key2 = null;
 
@@ -50,7 +49,7 @@ namespace Containerizer.Tests.Specs.Controllers
                     key1 = Guid.NewGuid().ToString();
                     key2 = Guid.NewGuid().ToString();
 
-                    properties = new Dictionary<string, string>()
+                    properties = new Dictionary<string, string>
                     {
                         {key1, "hello"},
                         {key2, "keytothecity"}
@@ -75,7 +74,6 @@ namespace Containerizer.Tests.Specs.Controllers
                     json[key1].ToString().should_be(properties[key1]);
                     json[key2].ToString().should_be(properties[key2]);
                 };
-
             };
 
             describe[Controller.Show] = () =>

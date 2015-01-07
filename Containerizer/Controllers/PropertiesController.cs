@@ -1,11 +1,8 @@
 ﻿#region
 
-using System.Collections.Generic;
-using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web;
 using System.Web.Http;
 using Containerizer.Services.Interfaces;
 using Newtonsoft.Json;
@@ -33,13 +30,9 @@ namespace Containerizer.Controllers
 
         [Route("api/containers/{handle}/properties/{propertyKey}")]
         [HttpGet]
-        public async Task<IHttpActionResult> Show(string handle, string propertyKey)
+        public Task<IHttpActionResult> Show(string handle, string propertyKey)
         {
-            return
-                Json(new GetPropertyResponse
-                {
-                    Value = propertyService.Get(handle, propertyKey),
-                });
+            return Task.FromResult((IHttpActionResult)Json(new GetPropertyResponse {Value = propertyService.Get(handle, propertyKey)}));
         }
 
         [Route("api/containers/{id}/properties/{propertyKey}")]
@@ -83,13 +76,11 @@ namespace Containerizer.Controllers
         }
 
         [Route("api/containers/{handle}/properties/{key}")]
-
         [HttpDelete]
-        public async Task<IHttpActionResult> Destroy(string handle, string key)
+        public Task<IHttpActionResult> Destroy(string handle, string key)
         {
-
             propertyService.Destroy(handle, key);
-            return Ok();
+            return Task.FromResult((IHttpActionResult)Ok());
         }
     }
 }
