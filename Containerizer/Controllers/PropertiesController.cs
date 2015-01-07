@@ -23,12 +23,12 @@ namespace Containerizer.Controllers
 
     public class PropertiesController : ApiController
     {
-        private readonly IMetadataService metadataService;
+        private readonly IPropertyService propertyService;
 
 
-        public PropertiesController(IMetadataService metadataService)
+        public PropertiesController(IPropertyService propertyService)
         {
-            this.metadataService = metadataService;
+            this.propertyService = propertyService;
         }
 
         [Route("api/containers/{handle}/properties/{propertyKey}")]
@@ -38,7 +38,7 @@ namespace Containerizer.Controllers
             return
                 Json(new GetPropertyResponse
                 {
-                    Value = metadataService.GetMetadata(handle, propertyKey),
+                    Value = propertyService.Get(handle, propertyKey),
                 });
         }
 
@@ -92,7 +92,7 @@ namespace Containerizer.Controllers
         public async Task<HttpResponseMessage> Destroy(string handle, string key)
         {
 
-            metadataService.Destroy(handle, key);
+            propertyService.Destroy(handle, key);
             return Request.CreateResponse(HttpStatusCode.OK);
         }
     }

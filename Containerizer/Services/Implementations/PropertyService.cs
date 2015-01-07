@@ -9,19 +9,19 @@ using Containerizer.Services.Interfaces;
 
 namespace Containerizer.Services.Implementations
 {
-    public class MetadataService : IMetadataService
+    public class PropertyService : IPropertyService
     {
-        public string GetMetadata(string handle, string key)
+        public string Get(string handle, string key)
         {
             return ((Dictionary<string, string>) HttpContext.Current.Application[handle])[key];
         }
 
-        public void SetMetadata(string handle, string key, string value)
+        public void Set(string handle, string key, string value)
         {
             throw new NotImplementedException();
         }
 
-        public void BulkSetMetadata(string handle, Dictionary<string, string> properties)
+        public void BulkSet(string handle, Dictionary<string, string> properties)
         {
             HttpContext.Current.Application[handle] = properties;
         }

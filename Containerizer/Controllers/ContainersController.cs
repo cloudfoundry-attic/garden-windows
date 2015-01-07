@@ -23,15 +23,15 @@ namespace Containerizer.Controllers
     {
         private readonly IContainerPathService containerPathService;
         private readonly ICreateContainerService createContainerService;
-        private readonly IMetadataService metadataService;
+        private readonly IPropertyService propertyService;
 
 
         public ContainersController(IContainerPathService containerPathService,
-            ICreateContainerService createContainerService, IMetadataService metadataService)
+            ICreateContainerService createContainerService, IPropertyService propertyService)
         {
             this.containerPathService = containerPathService;
             this.createContainerService = createContainerService;
-            this.metadataService = metadataService;
+            this.propertyService = propertyService;
         }
 
         [Route("api/containers")]
@@ -55,7 +55,7 @@ namespace Containerizer.Controllers
                 {
                     var properties =
                         JsonConvert.DeserializeObject<Dictionary<string, string>>(json["Properties"].ToString());
-                    metadataService.BulkSetMetadata(id, properties);
+                    propertyService.BulkSet(id, properties);
                 }
                 return Json(new CreateResponse {Id = id});
             }

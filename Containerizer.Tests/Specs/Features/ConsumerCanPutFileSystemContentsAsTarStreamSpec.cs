@@ -71,7 +71,6 @@ namespace Containerizer.Tests.Specs.Features
                             content.Add(streamContent);
                             string path = "/api/containers/" + id + "/files?destination=%2F";
                             responseMessage = client.PutAsync(path, streamContent).GetAwaiter().GetResult();
-                            var x = 1;
                         };
 
                         it["returns a successful status code"] =

@@ -28,15 +28,15 @@ namespace Containerizer.Tests.Specs.Controllers
 
             };
 
-            Mock<IMetadataService> mockMetadataService = null;
+            Mock<IPropertyService> mockPropertyService = null;
             PropertiesController propertiesController = null;
             string containerHandle = null;
             string key = null;
 
             before = () =>
             {
-                mockMetadataService = new Mock<IMetadataService>();
-                propertiesController = new PropertiesController(mockMetadataService.Object)
+                mockPropertyService = new Mock<IPropertyService>();
+                propertiesController = new PropertiesController(mockPropertyService.Object)
                 {
                     Configuration = new HttpConfiguration(),
                     Request = new HttpRequestMessage()
@@ -53,7 +53,7 @@ namespace Containerizer.Tests.Specs.Controllers
                 before = () =>
                 {
                     propertyValue = "a lion, a hippo, the number 25";
-                    mockMetadataService.Setup(x => x.GetMetadata(It.IsIn(new[] { containerHandle }), It.IsIn(new[] { key })))
+                    mockPropertyService.Setup(x => x.Get(It.IsIn(new[] { containerHandle }), It.IsIn(new[] { key })))
                         .Returns(() =>
                         {
                             return propertyValue;
@@ -90,7 +90,7 @@ namespace Containerizer.Tests.Specs.Controllers
                 it["calls the propertyService destroy method"] = () =>
                 {
                     propertiesController.Destroy(containerHandle, key).Wait();
-                    mockMetadataService.Verify(x => x.Destroy(containerHandle, key));
+                    mockPropertyService.Verify(x => x.Destroy(containerHandle, key));
                 };
             };
         }

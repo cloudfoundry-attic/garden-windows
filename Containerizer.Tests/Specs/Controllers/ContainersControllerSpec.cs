@@ -22,15 +22,15 @@ namespace Containerizer.Tests.Specs.Controllers
         private ContainersController containersController;
         private Mock<IContainerPathService> mockContainerPathService;
         private Mock<ICreateContainerService> mockCreateContainerService;
-        private Mock<IMetadataService> mockMetadataService;
+        private Mock<IPropertyService> mockPropertyService;
 
         private void before_each()
         {
             mockContainerPathService = new Mock<IContainerPathService>();
             mockCreateContainerService = new Mock<ICreateContainerService>();
-            mockMetadataService = new Mock<IMetadataService>();
+            mockPropertyService = new Mock<IPropertyService>();
             containersController = new ContainersController(mockContainerPathService.Object,
-                mockCreateContainerService.Object, mockMetadataService.Object)
+                mockCreateContainerService.Object, mockPropertyService.Object)
             {
                 Configuration = new HttpConfiguration(),
                 Request = new HttpRequestMessage()
@@ -116,12 +116,12 @@ namespace Containerizer.Tests.Specs.Controllers
                     json["id"].ToString().should_be(containerHandle);
                 };
 
-                it["sets metadata"] = () =>
+                it["sets properties"] = () =>
                 {
                     containersController.Create().Wait();
-                    mockMetadataService.Verify(
+                    mockPropertyService.Verify(
                         x =>
-                            x.BulkSetMetadata(containerHandle, It.Is((Dictionary<string, string> y) => y[key] == value)));
+                            x.BulkSet(containerHandle, It.Is((Dictionary<string, string> y) => y[key] == value)));
                 };
             };
             context["when the container is not created successfully"] = () =>
@@ -144,7 +144,7 @@ namespace Containerizer.Tests.Specs.Controllers
                 };
             };
 
-            context["when metadata properties are not passed to the endpoint"] = () =>
+            context["when  properties are not passed to the endpoint"] = () =>
             {
                 before = () =>
                 {
