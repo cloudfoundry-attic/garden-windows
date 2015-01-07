@@ -18,7 +18,12 @@ namespace Containerizer.Services.Implementations
 
         public void Set(string handle, string key, string value)
         {
-            throw new NotImplementedException();
+            HttpApplicationState application = HttpContext.Current.Application;
+            if (application[handle] == null)
+            {
+                application[handle] = new Dictionary<string, string>();
+            }
+            ((Dictionary<string, string>) HttpContext.Current.Application[handle])[key] = value;
         }
 
         public void BulkSet(string handle, Dictionary<string, string> properties)
@@ -29,6 +34,11 @@ namespace Containerizer.Services.Implementations
         public void Destroy(string handle, string key)
         {
             ((Dictionary<string, string>) HttpContext.Current.Application[handle]).Remove(key);
+        }
+
+        public Dictionary<string, string> GetAll(string handle)
+        {
+            return ((Dictionary<string, string>) HttpContext.Current.Application[handle]);
         }
     }
 }

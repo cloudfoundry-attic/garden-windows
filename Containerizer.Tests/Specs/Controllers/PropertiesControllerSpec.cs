@@ -1,6 +1,7 @@
 ﻿#region
 
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Web.Http;
@@ -18,20 +19,11 @@ namespace Containerizer.Tests.Specs.Controllers
     {
         private void describe_()
         {
-            before = () =>
-            {
-
-            };
-
-            describe["Index"] = () =>
-            {
-
-            };
-
             Mock<IPropertyService> mockPropertyService = null;
             PropertiesController propertiesController = null;
             string containerHandle = null;
             string key = null;
+            string value = null;
 
             before = () =>
             {
@@ -43,9 +35,50 @@ namespace Containerizer.Tests.Specs.Controllers
                 };
                 containerHandle = Guid.NewGuid().ToString();
                 key = "some:key";
+                value = "value";
             };
 
-            describe["Show"] = () =>
+            describe[Controller.Index] = () =>
+            {
+                HttpResponseMessage result = null;
+                Dictionary<string,string> properties = null;
+                string key1 = null;
+                string key2 = null;
+
+                before = () =>
+                {
+                    key1 = Guid.NewGuid().ToString();
+                    key2 = Guid.NewGuid().ToString();
+
+                    properties = new Dictionary<string, string>()
+                    {
+                        {key1, "hello"},
+                        {key2, "keytothecity"}
+                    };
+                    mockPropertyService.Setup(x => x.GetAll(containerHandle))
+                        .Returns(() =>
+                        {
+                            return properties;
+                        });
+
+                    result = propertiesController.Index(containerHandle).Result;
+                };
+
+                it["returns a successful status code"] = () =>
+                {
+                    result.VerifiesSuccessfulStatusCode();
+                };
+
+                it["returns the correct properties"] = () =>
+                {
+                    var json = result.Content.ReadAsJson();
+                    json[key1].ToString().should_be(properties[key1]);
+                    json[key2].ToString().should_be(properties[key2]);
+                };
+
+            };
+
+            describe[Controller.Show] = () =>
             {
                 IHttpActionResult result = null;
                 string propertyValue = null;
@@ -53,7 +86,7 @@ namespace Containerizer.Tests.Specs.Controllers
                 before = () =>
                 {
                     propertyValue = "a lion, a hippo, the number 25";
-                    mockPropertyService.Setup(x => x.Get(It.IsIn(new[] { containerHandle }), It.IsIn(new[] { key })))
+                    mockPropertyService.Setup(x => x.Get(containerHandle, key))
                         .Returns(() =>
                         {
                             return propertyValue;
@@ -65,7 +98,7 @@ namespace Containerizer.Tests.Specs.Controllers
 
                 it["returns a successful status code"] = () =>
                 {
-                    result.ExecuteAsync(new CancellationToken()).Result.IsSuccessStatusCode.should_be_true();
+                    result.VerifiesSuccessfulStatusCode();
                 };
 
                 it["returns the correct property value"] = () =>
@@ -80,17 +113,42 @@ namespace Containerizer.Tests.Specs.Controllers
                 };
             };
 
-            describe["Update"] = () =>
+            describe[Controller.Update] = () =>
             {
+                IHttpActionResult result = null;
+                before = () =>
+                {
+                    propertiesController.Request.Content = new StringContent(value);
+                    result = propertiesController.Update(containerHandle, key).Result;
+                };
 
+                it["calls the propertyService set method"] = () =>
+                {
+                    mockPropertyService.Verify(x => x.Set(containerHandle, key, value));
+                };
+
+                it["returns a successful status code"] = () =>
+                {
+                    result.VerifiesSuccessfulStatusCode();
+                };
             };
 
-            describe["Destroy"] = () =>
+            describe[Controller.Destroy] = () =>
             {
+                IHttpActionResult result = null;
+                before = () =>
+                {
+                    result = propertiesController.Destroy(containerHandle, key).Result;
+                };
+
                 it["calls the propertyService destroy method"] = () =>
                 {
-                    propertiesController.Destroy(containerHandle, key).Wait();
                     mockPropertyService.Verify(x => x.Destroy(containerHandle, key));
+                };
+
+                it["returns a successful status code"] = () =>
+                {
+                    result.VerifiesSuccessfulStatusCode();
                 };
             };
         }

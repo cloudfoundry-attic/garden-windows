@@ -4,6 +4,8 @@ using System.Net.Http;
 using System.Threading;
 using System.Web.Http;
 using Newtonsoft.Json.Linq;
+using NSpec;
+using NUnit.Core.Filters;
 
 #endregion
 
@@ -16,9 +18,24 @@ namespace Containerizer.Tests.Specs
             return sender.ExecuteAsync(new CancellationToken()).GetAwaiter().GetResult();
         }
 
+        public static void VerifiesSuccessfulStatusCode(this HttpResponseMessage sender)
+        {
+            sender.IsSuccessStatusCode.should_be_true();
+        }
+
+        public static void VerifiesSuccessfulStatusCode(this IHttpActionResult sender)
+        {
+            sender.ExecuteAsync(new CancellationToken()).Result.IsSuccessStatusCode.should_be_true();
+        }
+
         public static string ReadAsString(this HttpContent content)
         {
             return content.ReadAsStringAsync().GetAwaiter().GetResult();
+        }
+
+        public static JObject ReadContentAsJson(this IHttpActionResult sender)
+        {
+            return sender.ExecuteAsync(new CancellationToken()).Result.Content.ReadAsJson();
         }
 
         public static JObject ReadAsJson(this HttpContent content)

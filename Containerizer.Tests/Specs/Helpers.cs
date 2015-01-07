@@ -16,6 +16,15 @@ using Newtonsoft.Json.Linq;
 
 namespace Containerizer.Tests.Specs
 {
+    public static class Controller
+    {
+        public const string Index = "Index";
+        public const string Show = "Show";
+        public const string Create = "Create";
+        public const string Update = "Update";
+        public const string Destroy = "Destroy";
+    }
+
     public static class Helpers
     {
         /// <returns>The newly created container's id.</returns>

@@ -47,12 +47,7 @@ namespace Containerizer.Controllers
         public async Task<IHttpActionResult> Update(string id, string propertyKey)
         {
             string requestBody = await Request.Content.ReadAsStringAsync();
-            HttpApplicationState application = HttpContext.Current.Application;
-            if (application[id] == null)
-            {
-                application[id] = new Dictionary<string, string>();
-            }
-            ((Dictionary<string, string>) HttpContext.Current.Application[id])[propertyKey] = requestBody;
+            propertyService.Set(id, propertyKey, requestBody);
             return Json(new GetPropertyResponse {Value = "I did a thing"});
         }
 
@@ -60,7 +55,7 @@ namespace Containerizer.Controllers
         [HttpGet]
         public Task<HttpResponseMessage> Index(string id)
         {
-            var dictionary = (Dictionary<string, string>) HttpContext.Current.Application[id];
+            var dictionary = propertyService.GetAll(id);
             if (dictionary == null)
             {
                 const string ourJson = "{}";
@@ -88,12 +83,13 @@ namespace Containerizer.Controllers
         }
 
         [Route("api/containers/{handle}/properties/{key}")]
+
         [HttpDelete]
-        public async Task<HttpResponseMessage> Destroy(string handle, string key)
+        public async Task<IHttpActionResult> Destroy(string handle, string key)
         {
 
             propertyService.Destroy(handle, key);
-            return Request.CreateResponse(HttpStatusCode.OK);
+            return Ok();
         }
     }
 }
