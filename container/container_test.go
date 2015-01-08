@@ -351,7 +351,7 @@ var _ = Describe("container", func() {
 		BeforeEach(func() {
 			server.AppendHandlers(
 				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/api/containers/containerhandle/properties/key%3Aval"),
+					ghttp.VerifyRequest("GET", "/api/containers/containerhandle/properties/key:val"),
 					ghttp.RespondWith(200, "a value"),
 				),
 			)
