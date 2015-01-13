@@ -9,14 +9,14 @@ import (
 
 	"strings"
 
-	"github.com/cloudfoundry-incubator/garden/api"
+	"github.com/cloudfoundry-incubator/garden"
 	"github.com/pivotal-cf-experimental/garden-dot-net/container"
 	"github.com/pivotal-golang/lager"
 )
 
 type dotNetBackend struct {
 	containerizerURL url.URL
-        logger lager.Logger 
+	logger           lager.Logger
 }
 
 func NewDotNetBackend(containerizerURL string, logger lager.Logger) (*dotNetBackend, error) {
@@ -26,7 +26,7 @@ func NewDotNetBackend(containerizerURL string, logger lager.Logger) (*dotNetBack
 	}
 	return &dotNetBackend{
 		containerizerURL: *u,
-		logger: logger,
+		logger:           logger,
 	}, nil
 }
 
@@ -40,7 +40,7 @@ func (dotNetBackend *dotNetBackend) Start() error {
 
 func (dotNetBackend *dotNetBackend) Stop() {}
 
-func (dotNetBackend *dotNetBackend) GraceTime(api.Container) time.Duration {
+func (dotNetBackend *dotNetBackend) GraceTime(garden.Container) time.Duration {
 	return time.Second
 }
 
@@ -53,8 +53,8 @@ func (dotNetBackend *dotNetBackend) Ping() error {
 	return nil
 }
 
-func (dotNetBackend *dotNetBackend) Capacity() (api.Capacity, error) {
-	capacity := api.Capacity{
+func (dotNetBackend *dotNetBackend) Capacity() (garden.Capacity, error) {
+	capacity := garden.Capacity{
 		MemoryInBytes: 8 * 1024 * 1024 * 1024,
 		DiskInBytes:   80 * 1024 * 1024 * 1024,
 		MaxContainers: 100,
@@ -62,7 +62,7 @@ func (dotNetBackend *dotNetBackend) Capacity() (api.Capacity, error) {
 	return capacity, nil
 }
 
-func (dotNetBackend *dotNetBackend) Create(containerSpec api.ContainerSpec) (api.Container, error) {
+func (dotNetBackend *dotNetBackend) Create(containerSpec garden.ContainerSpec) (garden.Container, error) {
 	url := dotNetBackend.containerizerURL.String() + "/api/containers"
 	containerSpecJSON, err := json.Marshal(containerSpec)
 	if err != nil {
@@ -90,7 +90,7 @@ func (dotNetBackend *dotNetBackend) Destroy(handle string) error {
 	return err
 }
 
-func (dotNetBackend *dotNetBackend) Containers(api.Properties) ([]api.Container, error) {
+func (dotNetBackend *dotNetBackend) Containers(garden.Properties) ([]garden.Container, error) {
 	url := dotNetBackend.containerizerURL.String() + "/api/containers"
 	response, err := http.Get(url)
 	if err != nil {
@@ -104,14 +104,14 @@ func (dotNetBackend *dotNetBackend) Containers(api.Properties) ([]api.Container,
 	}
 	err = json.Unmarshal(body, &ids)
 
-	containers := []api.Container{}
+	containers := []garden.Container{}
 	for _, containerId := range ids {
 		containers = append(containers, container.NewContainer(dotNetBackend.containerizerURL, containerId, dotNetBackend.logger))
 	}
 	return containers, nil
 }
 
-func (dotNetBackend *dotNetBackend) Lookup(handle string) (api.Container, error) {
+func (dotNetBackend *dotNetBackend) Lookup(handle string) (garden.Container, error) {
 	netContainer := container.NewContainer(dotNetBackend.containerizerURL, handle, dotNetBackend.logger)
 	return netContainer, nil
 }

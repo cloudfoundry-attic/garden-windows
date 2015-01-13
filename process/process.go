@@ -3,7 +3,7 @@ package process
 import (
 	"errors"
 
-	"github.com/cloudfoundry-incubator/garden/api"
+	"github.com/cloudfoundry-incubator/garden"
 )
 
 type DotNetProcess struct {
@@ -29,6 +29,10 @@ func (process DotNetProcess) Wait() (int, error) {
 	return 0, nil
 }
 
-func (process DotNetProcess) SetTTY(ttyspec api.TTYSpec) error {
+func (process DotNetProcess) SetTTY(ttyspec garden.TTYSpec) error {
+	return nil
+}
+
+func (process DotNetProcess) Signal(signal garden.Signal) error {
 	return nil
 }

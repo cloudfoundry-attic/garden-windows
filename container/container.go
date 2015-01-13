@@ -11,7 +11,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/cloudfoundry-incubator/garden/api"
+	"github.com/cloudfoundry-incubator/garden"
 	"github.com/pivotal-cf-experimental/garden-dot-net/process"
 
 	"code.google.com/p/go.net/websocket"
@@ -30,9 +30,9 @@ type netInResponse struct {
 }
 
 type ProcessStreamEvent struct {
-	MessageType    string          `json:"type"`
-	ApiProcessSpec api.ProcessSpec `json:"pspec"`
-	Data           string          `json:"data"`
+	MessageType    string             `json:"type"`
+	ApiProcessSpec garden.ProcessSpec `json:"pspec"`
+	Data           string             `json:"data"`
 }
 
 func NewContainer(containerizerURL url.URL, handle string, logger lager.Logger) *container {
@@ -51,7 +51,7 @@ func (container *container) Stop(kill bool) error {
 	return nil
 }
 
-func (container *container) Info() (api.ContainerInfo, error) {
+func (container *container) Info() (garden.ContainerInfo, error) {
 	url := container.containerizerURL.String() + "/api/containers/" + container.Handle() + "/properties"
 	container.logger.Info("GETTING INFO", lager.Data{
 		"url": url,
@@ -61,31 +61,31 @@ func (container *container) Info() (api.ContainerInfo, error) {
 		container.logger.Info("ERROR GETTING PROPERTIES", lager.Data{
 			"error": err,
 		})
-		return api.ContainerInfo{}, err
+		return garden.ContainerInfo{}, err
 	}
 	defer response.Body.Close()
 	rawJSON, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return api.ContainerInfo{}, err
+		return garden.ContainerInfo{}, err
 	}
-	properties := api.Properties{}
+	properties := garden.Properties{}
 	err = json.Unmarshal(rawJSON, &properties)
 	if err != nil {
 		container.logger.Info("ERROR UNMARSHALING PROPERTIES", lager.Data{
 			"error": err,
 		})
-		return api.ContainerInfo{}, nil
+		return garden.ContainerInfo{}, nil
 	}
-	mappedPorts := api.PortMapping{
+	mappedPorts := garden.PortMapping{
 		HostPort:      8080,
 		ContainerPort: 8080,
 	}
-	containerInfo := api.ContainerInfo{
+	containerInfo := garden.ContainerInfo{
 		Properties:  properties,
 		HostIP:      "HOST_IP",
 		ContainerIP: "CONTAINER_IP",
 		ExternalIP:  "EXTERNAL_IP",
-		MappedPorts: []api.PortMapping{mappedPorts},
+		MappedPorts: []garden.PortMapping{mappedPorts},
 	}
 	container.logger.Info("CONTAINER INFO", lager.Data{
 		"containerInfo": containerInfo,
@@ -120,33 +120,33 @@ func (container *container) StreamOut(srcPath string) (io.ReadCloser, error) {
 	return resp.Body, nil
 }
 
-func (container *container) LimitBandwidth(limits api.BandwidthLimits) error {
+func (container *container) LimitBandwidth(limits garden.BandwidthLimits) error {
 	return nil
 }
-func (container *container) CurrentBandwidthLimits() (api.BandwidthLimits, error) {
-	return api.BandwidthLimits{}, nil
+func (container *container) CurrentBandwidthLimits() (garden.BandwidthLimits, error) {
+	return garden.BandwidthLimits{}, nil
 }
 
-func (container *container) LimitCPU(limits api.CPULimits) error {
+func (container *container) LimitCPU(limits garden.CPULimits) error {
 	return nil
 }
 
-func (container *container) CurrentCPULimits() (api.CPULimits, error) {
-	return api.CPULimits{}, nil
+func (container *container) CurrentCPULimits() (garden.CPULimits, error) {
+	return garden.CPULimits{}, nil
 }
 
-func (container *container) LimitDisk(limits api.DiskLimits) error {
+func (container *container) LimitDisk(limits garden.DiskLimits) error {
 	return nil
 }
-func (container *container) CurrentDiskLimits() (api.DiskLimits, error) {
-	return api.DiskLimits{}, nil
+func (container *container) CurrentDiskLimits() (garden.DiskLimits, error) {
+	return garden.DiskLimits{}, nil
 }
 
-func (container *container) LimitMemory(limits api.MemoryLimits) error {
+func (container *container) LimitMemory(limits garden.MemoryLimits) error {
 	return nil
 }
-func (container *container) CurrentMemoryLimits() (api.MemoryLimits, error) {
-	return api.MemoryLimits{}, nil
+func (container *container) CurrentMemoryLimits() (garden.MemoryLimits, error) {
+	return garden.MemoryLimits{}, nil
 }
 
 func (container *container) NetIn(hostPort, containerPort uint32) (uint32, uint32, error) {
@@ -173,7 +173,7 @@ func (container *container) NetIn(hostPort, containerPort uint32) (uint32, uint3
 	return responseJSON.HostPort, containerPort, err
 }
 
-func (container *container) NetOut(network string, port uint32) error {
+func (container *container) NetOut(network string, port uint32, portRange string, protocol garden.Protocol, icmpType int32, icmpCode int32) error {
 	return nil
 }
 
@@ -183,7 +183,7 @@ func (container *container) containerizerWS() string {
 	return u2.String()
 }
 
-func (container *container) Run(processSpec api.ProcessSpec, processIO api.ProcessIO) (api.Process, error) {
+func (container *container) Run(processSpec garden.ProcessSpec, processIO garden.ProcessIO) (garden.Process, error) {
 	origin := "http://localhost/"
 	wsUri := container.containerizerWS() + "/api/containers/" + container.handle + "/run"
 	ws, err := websocket.Dial(wsUri, "", origin)
@@ -209,7 +209,7 @@ func (container *container) Run(processSpec api.ProcessSpec, processIO api.Proce
 	return proc, nil
 }
 
-func (container *container) Attach(uint32, api.ProcessIO) (api.Process, error) {
+func (container *container) Attach(uint32, garden.ProcessIO) (garden.Process, error) {
 	return process.NewDotNetProcess(), nil
 }
 
@@ -277,7 +277,7 @@ func (container *container) RemoveProperty(name string) error {
 	return nil
 }
 
-func streamWebsocketIOToContainerizer(ws *websocket.Conn, processIO api.ProcessIO) {
+func streamWebsocketIOToContainerizer(ws *websocket.Conn, processIO garden.ProcessIO) {
 	if processIO.Stdin != nil {
 		fiw := faninWriter{
 			hasSink: make(chan struct{}),
@@ -287,7 +287,7 @@ func streamWebsocketIOToContainerizer(ws *websocket.Conn, processIO api.ProcessI
 	}
 }
 
-func streamWebsocketIOFromContainerizer(ws *websocket.Conn, processIO api.ProcessIO) error {
+func streamWebsocketIOFromContainerizer(ws *websocket.Conn, processIO garden.ProcessIO) error {
 	receiveStream := ProcessStreamEvent{}
 	for {
 		err := websocket.JSON.Receive(ws, &receiveStream)
