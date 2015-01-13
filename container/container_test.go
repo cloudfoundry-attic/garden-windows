@@ -4,7 +4,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"github.com/cloudfoundry-incubator/garden/api"
+	"github.com/cloudfoundry-incubator/garden"
 	netContainer "github.com/pivotal-cf-experimental/garden-dot-net/container"
 	"github.com/pivotal-cf-experimental/garden-dot-net/process"
 
@@ -28,7 +28,7 @@ func uint64ptr(n uint64) *uint64 {
 
 var _ = Describe("container", func() {
 	var server *ghttp.Server
-	var container api.Container
+	var container garden.Container
 	var logger *lagertest.TestLogger
 
 	BeforeEach(func() {
@@ -195,10 +195,10 @@ var _ = Describe("container", func() {
 		})
 
 		It("runs a script via a websocket and also passes rlimits", func() {
-			processSpec := api.ProcessSpec{
+			processSpec := garden.ProcessSpec{
 				Path: "/some/script",
 				Args: []string{"arg1", "arg2"},
-				Limits: api.ResourceLimits{
+				Limits: garden.ResourceLimits{
 					As:         uint64ptr(1),
 					Core:       uint64ptr(2),
 					Cpu:        uint64ptr(3),
@@ -216,7 +216,7 @@ var _ = Describe("container", func() {
 					Stack:      uint64ptr(15),
 				},
 			}
-			_, err := container.Run(processSpec, api.ProcessIO{})
+			_, err := container.Run(processSpec, garden.ProcessIO{})
 
 			Ω(err).ShouldNot(HaveOccurred())
 			Eventually(func() []netContainer.ProcessStreamEvent {
@@ -229,7 +229,7 @@ var _ = Describe("container", func() {
 
 		It("streams stdout from the websocket back through garden", func() {
 			stdout := gbytes.NewBuffer()
-			_, err := container.Run(api.ProcessSpec{}, api.ProcessIO{
+			_, err := container.Run(garden.ProcessSpec{}, garden.ProcessIO{
 				Stdout: stdout,
 			})
 			Ω(err).ShouldNot(HaveOccurred())
@@ -243,7 +243,7 @@ var _ = Describe("container", func() {
 
 		It("streams stderr from the websocket back through garden", func() {
 			stderr := gbytes.NewBuffer()
-			_, err := container.Run(api.ProcessSpec{}, api.ProcessIO{
+			_, err := container.Run(garden.ProcessSpec{}, garden.ProcessIO{
 				Stderr: stderr,
 			})
 			Ω(err).ShouldNot(HaveOccurred())
@@ -258,7 +258,7 @@ var _ = Describe("container", func() {
 		It("seperates stdout and stderr streams from the websocket", func() {
 			stdout := gbytes.NewBuffer()
 			stderr := gbytes.NewBuffer()
-			_, err := container.Run(api.ProcessSpec{}, api.ProcessIO{
+			_, err := container.Run(garden.ProcessSpec{}, garden.ProcessIO{
 				Stdout: stdout,
 				Stderr: stderr,
 			})
@@ -280,7 +280,7 @@ var _ = Describe("container", func() {
 		It("streams stdin over the websocket", func() {
 			stdin := gbytes.NewBuffer()
 
-			_, err := container.Run(api.ProcessSpec{}, api.ProcessIO{
+			_, err := container.Run(garden.ProcessSpec{}, garden.ProcessIO{
 				Stdin: stdin,
 			})
 			Ω(err).ShouldNot(HaveOccurred())
@@ -298,7 +298,7 @@ var _ = Describe("container", func() {
 		})
 
 		It("closes the WebSocketOpen channel on the proc when a close event is received", func() {
-			proc, err := container.Run(api.ProcessSpec{}, api.ProcessIO{})
+			proc, err := container.Run(garden.ProcessSpec{}, garden.ProcessIO{})
 			Ω(err).ShouldNot(HaveOccurred())
 
 			websocket.JSON.Send(testServer.handlerWS, netContainer.ProcessStreamEvent{
@@ -310,7 +310,7 @@ var _ = Describe("container", func() {
 
 		Context("when we receive an error on the channel", func() {
 			It("returns the error", func() {
-				proc, err := container.Run(api.ProcessSpec{}, api.ProcessIO{})
+				proc, err := container.Run(garden.ProcessSpec{}, garden.ProcessIO{})
 				Ω(err).ShouldNot(HaveOccurred())
 
 				websocket.JSON.Send(testServer.handlerWS, netContainer.ProcessStreamEvent{
@@ -322,7 +322,7 @@ var _ = Describe("container", func() {
 			})
 
 			It("closes the WebSocketOpen channel on the proc", func() {
-				proc, err := container.Run(api.ProcessSpec{}, api.ProcessIO{})
+				proc, err := container.Run(garden.ProcessSpec{}, garden.ProcessIO{})
 				Ω(err).ShouldNot(HaveOccurred())
 
 				websocket.JSON.Send(testServer.handlerWS, netContainer.ProcessStreamEvent{
@@ -339,7 +339,7 @@ var _ = Describe("container", func() {
 			})
 
 			It("returns the error", func(done Done) {
-				_, err := container.Run(api.ProcessSpec{}, api.ProcessIO{})
+				_, err := container.Run(garden.ProcessSpec{}, garden.ProcessIO{})
 				Ω(err).Should(HaveOccurred())
 
 				close(done)

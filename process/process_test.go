@@ -8,12 +8,12 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"github.com/cloudfoundry-incubator/garden/api"
+	"github.com/cloudfoundry-incubator/garden"
 	"github.com/pivotal-cf-experimental/garden-dot-net/process"
 )
 
 var _ = Describe("process", func() {
-	var proc api.Process
+	var proc garden.Process
 
 	BeforeEach(func() {
 		proc = process.NewDotNetProcess()

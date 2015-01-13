@@ -6,7 +6,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"github.com/cloudfoundry-incubator/garden/api"
+	"github.com/cloudfoundry-incubator/garden"
 	"github.com/pivotal-cf-experimental/garden-dot-net/backend"
 	"github.com/pivotal-cf-experimental/garden-dot-net/container"
 	"github.com/pivotal-golang/lager/lagertest"
@@ -18,7 +18,7 @@ import (
 
 var _ = Describe("backend", func() {
 	var server *ghttp.Server
-	var dotNetBackend api.Backend
+	var dotNetBackend garden.Backend
 	var serverUri *url.URL
 	var logger *lagertest.TestLogger
 
@@ -48,7 +48,7 @@ var _ = Describe("backend", func() {
 		It("returns a list of containers", func() {
 			containers, err := dotNetBackend.Containers(nil)
 			Ω(err).NotTo(HaveOccurred())
-			Ω(containers).Should(Equal([]api.Container{
+			Ω(containers).Should(Equal([]garden.Container{
 				container.NewContainer(*serverUri, "MyFirstContainer", logger),
 				container.NewContainer(*serverUri, "MySecondContainer", logger),
 			}))
@@ -56,10 +56,10 @@ var _ = Describe("backend", func() {
 	})
 
 	Describe("Create", func() {
-		var testContainer api.ContainerSpec
+		var testContainer garden.ContainerSpec
 
 		BeforeEach(func() {
-			testContainer = api.ContainerSpec{
+			testContainer = garden.ContainerSpec{
 				Handle:     "Fred",
 				GraceTime:  1 * time.Second,
 				RootFSPath: "/stuff",
