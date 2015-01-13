@@ -84,7 +84,7 @@ func (container *container) Info() (garden.ContainerInfo, error) {
 		Properties:  properties,
 		HostIP:      "HOST_IP",
 		ContainerIP: "CONTAINER_IP",
-		ExternalIP:  "EXTERNAL_IP",
+		ExternalIP:  container.containerizerHost(),
 		MappedPorts: []garden.PortMapping{mappedPorts},
 	}
 	container.logger.Info("CONTAINER INFO", lager.Data{
@@ -275,6 +275,10 @@ func (container *container) RemoveProperty(name string) error {
 
 	response.Body.Close()
 	return nil
+}
+
+func (container *container) containerizerHost() string {
+	return strings.Split(container.containerizerURL.Host, ":")[0]
 }
 
 func streamWebsocketIOToContainerizer(ws *websocket.Conn, processIO garden.ProcessIO) {

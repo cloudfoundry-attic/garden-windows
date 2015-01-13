@@ -30,12 +30,14 @@ var _ = Describe("container", func() {
 	var server *ghttp.Server
 	var container garden.Container
 	var logger *lagertest.TestLogger
+	var containerizerURL url.URL
 
 	BeforeEach(func() {
 		server = ghttp.NewServer()
 		u, _ := url.Parse(server.URL())
+		containerizerURL = *u
 		logger = lagertest.NewTestLogger("container")
-		container = netContainer.NewContainer(*u, "containerhandle", logger)
+		container = netContainer.NewContainer(containerizerURL, "containerhandle", logger)
 	})
 
 	AfterEach(func() {
@@ -61,7 +63,9 @@ var _ = Describe("container", func() {
 		It("returns info about the container", func() {
 			info, err := container.Info()
 			Ω(err).NotTo(HaveOccurred())
-			Ω(info.Properties).Should(Equal(api.Properties{"Keymaster": "Gatekeeper"}))
+			Ω(info.Properties).Should(Equal(garden.Properties{"Keymaster": "Gatekeeper"}))
+			expectedHost := strings.Split(containerizerURL.Host, ":")[0]
+			Ω(info.ExternalIP).Should(Equal(expectedHost))
 		})
 	})
 
