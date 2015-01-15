@@ -6,7 +6,7 @@ using System;
 
 namespace Containerizer.Services.Interfaces
 {
-    public interface ICreateContainerService
+    public interface IContainerService
     {
         string CreateContainer(String containerId);
     }

@@ -12,7 +12,7 @@ using NSpec;
 
 namespace Containerizer.Tests.Specs.Services
 {
-    internal class CreateContainersServiceSpec : nspec
+    internal class ContainersServiceSpec : nspec
     {
         private void describe_()
         {
@@ -25,9 +25,9 @@ namespace Containerizer.Tests.Specs.Services
                 before = () =>
                 {
                     passedInId = Guid.NewGuid() + "-" + Guid.NewGuid();
-                    var createContainerService = new CreateContainerService();
-                    returnedId = createContainerService.CreateContainer(passedInId);
-                    createContainerService = new CreateContainerService();
+                    var containerService = new ContainerService();
+                    returnedId = containerService.CreateContainer(passedInId);
+                    containerService = new ContainerService();
                     serverManager = ServerManager.OpenRemote("localhost");
                 };
 
@@ -95,6 +95,33 @@ namespace Containerizer.Tests.Specs.Services
                                 .PhysicalPath.should_be(expectedPath);
                         };
                 };
+            };
+
+            describe["#DeleteContainer"] = () =>
+            {
+                string handle = null;
+                string appPoolName = null;
+                ServerManager serverManager = null;
+
+                before = () =>
+                {
+                    handle = Guid.NewGuid() + "-" + Guid.NewGuid();
+                    appPoolName = "FakeAppPoolName";
+                    Helpers.SetupSiteInIIS(Directory.GetCurrentDirectory(), handle, appPoolName);
+
+                    var containerService = new ContainerService();
+                    serverManager = ServerManager.OpenRemote("localhost");
+                    serverManager.Sites.should_contain(x => x.Name == handle);
+                    serverManager.ApplicationPools.should_contain(x => x.Name == appPoolName);
+
+                    containerService.DeleteContainer(handle);
+                };
+
+                it["destroys the site in IIS with the given name"] =
+                    () => { serverManager.Sites.should_not_contain(x => x.Name == handle); };
+
+                it["destroys the app pool in IIS with the given name"] =
+                    () => { serverManager.ApplicationPools.should_not_contain(x => x.Name == appPoolName); };
             };
         }
     }

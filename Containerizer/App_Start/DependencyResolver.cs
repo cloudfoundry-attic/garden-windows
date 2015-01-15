@@ -19,7 +19,7 @@ namespace Containerizer
         public DependencyResolver()
         {
             var containerBuilder = new ContainerBuilder();
-            containerBuilder.RegisterType<CreateContainerService>().As<ICreateContainerService>();
+            containerBuilder.RegisterType<ContainerService>().As<IContainerService>();
             containerBuilder.RegisterType<ContainerPathService>().As<IContainerPathService>();
             containerBuilder.RegisterType<NetInService>().As<INetInService>();
             containerBuilder.RegisterType<StreamInService>().As<IStreamInService>();

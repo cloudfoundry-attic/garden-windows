@@ -23,15 +23,15 @@ namespace Containerizer.Controllers
     public class ContainersController : ApiController
     {
         private readonly IContainerPathService containerPathService;
-        private readonly ICreateContainerService createContainerService;
+        private readonly IContainerService _containerService;
         private readonly IPropertyService propertyService;
 
 
         public ContainersController(IContainerPathService containerPathService,
-            ICreateContainerService createContainerService, IPropertyService propertyService)
+            IContainerService _containerService, IPropertyService propertyService)
         {
             this.containerPathService = containerPathService;
-            this.createContainerService = createContainerService;
+            this._containerService = _containerService;
             this.propertyService = propertyService;
         }
 
@@ -48,7 +48,7 @@ namespace Containerizer.Controllers
         {
             string content = await Request.Content.ReadAsStringAsync();
             JObject json = JObject.Parse(content);
-            string id = createContainerService.CreateContainer(json["Handle"].ToString());
+            string id = _containerService.CreateContainer(json["Handle"].ToString());
 
             if (json["Properties"] != null)
             {

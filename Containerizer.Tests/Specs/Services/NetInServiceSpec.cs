@@ -16,14 +16,14 @@ namespace Containerizer.Tests.Specs.Services
         {
             context["#AddPort"] = () =>
             {
-                CreateContainerService createContainerService = null;
+                ContainerService containerService = null;
                 string containerId = null;
 
                 before = () =>
                 {
-                    createContainerService = new CreateContainerService();
+                    containerService = new ContainerService();
                     containerId =
-                        createContainerService.CreateContainer(Guid.NewGuid().ToString());
+                        containerService.CreateContainer(Guid.NewGuid().ToString());
                     containerId.should_not_be_null();
                 };
 
