@@ -14,6 +14,8 @@ namespace Containerizer.Services.Interfaces
 
         string GetSubdirectory(string id, string destination);
 
+        void DeleteContainerDirectory(string id);
+
         IEnumerable<string> ContainerIds();
     }
 }

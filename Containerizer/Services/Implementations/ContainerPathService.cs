@@ -22,6 +22,11 @@ namespace Containerizer.Services.Implementations
             Directory.CreateDirectory(GetContainerRoot(id));
         }
 
+        public void DeleteContainerDirectory(string id)
+        {
+            Directory.Delete(GetContainerRoot(id));
+        }
+
         public string GetSubdirectory(string id, string destination)
         {
             return Path.GetFullPath(GetContainerRoot(id) + destination);

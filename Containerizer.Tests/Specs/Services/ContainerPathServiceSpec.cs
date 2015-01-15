@@ -94,6 +94,20 @@ namespace Containerizer.Tests.Specs.Services
                     Directory.Delete(expectedPath);
                 };
             };
+
+            describe["#DeleteContainerDirectory"] = () =>
+            {
+                before = () =>
+                {
+                    Directory.CreateDirectory(expectedPath);
+                    containerPathService.DeleteContainerDirectory(id);
+                };
+                
+                it["delete the container's root directory"] = () =>
+                {
+                    Directory.Exists(expectedPath).should_be_false();
+                };
+            };
         }
     }
 }

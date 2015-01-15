@@ -2,9 +2,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Web.Http;
+using System.Xml.Schema;
 using Containerizer.Controllers;
 using Containerizer.Services.Interfaces;
 using Moq;
@@ -138,6 +140,56 @@ namespace Containerizer.Tests.Specs.Controllers
                     {
                         result.VerifiesSuccessfulStatusCode();
                     };
+                };
+            };
+
+            describe[Controller.Destroy] = () =>
+            {
+                HttpResponseMessage result = null;
+
+                act = () => result = containersController.Destroy("MySecondContainer").GetAwaiter().GetResult();
+
+                context["a handle which exists"] = () =>
+                {
+                    before = () =>
+                    {
+                        mockContainerPathService.Setup(x => x.ContainerIds())
+                            .Returns(new List<string>
+                            {
+                                "MyFirstContainer",
+                                "MySecondContainer",
+                                "MyThirdContainer"
+                            });
+                    };
+
+                    it["returns 200"] = () =>
+                    {
+                        result.StatusCode.should_be(HttpStatusCode.OK);
+                    };
+
+                    it["calls delete on the containerPathService"] = () =>
+                    {
+                        mockContainerPathService.Verify(x => x.DeleteContainerDirectory("MySecondContainer"));
+                    };
+                };
+
+                context["a handle which does not exist"] = () =>
+                {
+                    before = () =>
+                    {
+                        mockContainerPathService.Setup(x => x.ContainerIds())
+                            .Returns(new List<string>
+                            {
+                                "MyFirstContainer",
+                                "MyThirdContainer"
+                            });
+                    };
+
+                    it["returns 404"] = () =>
+                    {
+                        result.StatusCode.should_be(HttpStatusCode.NotFound);
+                    };
+
                 };
             };
         }

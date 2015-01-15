@@ -1,6 +1,7 @@
 ﻿#region
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -68,7 +69,14 @@ namespace Containerizer.Controllers
             //ServerManager serverManager = ServerManager.OpenRemote("localhost");
             //Site site = serverManager.Sites[id];
             //site.Stop();
-            return Task.FromResult(Request.CreateResponse(HttpStatusCode.OK));
+
+            if (containerPathService.ContainerIds().Contains(id))
+            {
+                containerPathService.DeleteContainerDirectory(id);
+                return Task.FromResult(Request.CreateResponse(HttpStatusCode.OK));
+            }
+
+            return Task.FromResult(Request.CreateResponse(HttpStatusCode.NotFound));
         }
     }
 }
