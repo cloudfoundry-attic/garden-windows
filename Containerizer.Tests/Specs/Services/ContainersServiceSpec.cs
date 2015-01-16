@@ -107,7 +107,7 @@ namespace Containerizer.Tests.Specs.Services
                 {
                     handle = Guid.NewGuid() + "-" + Guid.NewGuid();
                     appPoolName = "FakeAppPoolName";
-                    Helpers.SetupSiteInIIS(Directory.GetCurrentDirectory(), handle, appPoolName);
+                    Helpers.SetupSiteInIIS(Directory.GetCurrentDirectory(), handle, appPoolName, 3333, false);
 
                     var containerService = new ContainerService();
                     serverManager = ServerManager.OpenRemote("localhost");

@@ -1,6 +1,7 @@
 #region
 
 using System;
+using System.Text;
 
 #endregion
 
@@ -18,7 +19,17 @@ namespace Containerizer.Models
                 return null;
             }
 
-            return String.Join(" ", Args);
+            var builder = new StringBuilder();
+            foreach (string arg in Args)
+            {
+                if (builder.Length > 0)
+                    builder.Append(" ");
+                
+                builder.Append("\"")
+                    .Append(arg.Replace("\\", "\\\\").Replace("\"", "\\\""))
+                    .Append("\"");
+            }
+            return builder.ToString();
         }
     }
 }

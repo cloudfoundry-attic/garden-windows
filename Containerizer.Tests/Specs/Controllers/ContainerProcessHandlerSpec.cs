@@ -102,7 +102,7 @@ namespace Containerizer.Tests.Specs.Controllers
             it["sets start info correctly"] = () =>
             {
                 startInfo.FileName.should_be("C:\\A\\Directory\\foo.exe");
-                startInfo.Arguments.should_be("some args");
+                startInfo.Arguments.should_be("\"some\" \"args\"");
             };
 
             it["runs something"] = () =>
