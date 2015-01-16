@@ -119,7 +119,7 @@
     <Compile Include="Specs\Services\TarStreamServiceSpec.cs" />
     <Compile Include="Specs\Services\ContainerPathServiceSpec.cs" />
     <Compile Include="Specs\Services\StreamOutServiceSpec.cs" />
-    <Compile Include="Specs\Services\ContainersServiceSpec.cs" />
+    <Compile Include="Specs\Services\ContainerServiceSpec.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>

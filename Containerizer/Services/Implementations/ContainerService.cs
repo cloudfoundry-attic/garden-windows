@@ -50,21 +50,20 @@ namespace Containerizer.Services.Implementations
             try
             {
                 ServerManager serverManager = ServerManager.OpenRemote("localhost");
-                string rootDir =
-                    Directory.GetDirectoryRoot(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+                string rootDir = Directory.GetDirectoryRoot(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
                 string path = Path.Combine(rootDir, "containerizer", containerId);
 
-                serverManager.Sites.Each(site =>
+                var site = serverManager.Sites.FirstOrDefault(s => s.Name == containerId);
+                if (site.Name == containerId)
                 {
-                    if (site.Name == containerId)
-                    {
-                        //var appPoolName = site.Applications[0].ApplicationPoolName;
+                    var appPoolName = site.Applications[0].ApplicationPoolName;
 
-                        serverManager.Sites.Remove(site);
+                    serverManager.Sites.Remove(site);
 
-                        //serverManager.ApplicationPools[appPoolName].Delete();
-                    }
-                });
+                    serverManager.ApplicationPools.Remove(serverManager.ApplicationPools[appPoolName]);
+              
+                    serverManager.CommitChanges();
+                }
             }
             catch (COMException ex)
             {

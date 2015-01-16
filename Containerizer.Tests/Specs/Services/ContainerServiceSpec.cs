@@ -12,7 +12,7 @@ using NSpec;
 
 namespace Containerizer.Tests.Specs.Services
 {
-    internal class ContainersServiceSpec : nspec
+    internal class ContainerServiceSpec : nspec
     {
         private void describe_()
         {
@@ -38,16 +38,10 @@ namespace Containerizer.Tests.Specs.Services
                 };
 
                 it["creates a new site in IIS named with the given id"] =
-                    () =>
-                    {
-                        serverManager.Sites.should_contain(x => x.Name == returnedId);
-                    };
+                    () => { serverManager.Sites.should_contain(x => x.Name == returnedId); };
 
                 it["returns the passed in id"] =
-                    () =>
-                    {
-                        returnedId.should_be(passedInId);
-                    };
+                    () => { returnedId.should_be(passedInId); };
                 it["creates a new associated app pool in IIS named with the truncated passed in id"] =
                     () =>
                     {
@@ -56,10 +50,7 @@ namespace Containerizer.Tests.Specs.Services
                     };
 
                 it["creates a site with exactly one application"] =
-                    () =>
-                    {
-                        serverManager.Sites.First(x => x.Name == returnedId).Applications.Count.should_be(1);
-                    };
+                    () => { serverManager.Sites.First(x => x.Name == returnedId).Applications.Count.should_be(1); };
 
                 it["creates a site with an application mapped to the root virtual directory"] =
                     () =>
@@ -74,17 +65,14 @@ namespace Containerizer.Tests.Specs.Services
                     string expectedPath = null;
                     before = () =>
                     {
-                        string rootDir =
+                        var rootDir =
                             Directory.GetDirectoryRoot(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
                         expectedPath = Path.Combine(rootDir, "containerizer", returnedId);
                     };
 
                     it[
                         @"creates a folder on the file system in the folder 'containerizer' in the root directory (e.g. C:\containerizer\38272f66-ae9c-4369-bfe4-4d8a1152c1ce)"
-                        ] = () =>
-                        {
-                            Directory.Exists(expectedPath).should_be_true();
-                        };
+                        ] = () => { Directory.Exists(expectedPath).should_be_true(); };
 
                     it[
                         @"associates the site with a folder in the folder 'containerizer' the root directory (e.g. C:\containerizer\38272f66-ae9c-4369-bfe4-4d8a1152c1ce)"
@@ -101,21 +89,29 @@ namespace Containerizer.Tests.Specs.Services
             {
                 string handle = null;
                 string appPoolName = null;
+                string path = null;
                 ServerManager serverManager = null;
 
                 before = () =>
                 {
                     handle = Guid.NewGuid() + "-" + Guid.NewGuid();
-                    appPoolName = "FakeAppPoolName";
-                    Helpers.SetupSiteInIIS(Directory.GetCurrentDirectory(), handle, appPoolName, 3333, false);
+                    appPoolName = Guid.NewGuid().ToString();
+                    path = new ContainerPathService().GetContainerRoot(handle);
+                    Directory.CreateDirectory(path);
+                    Helpers.SetupSiteInIIS(path, handle, appPoolName, 3333, false);
 
                     var containerService = new ContainerService();
                     serverManager = ServerManager.OpenRemote("localhost");
                     serverManager.Sites.should_contain(x => x.Name == handle);
                     serverManager.ApplicationPools.should_contain(x => x.Name == appPoolName);
+                    Directory.Exists(path).should_be_true();
 
                     containerService.DeleteContainer(handle);
+
+                    serverManager = ServerManager.OpenRemote("localhost"); // Refresh
                 };
+
+                after = () => Directory.Delete(path, true);
 
                 it["destroys the site in IIS with the given name"] =
                     () => { serverManager.Sites.should_not_contain(x => x.Name == handle); };
