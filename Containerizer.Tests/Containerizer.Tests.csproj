@@ -113,7 +113,7 @@
     <Compile Include="Specs\Features\ConsumerCanPutFileSystemContentsAsTarGzStreamSpec.cs" />
     <Compile Include="Specs\Features\ConsumerCanRunAProcessSpec.cs" />
     <Compile Include="Specs\Helpers.cs" />
-    <Compile Include="Specs\Models\ApiProcessSpecSpec.cs" />
+    <Compile Include="Specs\Models\ArgumentEscaperSpec.cs" />
     <Compile Include="Specs\Services\NetInServiceSpec.cs" />
     <Compile Include="Specs\Services\StreamInServiceSpec.cs" />
     <Compile Include="Specs\Services\TarStreamServiceSpec.cs" />
