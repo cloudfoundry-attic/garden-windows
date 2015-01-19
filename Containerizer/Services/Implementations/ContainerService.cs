@@ -15,15 +15,20 @@ namespace Containerizer.Services.Implementations
 {
     public class ContainerService : IContainerService
     {
+        private IContainerPathService containerPathService;
+
+        public ContainerService(IContainerPathService containerPathService)
+        {
+            this.containerPathService = containerPathService;
+        }
+
         public string CreateContainer(String containerId)
         {
             try
             {
                 ServerManager serverManager = ServerManager.OpenRemote("localhost");
-                string rootDir =
-                    Directory.GetDirectoryRoot(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
-                string path = Path.Combine(rootDir, "containerizer", containerId);
-                var appPoolName = string.Join("", containerId.Replace("-", "").Take(64));
+                var path = containerPathService.GetContainerRoot(containerId);
+                var appPoolName = HandleToAppPoolName(containerId);
                 Site site = serverManager.Sites.Add(containerId, path, 0);
 
                 serverManager.ApplicationPools.Add(appPoolName);
@@ -32,7 +37,7 @@ namespace Containerizer.Services.Implementations
                 appPool.ManagedPipelineMode = ManagedPipelineMode.Integrated;
 
                 serverManager.CommitChanges();
-                Directory.CreateDirectory(path);
+                containerPathService.CreateContainerDirectory(containerId);
                 return containerId;
             }
             catch (COMException ex)
@@ -50,20 +55,24 @@ namespace Containerizer.Services.Implementations
             try
             {
                 ServerManager serverManager = ServerManager.OpenRemote("localhost");
-                string rootDir = Directory.GetDirectoryRoot(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
-                string path = Path.Combine(rootDir, "containerizer", containerId);
+                var path = containerPathService.GetContainerRoot(containerId);
 
-                var site = serverManager.Sites.FirstOrDefault(s => s.Name == containerId);
-                if (site.Name == containerId)
+                var sitesToBeRemoved = serverManager.Sites.Where(s => s.Name == containerId).ToList();
+                foreach (var site in sitesToBeRemoved)
                 {
-                    var appPoolName = site.Applications[0].ApplicationPoolName;
-
                     serverManager.Sites.Remove(site);
-
-                    serverManager.ApplicationPools.Remove(serverManager.ApplicationPools[appPoolName]);
-              
-                    serverManager.CommitChanges();
                 }
+
+                var appPoolName = HandleToAppPoolName(containerId);
+                var appPoolsToBeRemoved = serverManager.ApplicationPools.Where(p => p.Name == appPoolName).ToList();
+                foreach (var pool in appPoolsToBeRemoved)
+                {
+                    serverManager.ApplicationPools.Remove(pool);
+                }
+
+                containerPathService.DeleteContainerDirectory(containerId);
+
+                serverManager.CommitChanges();
             }
             catch (COMException ex)
             {
@@ -73,6 +82,11 @@ namespace Containerizer.Services.Implementations
                 }
                 throw;
             }
+        }
+
+        public static string HandleToAppPoolName(string handle)
+        {
+            return string.Join("", handle.Replace("-", "").Take(64));
         }
     }
 }

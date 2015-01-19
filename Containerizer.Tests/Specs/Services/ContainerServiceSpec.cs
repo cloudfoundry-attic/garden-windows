@@ -1,6 +1,7 @@
 ﻿#region
 
 using System;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -16,6 +17,27 @@ namespace Containerizer.Tests.Specs.Services
     {
         private void describe_()
         {
+            describe["#HandleToAppPoolName"] = () =>
+            {
+                string handle = null;
+                before = () =>
+                {
+                    handle = "7CF6D2AD-2061-4516-B2FA-0146926025C2";
+
+                };
+                it["generates less than 64 character application pool name"] = () =>
+                {
+                    var longHandle = handle + "-" + handle + "-" + handle;
+                    longHandle.Length.should_be_greater_than(64);
+                    string appPoolName = ContainerService.HandleToAppPoolName(longHandle);
+                    appPoolName.Length.should_be_less_or_equal_to(64);
+                };
+                it["remove dashes from the diego handle"] = () =>
+                {
+                    var appPoolName = ContainerService.HandleToAppPoolName(handle);
+                    appPoolName.should_not_contain(x => x == '-');
+                };
+            };
             describe["#CreateContainer"] = () =>
             {
                 string passedInId = null;
@@ -25,9 +47,9 @@ namespace Containerizer.Tests.Specs.Services
                 before = () =>
                 {
                     passedInId = Guid.NewGuid() + "-" + Guid.NewGuid();
-                    var containerService = new ContainerService();
+                    var containerService = new ContainerService(new ContainerPathService());
                     returnedId = containerService.CreateContainer(passedInId);
-                    containerService = new ContainerService();
+                    containerService = new ContainerService(new ContainerPathService());
                     serverManager = ServerManager.OpenRemote("localhost");
                 };
 
@@ -95,29 +117,39 @@ namespace Containerizer.Tests.Specs.Services
                 before = () =>
                 {
                     handle = Guid.NewGuid() + "-" + Guid.NewGuid();
-                    appPoolName = Guid.NewGuid().ToString();
-                    path = new ContainerPathService().GetContainerRoot(handle);
-                    Directory.CreateDirectory(path);
-                    Helpers.SetupSiteInIIS(path, handle, appPoolName, 3333, false);
+                    appPoolName = ContainerService.HandleToAppPoolName(handle);
 
-                    var containerService = new ContainerService();
+                    var containerService = new ContainerService(new ContainerPathService());
+                    containerService.CreateContainer(handle);
+
                     serverManager = ServerManager.OpenRemote("localhost");
                     serverManager.Sites.should_contain(x => x.Name == handle);
                     serverManager.ApplicationPools.should_contain(x => x.Name == appPoolName);
-                    Directory.Exists(path).should_be_true();
+                    Directory.Exists(new ContainerPathService().GetContainerRoot(handle)).should_be_true();
 
                     containerService.DeleteContainer(handle);
 
-                    serverManager = ServerManager.OpenRemote("localhost"); // Refresh
+                    serverManager = ServerManager.OpenRemote("localhost");
                 };
 
-                after = () => Directory.Delete(path, true);
-
                 it["destroys the site in IIS with the given name"] =
-                    () => { serverManager.Sites.should_not_contain(x => x.Name == handle); };
+                    () =>
+                    {
+                        serverManager.Sites.should_not_contain(x => x.Name == handle);
+                    };
 
                 it["destroys the app pool in IIS with the given name"] =
-                    () => { serverManager.ApplicationPools.should_not_contain(x => x.Name == appPoolName); };
+                    () =>
+                    {
+                        serverManager.ApplicationPools.should_not_contain(x => x.Name == appPoolName);
+                    };
+
+                it["deletes the folder associated with the container"] =
+                    () =>
+                    {
+                        var containerDir = new ContainerPathService().GetContainerRoot(handle);
+                        Directory.Exists(containerDir).should_be_false();
+                    };
             };
         }
     }
