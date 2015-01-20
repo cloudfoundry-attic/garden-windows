@@ -105,7 +105,7 @@ namespace Containerizer.Tests.Specs.Services
             {
                 context["file does not exist"] = () =>
                 {
-                    it["raises an error"] = () => expect<KeyNotFoundException>(() => propService.Get(handle, "key"))();
+                    it["raises an error"] = () => expect<FileNotFoundException>(() => propService.Get(handle, "key"))();
                 };
 
                 context["file exists but key does not"] = () =>
@@ -125,7 +125,7 @@ namespace Containerizer.Tests.Specs.Services
             {
                 context["file does not exist"] = () =>
                 {
-                    it["raises an error"] = () => expect<KeyNotFoundException>(() => propService.Destroy(handle, "key"))();
+                    it["raises an error"] = () => expect<FileNotFoundException>(() => propService.Destroy(handle, "key"))();
                 };
 
                 context["file exists but key does not"] = () =>

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Web;
 using Containerizer.Services.Interfaces;
 using Newtonsoft.Json;
+using System.IO;
 
 #endregion 
 
@@ -19,7 +20,7 @@ namespace Containerizer.Services.Implementations
 
         public string Get(string handle, string key)
         {
-            Dictionary<string, string> properties = GetProperties(handle);
+            Dictionary<string, string> properties = GetAll(handle);
             if (properties[key] == null)
             {
                 throw new KeyNotFoundException();
@@ -29,27 +30,15 @@ namespace Containerizer.Services.Implementations
 
         public void Set(string handle, string key, string value)
         {
-            Dictionary<string, string> properties = GetProperties(handle);
+            Dictionary<string, string> properties;
+            if (File.Exists(GetFileName(handle))) {
+                properties = GetAll(handle);
+            } else {
+                properties = new Dictionary<string, string>();
+            }
             properties[key] = value;
 
             WritePropertiesToDisk(handle, properties);
-        }
-
-        private Dictionary<string, string> GetProperties(string handle)
-        {
-            Dictionary<string, string> properties;
-            var fileName = GetFileName(handle);
-
-            if (System.IO.File.Exists(fileName))
-            {
-                var fileJson = System.IO.File.ReadAllText(fileName);
-                properties = JsonConvert.DeserializeObject<Dictionary<string, string>>(fileJson);
-            }
-            else
-            {
-                properties = new Dictionary<string, string>();
-            }
-            return properties;
         }
 
         public void BulkSet(string handle, Dictionary<string, string> properties)
@@ -59,7 +48,7 @@ namespace Containerizer.Services.Implementations
 
         public void Destroy(string handle, string key)
         {
-            Dictionary<string, string> properties = GetProperties(handle);
+            Dictionary<string, string> properties = GetAll(handle);
             if (properties[key] == null)
             {
                 throw new KeyNotFoundException();
@@ -71,13 +60,13 @@ namespace Containerizer.Services.Implementations
 
         public Dictionary<string, string> GetAll(string handle)
         {
-            var fileJson = System.IO.File.ReadAllText(GetFileName(handle));
+            var fileJson = File.ReadAllText(GetFileName(handle));
             return JsonConvert.DeserializeObject<Dictionary<string, string>>(fileJson);
         }
 
         private void WritePropertiesToDisk(string handle, Dictionary<string, string> properties)
         { 
-            System.IO.File.WriteAllText(GetFileName(handle), JsonConvert.SerializeObject(properties));
+            File.WriteAllText(GetFileName(handle), JsonConvert.SerializeObject(properties));
         }
 
         private string GetFileName(string handle)
