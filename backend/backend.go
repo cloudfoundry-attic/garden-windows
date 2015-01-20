@@ -85,9 +85,14 @@ func (dotNetBackend *dotNetBackend) Destroy(handle string) error {
 	if err != nil {
 		return err
 	}
-	_, err = http.DefaultClient.Do(req)
 
-	return err
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	resp.Body.Close()
+
+	return nil
 }
 
 func (dotNetBackend *dotNetBackend) Containers(garden.Properties) ([]garden.Container, error) {
@@ -96,6 +101,7 @@ func (dotNetBackend *dotNetBackend) Containers(garden.Properties) ([]garden.Cont
 	if err != nil {
 		return nil, err
 	}
+	defer response.Body.Close()
 
 	var ids []string
 	body, err := ioutil.ReadAll(response.Body)
