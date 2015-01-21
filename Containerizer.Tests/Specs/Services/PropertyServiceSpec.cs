@@ -19,28 +19,28 @@ namespace Containerizer.Tests.Specs.Services
             Mock<IContainerPathService> mockPathService = null;
             PropertyService propService = null;
             string handle = null;
-            string baseFileName = null;
+            string containerDirectory = null;
             before = () =>
             {
                 handle = Guid.NewGuid().ToString();
                 mockPathService = new Mock<IContainerPathService>();
-                baseFileName = Path.GetTempFileName();
-                mockPathService.Setup(x => x.GetContainerRoot(handle)).Returns(baseFileName);
+                containerDirectory = Path.Combine(Path.GetTempPath(), handle);
+                Directory.CreateDirectory(containerDirectory);
+                mockPathService.Setup(x => x.GetContainerRoot(handle)).Returns(containerDirectory);
                 propService = new PropertyService(mockPathService.Object);
             };
 
             after = () =>
             {
-                if (File.Exists(baseFileName + ".json")) File.Delete(baseFileName + ".json");
+                Directory.Delete(containerDirectory, true);
             };
 
             it["delete me"] = () =>
             {
-                if (File.Exists("C:\\Users\\Administrator\\AppData\\Local\\Temp\\2\\this.json")) File.Delete("C:\\Users\\Administrator\\AppData\\Local\\Temp\\2\\this.json");
-                if (File.Exists("C:\\Users\\Administrator\\AppData\\Local\\Temp\\2\\that.json")) File.Delete("C:\\Users\\Administrator\\AppData\\Local\\Temp\\2\\that.json");
-
-                mockPathService.Setup(x => x.GetContainerRoot("this")).Returns("C:\\Users\\Administrator\\AppData\\Local\\Temp\\2\\this");
-                mockPathService.Setup(x => x.GetContainerRoot("that")).Returns("C:\\Users\\Administrator\\AppData\\Local\\Temp\\2\\that");
+                Directory.CreateDirectory(Path.Combine(containerDirectory, "this"));
+                Directory.CreateDirectory(Path.Combine(containerDirectory, "that"));
+                mockPathService.Setup(x => x.GetContainerRoot("this")).Returns(Path.Combine(containerDirectory, "this"));
+                mockPathService.Setup(x => x.GetContainerRoot("that")).Returns(Path.Combine(containerDirectory, "that"));
 
                 var properties = new Dictionary<string, string>
                 {
@@ -75,7 +75,7 @@ namespace Containerizer.Tests.Specs.Services
                         { "mysecret", "dontread" },
                     });
 
-                    File.ReadAllText(baseFileName + ".json").should_be(
+                    File.ReadAllText(Path.Combine(containerDirectory, "properties.json")).should_be(
                         "{\"mysecret\":\"dontread\"}"
                         );
                 };
@@ -86,16 +86,16 @@ namespace Containerizer.Tests.Specs.Services
                 it["stores the dictionary to disk"] = () =>
                 {
                     propService.Set(handle, "mysecret", "dontread");
-                    File.ReadAllText(baseFileName + ".json").should_be(
+                    File.ReadAllText(Path.Combine(containerDirectory, "properties.json")).should_be(
                         "{\"mysecret\":\"dontread\"}"
                         );
                 };
 
                 it["adds to existing properties dictionary"] = () =>
                 {
-                    File.WriteAllText(baseFileName + ".json", "{\"mysecret\":\"dontread\"}");
+                    File.WriteAllText(Path.Combine(containerDirectory, "properties.json"), "{\"mysecret\":\"dontread\"}");
                     propService.Set(handle, "anothersecret", "durst");
-                    File.ReadAllText(baseFileName + ".json").should_be(
+                    File.ReadAllText(Path.Combine(containerDirectory, "properties.json")).should_be(
                         "{\"mysecret\":\"dontread\",\"anothersecret\":\"durst\"}"
                         );
                 };
@@ -110,13 +110,13 @@ namespace Containerizer.Tests.Specs.Services
 
                 context["file exists but key does not"] = () =>
                 {
-                    before = () => File.WriteAllText(baseFileName + ".json", "{\"mysecret\":\"dontread\"}");
+                    before = () => File.WriteAllText(Path.Combine(containerDirectory, "properties.json"), "{\"mysecret\":\"dontread\"}");
                     it["raises an error"] = () => expect<KeyNotFoundException>(() => propService.Get(handle, "key"))();
                 };
 
                 context["file and key exist"] = () =>
                 {
-                    before = () => File.WriteAllText(baseFileName + ".json", "{\"mysecret\":\"dontread\"}");
+                    before = () => File.WriteAllText(Path.Combine(containerDirectory, "properties.json"), "{\"mysecret\":\"dontread\"}");
                     it["returns the associated value"] = () => propService.Get(handle, "mysecret").should_be("dontread");
                 };
             };
@@ -130,17 +130,17 @@ namespace Containerizer.Tests.Specs.Services
 
                 context["file exists but key does not"] = () =>
                 {
-                    before = () => File.WriteAllText(baseFileName + ".json", "{\"mysecret\":\"dontread\"}");
+                    before = () => File.WriteAllText(Path.Combine(containerDirectory, "properties.json"), "{\"mysecret\":\"dontread\"}");
                     it["raises an error"] = () => expect<KeyNotFoundException>(() => propService.Destroy(handle, "key"))();
                 };
 
                 context["file and key exist"] = () =>
                 {
-                    before = () => File.WriteAllText(baseFileName + ".json", "{\"mysecret\":\"dontread\",\"another\":\"text\"}");
+                    before = () => File.WriteAllText(Path.Combine(containerDirectory, "properties.json"), "{\"mysecret\":\"dontread\",\"another\":\"text\"}");
                     it["removes the key-value pair"] = () =>
                     {
                         propService.Destroy(handle, "mysecret");
-                        File.ReadAllText(baseFileName + ".json").should_be("{\"another\":\"text\"}");
+                        File.ReadAllText(Path.Combine(containerDirectory, "properties.json")).should_be("{\"another\":\"text\"}");
                     };
                 };
             };
@@ -154,7 +154,7 @@ namespace Containerizer.Tests.Specs.Services
 
                 context["file does exist"] = () =>
                 {
-                    before = () => File.WriteAllText(baseFileName + ".json", "{\"mysecret\":\"dontread\",\"another\":\"text\"}");
+                    before = () => File.WriteAllText(Path.Combine(containerDirectory, "properties.json"), "{\"mysecret\":\"dontread\",\"another\":\"text\"}");
                     it["returns the properties"] = () =>
                     {
                         propService.GetAll(handle).should_be(new Dictionary<string, string>

@@ -71,7 +71,7 @@ namespace Containerizer.Services.Implementations
 
         private string GetFileName(string handle)
         {
-            return pathService.GetContainerRoot(handle) + ".json";
+            return Path.Combine(pathService.GetContainerRoot(handle), "properties.json");
         }
 
         class KeyNotFoundException : System.Exception { }
