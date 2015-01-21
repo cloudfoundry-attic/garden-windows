@@ -100,10 +100,11 @@ namespace Containerizer.Tests.Specs.Services
                 before = () =>
                 {
                     Directory.CreateDirectory(expectedPath);
+                    File.WriteAllText(Path.Combine(expectedPath, "properties.json"), "{}");
                     containerPathService.DeleteContainerDirectory(id);
                 };
                 
-                it["delete the container's root directory"] = () =>
+                it["delete the container's root directory with files inside"] = () =>
                 {
                     Directory.Exists(expectedPath).should_be_false();
                 };

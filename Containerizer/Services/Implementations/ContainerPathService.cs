@@ -24,7 +24,7 @@ namespace Containerizer.Services.Implementations
 
         public void DeleteContainerDirectory(string id)
         {
-            Directory.Delete(GetContainerRoot(id));
+            Directory.Delete(GetContainerRoot(id), true);
         }
 
         public string GetSubdirectory(string id, string destination)
