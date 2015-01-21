@@ -35,37 +35,6 @@ namespace Containerizer.Tests.Specs.Services
                 Directory.Delete(containerDirectory, true);
             };
 
-            it["delete me"] = () =>
-            {
-                Directory.CreateDirectory(Path.Combine(containerDirectory, "this"));
-                Directory.CreateDirectory(Path.Combine(containerDirectory, "that"));
-                mockPathService.Setup(x => x.GetContainerRoot("this")).Returns(Path.Combine(containerDirectory, "this"));
-                mockPathService.Setup(x => x.GetContainerRoot("that")).Returns(Path.Combine(containerDirectory, "that"));
-
-                var properties = new Dictionary<string, string>
-                {
-                    { "mysecret", "dontread" },
-                    { "hello", "goodbye" },
-                };
-
-                propService.BulkSet("this", properties);
-                propService.GetAll("this").should_be(properties);
-                expect<FileNotFoundException>(() => propService.GetAll("that"))();
-
-                propService.Set("that", "mysecret", "fred");
-                propService.Get("that", "mysecret").should_be("fred");
-                propService.Get("this", "mysecret").should_be("dontread");
-
-                propService.Set("this", "mysecret", "jane");
-                propService.Get("that", "mysecret").should_be("fred");
-                propService.Get("this", "mysecret").should_be("jane");
-
-                propService.Destroy("that", "mysecret");
-                propService.Get("this", "mysecret").should_be("jane");
-                expect<KeyNotFoundException>(() => propService.Get("that", "mysecret"))();
-            };
-
-
             describe["#BulkSet"] = () =>
             {
                 it["stores the dictionary to disk"] = () =>
