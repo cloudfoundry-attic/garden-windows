@@ -9,7 +9,7 @@ import (
 	"code.google.com/p/go.net/websocket"
 	"github.com/gorilla/mux"
 	"github.com/hydrogen18/stoppableListener"
-	"github.com/pivotal-cf-experimental/garden-dot-net/container"
+	"github.com/pivotal-cf-experimental/garden-windows/container"
 )
 
 type TestWebSocketServer struct {

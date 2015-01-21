@@ -5,8 +5,8 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/cloudfoundry-incubator/garden"
-	netContainer "github.com/pivotal-cf-experimental/garden-dot-net/container"
-	"github.com/pivotal-cf-experimental/garden-dot-net/process"
+	netContainer "github.com/pivotal-cf-experimental/garden-windows/container"
+	"github.com/pivotal-cf-experimental/garden-windows/process"
 
 	"io/ioutil"
 

@@ -7,8 +7,8 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/cloudfoundry-incubator/garden"
-	"github.com/pivotal-cf-experimental/garden-dot-net/backend"
-	"github.com/pivotal-cf-experimental/garden-dot-net/container"
+	"github.com/pivotal-cf-experimental/garden-windows/backend"
+	"github.com/pivotal-cf-experimental/garden-windows/container"
 	"github.com/pivotal-golang/lager/lagertest"
 
 	"time"

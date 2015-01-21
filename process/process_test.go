@@ -9,7 +9,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/cloudfoundry-incubator/garden"
-	"github.com/pivotal-cf-experimental/garden-dot-net/process"
+	"github.com/pivotal-cf-experimental/garden-windows/process"
 )
 
 var _ = Describe("process", func() {
