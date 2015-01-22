@@ -6,6 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/cloudfoundry-incubator/cf-lager"
 	"github.com/cloudfoundry-incubator/garden/server"
 	"github.com/pivotal-cf-experimental/garden-windows/backend"
 	"github.com/pivotal-golang/lager"
@@ -40,7 +41,8 @@ func main() {
 		"address to listen on",
 	)
 
-	logger := cf_lager.New("garden-dotnet")
+	cf_lager.AddFlags(flag.CommandLine)
+	logger := cf_lager.New("garden-windows")
 
 	netBackend, err := backend.NewDotNetBackend(*containerizerURL, logger)
 	if err != nil {
