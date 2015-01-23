@@ -40,8 +40,9 @@ func main() {
 		defaultListAddr,
 		"address to listen on",
 	)
-
 	cf_lager.AddFlags(flag.CommandLine)
+	flag.Parse()
+
 	logger := cf_lager.New("garden-windows")
 
 	netBackend, err := backend.NewDotNetBackend(*containerizerURL, logger)
