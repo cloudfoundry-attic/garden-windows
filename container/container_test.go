@@ -93,24 +93,42 @@ var _ = Describe("container", func() {
 	})
 
 	Describe("StreamOut", func() {
-		BeforeEach(func() {
-			server.AppendHandlers(
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/api/containers/containerhandle/files", "source=a/path"),
-					ghttp.RespondWith(200, "a tarball"),
-				),
-			)
+		Context("Containerizer returns 200", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/containers/containerhandle/files", "source=a/path"),
+						ghttp.RespondWith(200, "a tarball"),
+					),
+				)
+			})
+
+			It("makes a call out to an external service", func() {
+				stream, err := container.StreamOut("a/path")
+				defer stream.Close()
+				Ω(err).NotTo(HaveOccurred())
+				Ω(server.ReceivedRequests()).Should(HaveLen(1))
+
+				body, err := ioutil.ReadAll(stream)
+				Ω(err).NotTo(HaveOccurred())
+				Ω(string(body)).Should(Equal("a tarball"))
+			})
 		})
 
-		It("makes a call out to an external service", func() {
-			stream, err := container.StreamOut("a/path")
-			defer stream.Close()
-			Ω(err).NotTo(HaveOccurred())
-			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		Context("Containerizer returns non 200", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/containers/containerhandle/files", "source=a/path"),
+						ghttp.RespondWith(500, "some large error html text"),
+					),
+				)
+			})
 
-			body, err := ioutil.ReadAll(stream)
-			Ω(err).NotTo(HaveOccurred())
-			Ω(string(body)).Should(Equal("a tarball"))
+			It("returns an error", func() {
+				_, err := container.StreamOut("a/path")
+				Ω(err).To(HaveOccurred())
+			})
 		})
 	})
 

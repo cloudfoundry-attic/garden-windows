@@ -43,6 +43,8 @@ func NewContainer(containerizerURL url.URL, handle string, logger lager.Logger) 
 	}
 }
 
+var ErrReadFromPath = errors.New("could not read tar path")
+
 func (container *container) Handle() string {
 	return container.handle
 }
@@ -116,6 +118,9 @@ func (container *container) StreamOut(srcPath string) (io.ReadCloser, error) {
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, ErrReadFromPath
 	}
 	return resp.Body, nil
 }
