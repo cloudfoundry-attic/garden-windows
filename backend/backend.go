@@ -41,7 +41,8 @@ func (dotNetBackend *dotNetBackend) Start() error {
 func (dotNetBackend *dotNetBackend) Stop() {}
 
 func (dotNetBackend *dotNetBackend) GraceTime(garden.Container) time.Duration {
-	return time.Second
+	// FIXME -- what should this do.
+	return time.Hour
 }
 
 func (dotNetBackend *dotNetBackend) Ping() error {
