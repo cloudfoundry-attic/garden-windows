@@ -48,26 +48,21 @@ namespace Containerizer.Controllers
         [HttpGet]
         public Task<HttpResponseMessage> Index(string id)
         {
-            var dictionary = propertyService.GetAll(id);
-            if (dictionary == null)
+            string json;
+            try
             {
-                const string ourJson = "{}";
-                var emptyResponse = new HttpResponseMessage
-                {
-                    Content = new StringContent(
-                        ourJson,
-                        Encoding.UTF8,
-                        "application/json"
-                        )
-                };
-                return Task.FromResult(emptyResponse);
+                var dictionary = propertyService.GetAll(id);
+                json = JsonConvert.SerializeObject(dictionary, new KeyValuePairConverter());
             }
-            string jsonDictionary = JsonConvert.SerializeObject(dictionary, new KeyValuePairConverter());
+            catch (System.IO.FileNotFoundException e)
+            {
+                json = "{}";
+            }
 
             var response = new HttpResponseMessage
             {
                 Content = new StringContent(
-                    jsonDictionary,
+                    json,
                     Encoding.UTF8,
                     "application/json"
                     )

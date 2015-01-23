@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Web.Http;
@@ -40,39 +41,60 @@ namespace Containerizer.Tests.Specs.Controllers
             describe[Controller.Index] = () =>
             {
                 HttpResponseMessage result = null;
-                Dictionary<string, string> properties = null;
-                string key1 = null;
-                string key2 = null;
 
-                before = () =>
+                act = () => result = propertiesController.Index(containerHandle).Result;
+
+                context["properties exist"] = () =>
                 {
-                    key1 = Guid.NewGuid().ToString();
-                    key2 = Guid.NewGuid().ToString();
+                    string key1 = null;
+                    string key2 = null;
 
-                    properties = new Dictionary<string, string>
+                    before = () =>
                     {
-                        {key1, "hello"},
-                        {key2, "keytothecity"}
-                    };
-                    mockPropertyService.Setup(x => x.GetAll(containerHandle))
-                        .Returns(() =>
+                        key1 = Guid.NewGuid().ToString();
+                        key2 = Guid.NewGuid().ToString();
+
+                        var properties = new Dictionary<string, string>
                         {
-                            return properties;
-                        });
+                            {key1, "hello"},
+                            {key2, "keytothecity"}
+                        };
+                        mockPropertyService.Setup(x => x.GetAll(containerHandle))
+                            .Returns(() =>
+                            {
+                                return properties;
+                            });
+                    };
 
-                    result = propertiesController.Index(containerHandle).Result;
+                    it["returns a successful status code"] = () =>
+                    {
+                        result.VerifiesSuccessfulStatusCode();
+                    };
+
+                    it["returns the correct properties"] = () =>
+                    {
+                        var json = result.Content.ReadAsJson();
+                        json[key1].ToString().should_be("hello");
+                        json[key2].ToString().should_be("keytothecity");
+                    };
                 };
 
-                it["returns a successful status code"] = () =>
+                context["properties do not yet exist"] = () =>
                 {
-                    result.VerifiesSuccessfulStatusCode();
-                };
+                    before = () =>
+                    {
+                        mockPropertyService.Setup(x => x.GetAll(containerHandle)).Throws(new FileNotFoundException());
+                    };
 
-                it["returns the correct properties"] = () =>
-                {
-                    var json = result.Content.ReadAsJson();
-                    json[key1].ToString().should_be(properties[key1]);
-                    json[key2].ToString().should_be(properties[key2]);
+                    it["returns a successful status code"] = () =>
+                    {
+                        result.VerifiesSuccessfulStatusCode();
+                    };
+
+                    it["returns the correct properties"] = () =>
+                    {
+                        result.Content.ReadAsString().should_be("{}");
+                    };
                 };
             };
 
