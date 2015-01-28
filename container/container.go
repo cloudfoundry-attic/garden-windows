@@ -178,7 +178,7 @@ func (container *container) NetIn(hostPort, containerPort uint32) (uint32, uint3
 	return responseJSON.HostPort, containerPort, err
 }
 
-func (container *container) NetOut(network string, port uint32, portRange string, protocol garden.Protocol, icmpType int32, icmpCode int32) error {
+func (container *container) NetOut(network string, port uint32, portRange string, protocol garden.Protocol, icmpType int32, icmpCode int32, log bool) error {
 	return nil
 }
 
