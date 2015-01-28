@@ -36,14 +36,17 @@
     <Reference Include="ICSharpCode.SharpZipLib">
       <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
-    <Reference Include="IronFoundry.Container">
-      <HintPath>..\packages\IronFoundry.Container.0.20150127.124251-DevLocal\lib\net45\IronFoundry.Container.dll</HintPath>
+    <Reference Include="IronFoundry.Container, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\IronFoundry.Container.0.20150128.172101-DevLocal\lib\net45\IronFoundry.Container.dll</HintPath>
     </Reference>
-    <Reference Include="IronFoundry.Container.Host">
-      <HintPath>..\packages\IronFoundry.Container.0.20150127.124251-DevLocal\lib\net45\IronFoundry.Container.Host.exe</HintPath>
+    <Reference Include="IronFoundry.Container.Host, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\IronFoundry.Container.0.20150128.172101-DevLocal\lib\net45\IronFoundry.Container.Host.exe</HintPath>
     </Reference>
-    <Reference Include="IronFoundry.Container.Shared">
-      <HintPath>..\packages\IronFoundry.Container.0.20150127.124251-DevLocal\lib\net45\IronFoundry.Container.Shared.dll</HintPath>
+    <Reference Include="IronFoundry.Container.Shared, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\IronFoundry.Container.0.20150128.172101-DevLocal\lib\net45\IronFoundry.Container.Shared.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.WebSockets, Version=0.2.3.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -138,7 +141,6 @@
     <Compile Include="Specs\Services\TarStreamServiceSpec.cs" />
     <Compile Include="Specs\Services\ContainerPathServiceSpec.cs" />
     <Compile Include="Specs\Services\StreamOutServiceSpec.cs" />
-    <Compile Include="Specs\Services\ContainerServiceSpec.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>

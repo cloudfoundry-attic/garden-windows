@@ -7,6 +7,8 @@ using Autofac;
 using Containerizer.Controllers;
 using Containerizer.Services.Implementations;
 using Containerizer.Services.Interfaces;
+using IronFoundry.Container;
+using System.IO;
 
 #endregion
 
@@ -14,12 +16,19 @@ namespace Containerizer
 {
     public class DependencyResolver : IDependencyResolver
     {
-        private readonly IContainer container;
+        private readonly Autofac.IContainer container;
+        private static IContainerService containerService;
+
+        static DependencyResolver()
+        {
+            containerService = new ContainerService(ContainerPathService.GetContainerRoot(), "Users");
+        }
 
         public DependencyResolver()
         {
             var containerBuilder = new ContainerBuilder();
-            containerBuilder.RegisterType<ContainerService>().As<IContainerService>();
+
+            containerBuilder.Register(context => containerService).As<IContainerService>();
             containerBuilder.RegisterType<ContainerPathService>().As<IContainerPathService>();
             containerBuilder.RegisterType<NetInService>().As<INetInService>();
             containerBuilder.RegisterType<StreamInService>().As<IStreamInService>();
@@ -33,6 +42,7 @@ namespace Containerizer
             containerBuilder.RegisterType<RunController>();
             container = containerBuilder.Build();
         }
+
 
         IDependencyScope IDependencyResolver.BeginScope()
         {

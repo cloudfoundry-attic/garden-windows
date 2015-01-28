@@ -12,6 +12,9 @@ using Containerizer.Services.Interfaces;
 using Moq;
 using Newtonsoft.Json;
 using NSpec;
+using IronFoundry.Container;
+using Containerizer.Models;
+using System.IO;
 
 #endregion
 
@@ -19,157 +22,157 @@ namespace Containerizer.Tests.Specs.Controllers
 {
     internal class ContainersControllerSpec : nspec
     {
+        
+        IContainer mockContainerWithHandle(string handle)
+        {
+            var container = new Mock<IContainer>();
+            container.Setup(x => x.Handle).Returns(handle);
+            return container.Object;
+        }
+
         private void describe_()
         {
             ContainersController containersController = null;
             Mock<IContainerPathService> mockContainerPathService = null;
-            Mock<IContainerService> mockCreateContainerService = null;
+            Mock<IContainerService> mockContainerService = null;
             Mock<IPropertyService> mockPropertyService = null;
 
             before = () =>
             {
                 mockContainerPathService = new Mock<IContainerPathService>();
-                mockCreateContainerService = new Mock<IContainerService>();
+                mockContainerService = new Mock<IContainerService>();
                 mockPropertyService = new Mock<IPropertyService>();
                 containersController = new ContainersController(mockContainerPathService.Object,
-                    mockCreateContainerService.Object, mockPropertyService.Object)
+                    mockContainerService.Object, mockPropertyService.Object)
                 {
                     Configuration = new HttpConfiguration(),
                     Request = new HttpRequestMessage()
                 };
             };
 
+
             describe[Controller.Index] = () =>
             {
-                HttpResponseMessage result = null;
+                IReadOnlyList<string> result = null;
 
                 before = () =>
                 {
-                    mockContainerPathService.Setup(x => x.ContainerIds())
-                        .Returns(new List<string>
+                    mockContainerService.Setup(x => x.GetContainers())
+                        .Returns(new List<IContainer>
                         {
-                            "MyFirstContainer",
-                            "MySecondContainer"
+                            mockContainerWithHandle("MyFirstContainer"),
+                            mockContainerWithHandle("MySecondContainer")
                         });
-                    result = containersController.Index()
-                        .GetAwaiter()
-                        .GetResult()
-                        .ExecuteAsync(new CancellationToken())
-                        .GetAwaiter()
-                        .GetResult();
-                };
-
-                it["returns a successful status code"] = () =>
-                {
-                    result.VerifiesSuccessfulStatusCode();
+                    result = containersController.Index();
                 };
 
                 it["returns a list of container ids as strings"] = () =>
                 {
-                    var jsonString = result.Content.ReadAsString(); // Json();
-                    var json = JsonConvert.DeserializeObject<string[]>(jsonString);
-                    json.should_contain("MyFirstContainer");
-                    json.should_contain("MySecondContainer");
+                    result.should_contain("MyFirstContainer");
+                    result.should_contain("MySecondContainer");
                 };
             };
 
-            describe[Controller.Update] = () =>
+            describe["#Create"] = () =>
             {
+
+                string containerHandle = null;
+                string containerUserPath = null;
+                ContainerSpecApiModel specModel = null;
+                CreateResponse result = null;
+
+                before = () =>
+                {
+                    containerHandle = Guid.NewGuid().ToString();
+                    containerUserPath = Path.Combine(@"C:\containerizer", containerHandle, @"user");
+
+                    var mockContainerDirectory = new Mock<IContainerDirectory>();
+                    mockContainerDirectory.Setup(x => x.MapUserPath(It.IsAny<string>()))
+                        .Returns((string path) => Path.Combine(containerUserPath, path));
+
+                    var mockContainer = new Mock<IContainer>();
+                    mockContainer.Setup(x => x.Handle).Returns(containerHandle);
+                    mockContainer.Setup(x => x.Directory).Returns(mockContainerDirectory.Object);
+                    
+                    mockContainerService.Setup(x => x.CreateContainer(It.IsAny<ContainerSpec>()))
+                        .Returns(mockContainer.Object);
+                };
+
+                act = () => result = containersController.Create(specModel);
+
                 context["when the container is created successfully"] = () =>
                 {
-                    string containerHandle = null;
-                    Dictionary<string, string> properties = null;
                     string key = null;
                     string value = null;
-                    IHttpActionResult result = null;
-
                     before = () =>
                     {
-                        containerHandle = Guid.NewGuid().ToString();
                         key = "hiwillyou";
                         value = "bemyfriend";
-                        properties = new Dictionary<string, string>
+
+                        specModel = new ContainerSpecApiModel
                         {
-                            {key, value}
+                            Handle = containerHandle,
+                            Properties = new Dictionary<string, string>
+                            {
+                                {key, value}
+                            },
                         };
-
-                        mockCreateContainerService.Setup(x => x.CreateContainer(It.IsAny<String>()))
-                            .Returns((String x) => x);
-                        containersController.Request.Content =
-                            new StringContent("{Handle: \"" + containerHandle + "\", Properties:{\"" + key + "\": \"" +
-                                              value + "\"}}");
-                        result = containersController.Create().Result;
-                    };
-
-                    it["returns a successful status code"] = () =>
-                    {
-                        result.VerifiesSuccessfulStatusCode();
                     };
 
                     it["returns the passed in container's id"] = () =>
                     {
-                        result.ReadContentAsJson()["id"].ToString().should_be(containerHandle);
+                        result.Id.should_be(containerHandle);
                     };
 
                     it["sets properties"] = () =>
                     {
                         mockPropertyService.Verify(
                             x =>
-                                x.BulkSet(containerHandle, It.Is((Dictionary<string, string> y) => y[key] == value)));
+                                x.BulkSetWithContainerPath(containerUserPath, It.Is((Dictionary<string, string> y) => y[key] == value)));
                     };
                 };
 
                 context["when properties are not passed to the endpoint"] = () =>
                 {
-                    IHttpActionResult result = null;
-
                     before = () =>
                     {
-                        string containerHandle = null;
-                        containerHandle = Guid.NewGuid().ToString();
-
-                        mockCreateContainerService.Setup(x => x.CreateContainer(It.IsAny<String>()))
-                            .Returns((String x) => x);
-                        containersController.Request.Content =
-                            new StringContent("{Handle: \"" + containerHandle + "\"}");
-
-                        result = containersController.Create().Result;
+                        specModel = new ContainerSpecApiModel
+                        {
+                            Handle = containerHandle,
+                            Properties = null,
+                        };
                     };
 
-                    it["returns a successful status code"] = () =>
+                    it["returns the passed in container's id"] = () =>
                     {
-                        result.VerifiesSuccessfulStatusCode();
+                        result.Id.should_be(containerHandle);
                     };
                 };
             };
 
-            describe[Controller.Destroy] = () =>
+            describe["#Destroy"] = () =>
             {
-                HttpResponseMessage result = null;
+                IHttpActionResult result = null;
 
-                act = () => result = containersController.Destroy("MySecondContainer").GetAwaiter().GetResult();
+                act = () => result = containersController.Destroy("MySecondContainer");
 
                 context["a handle which exists"] = () =>
                 {
+                    Mock<IContainer> mockContainer = null;
                     before = () =>
                     {
-                        mockContainerPathService.Setup(x => x.ContainerIds())
-                            .Returns(new List<string>
-                            {
-                                "MyFirstContainer",
-                                "MySecondContainer",
-                                "MyThirdContainer"
-                            });
+                        mockContainer = new Mock<IContainer>();
+                        mockContainerService.Setup(x => x.GetContainerByHandle("MySecondContainer")).Returns(mockContainer.Object);
                     };
 
                     it["returns 200"] = () =>
                     {
-                        result.StatusCode.should_be(HttpStatusCode.OK);
+                        result.should_cast_to<System.Web.Http.Results.OkResult>();
                     };
 
                     it["calls delete on the containerPathService"] = () =>
                     {
-                        mockContainerPathService.Verify(x => x.DeleteContainerDirectory("MySecondContainer"));
+                        mockContainerService.Verify(x => x.DestroyContainer("MySecondContainer"));
                     };
                 };
 
@@ -177,17 +180,12 @@ namespace Containerizer.Tests.Specs.Controllers
                 {
                     before = () =>
                     {
-                        mockContainerPathService.Setup(x => x.ContainerIds())
-                            .Returns(new List<string>
-                            {
-                                "MyFirstContainer",
-                                "MyThirdContainer"
-                            });
+                        mockContainerService.Setup(x => x.GetContainerByHandle("MySecondContainer")).Returns(null as IContainer);
                     };
 
                     it["returns 404"] = () =>
                     {
-                        result.StatusCode.should_be(HttpStatusCode.NotFound);
+                        result.should_cast_to<System.Web.Http.Results.NotFoundResult>();
                     };
 
                 };

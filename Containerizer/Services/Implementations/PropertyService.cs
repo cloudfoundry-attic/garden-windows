@@ -31,19 +31,25 @@ namespace Containerizer.Services.Implementations
         public void Set(string handle, string key, string value)
         {
             Dictionary<string, string> properties;
-            if (File.Exists(GetFileName(handle))) {
+            var propertiesFileName = GetFileNameFromHandle(handle);
+            if (File.Exists(propertiesFileName)) {
                 properties = GetAll(handle);
             } else {
                 properties = new Dictionary<string, string>();
             }
             properties[key] = value;
 
-            WritePropertiesToDisk(handle, properties);
+            WritePropertiesToDisk(propertiesFileName, properties);
         }
 
         public void BulkSet(string handle, Dictionary<string, string> properties)
         {
-            WritePropertiesToDisk(handle, properties);
+            WritePropertiesToDisk(GetFileNameFromHandle(handle), properties);
+        }
+
+        public void BulkSetWithContainerPath(string containerPath, Dictionary<string, string> properties)
+        {
+            WritePropertiesToDisk(GetFileName(containerPath), properties);
         }
 
         public void Destroy(string handle, string key)
@@ -55,23 +61,28 @@ namespace Containerizer.Services.Implementations
             }
 
             properties.Remove(key);
-            WritePropertiesToDisk(handle, properties);
+            WritePropertiesToDisk(GetFileNameFromHandle(handle), properties);
         }
 
         public Dictionary<string, string> GetAll(string handle)
         {
-            var fileJson = File.ReadAllText(GetFileName(handle));
+            var fileJson = File.ReadAllText(GetFileNameFromHandle(handle));
             return JsonConvert.DeserializeObject<Dictionary<string, string>>(fileJson);
         }
 
-        private void WritePropertiesToDisk(string handle, Dictionary<string, string> properties)
+        private void WritePropertiesToDisk(string propertiesFileName, Dictionary<string, string> properties)
         { 
-            File.WriteAllText(GetFileName(handle), JsonConvert.SerializeObject(properties));
+            File.WriteAllText(propertiesFileName, JsonConvert.SerializeObject(properties));
         }
 
-        private string GetFileName(string handle)
+        private string GetFileNameFromHandle(string handle)
         {
-            return Path.Combine(pathService.GetContainerRoot(handle), "properties.json");
+            return GetFileName(pathService.GetContainerRoot(handle));
+        }
+
+        private string GetFileName(string containerPath)
+        {
+            return Path.Combine(containerPath, "properties.json");
         }
 
         class KeyNotFoundException : System.Exception { }

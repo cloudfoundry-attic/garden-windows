@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Containerizer.Services.Interfaces;
+using IronFoundry.Container;
 
 #endregion
 
@@ -12,33 +13,28 @@ namespace Containerizer.Services.Implementations
 {
     public class ContainerPathService : IContainerPathService
     {
+        private IContainerService containerService;
+        public ContainerPathService(IContainerService containerService)
+        {
+            this.containerService = containerService;
+        }
+
         public string GetContainerRoot(string id)
         {
-            return Path.Combine(GetContainerRoot(), id);
-        }
-
-        public void CreateContainerDirectory(string id)
-        {
-            Directory.CreateDirectory(GetContainerRoot(id));
-        }
-
-        public void DeleteContainerDirectory(string id)
-        {
-            Directory.Delete(GetContainerRoot(id), true);
+            return containerService.GetContainerByHandle(id).Directory.MapUserPath("");
         }
 
         public string GetSubdirectory(string id, string destination)
         {
-            return Path.GetFullPath(GetContainerRoot(id) + destination);
+            return containerService.GetContainerByHandle(id).Directory.MapUserPath(destination);
         }
 
         public IEnumerable<string> ContainerIds()
         {
-            string[] dirs = Directory.GetDirectories(GetContainerRoot());
-            return dirs.Select(Path.GetFileName);
+            return containerService.GetContainers().Select(x => x.Handle);
         }
 
-        private string GetContainerRoot()
+        public static string GetContainerRoot()
         {
             string rootDir = Directory.GetDirectoryRoot(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
             return Path.Combine(rootDir, "containerizer");

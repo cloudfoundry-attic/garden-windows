@@ -15,11 +15,13 @@ namespace Containerizer.Tests.Specs.Controllers
 
         private void before_each()
         {
+            /*
             runController = new RunController
             {
                 Configuration = new HttpConfiguration(),
                 Request = new HttpRequestMessage()
             };
+            */
         }
     }
 }

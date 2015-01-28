@@ -47,16 +47,17 @@
     <Reference Include="ICSharpCode.SharpZipLib">
       <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
-    <Reference Include="IronFoundry.Container">
-      <HintPath>..\packages\IronFoundry.Container.0.20150127.124251-DevLocal\lib\net45\IronFoundry.Container.dll</HintPath>
+    <Reference Include="IronFoundry.Container, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\IronFoundry.Container.0.20150128.172101-DevLocal\lib\net45\IronFoundry.Container.dll</HintPath>
     </Reference>
     <Reference Include="IronFoundry.Container.Host, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\IronFoundry.Container.0.20150127.124251-DevLocal\lib\net45\IronFoundry.Container.Host.exe</HintPath>
+      <HintPath>..\packages\IronFoundry.Container.0.20150128.172101-DevLocal\lib\net45\IronFoundry.Container.Host.exe</HintPath>
     </Reference>
     <Reference Include="IronFoundry.Container.Shared, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\IronFoundry.Container.0.20150127.124251-DevLocal\lib\net45\IronFoundry.Container.Shared.dll</HintPath>
+      <HintPath>..\packages\IronFoundry.Container.0.20150128.172101-DevLocal\lib\net45\IronFoundry.Container.Shared.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Web.Administration, Version=7.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -137,17 +138,16 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\ArgumentEscaper.cs" />
+    <Compile Include="Models\ContainerSpecApiModel.cs" />
     <Compile Include="Models\ProcessStreamEvent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\Implementations\ContainerPathService.cs" />
-    <Compile Include="Services\Implementations\ContainerService.cs" />
     <Compile Include="Services\Implementations\PropertyService.cs" />
     <Compile Include="Services\Implementations\NetInService.cs" />
     <Compile Include="Services\Implementations\StreamInService.cs" />
     <Compile Include="Services\Implementations\StreamOutService.cs" />
     <Compile Include="Services\Implementations\TarStreamService.cs" />
     <Compile Include="Services\Interfaces\IContainerPathService.cs" />
-    <Compile Include="Services\Interfaces\IContainerService.cs" />
     <Compile Include="Services\Interfaces\IPropertyService.cs" />
     <Compile Include="Services\Interfaces\INetInService.cs" />
     <Compile Include="Services\Interfaces\IStreamOutService.cs" />

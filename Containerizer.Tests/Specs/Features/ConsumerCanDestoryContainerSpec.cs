@@ -25,7 +25,6 @@ namespace Containerizer.Tests.Specs.Features
         private void after_each()
         {
             Helpers.RemoveExistingSite("Containerizer.Tests", "ContainerizerTestsApplicationPool");
-            Helpers.RemoveExistingSite(id, id);
         }
 
         private void describe_consumer_can_destroy_a_container()
@@ -39,37 +38,18 @@ namespace Containerizer.Tests.Specs.Features
                 {
                     client = new HttpClient { BaseAddress = new Uri("http://localhost:" + port) };
 
-                    handle = Guid.NewGuid() + "-" + Guid.NewGuid();
-                    client.PostAsync("/api/Containers",
-                        new StringContent("{\"Handle\": \"" + handle + "\"}")).Wait();
+                    handle = Helpers.CreateContainer(client);
                 };
 
-                context["when I send a destroy request"] = () =>
+                context["when I send two destroy request"] = () =>
                 {
-                   
-                    HttpResponseMessage response = null;
-                    before = () =>
+                    it["responds with 200 and then 404"] = () =>
                     {
-                        response = client.DeleteAsync("/api/Containers/" + handle).GetAwaiter().GetResult();
-                    };
-
-                    it["responds with 200"] = () =>
-                    {
+                        var response = client.DeleteAsync("/api/Containers/" + handle).GetAwaiter().GetResult();
                         response.StatusCode.should_be(HttpStatusCode.OK);
-                    };
 
-                    context["for a destroyed container"] = () =>
-                    {
-                        before = () =>
-                        {
-                            response = client.DeleteAsync("/api/Containers/" + handle).GetAwaiter().GetResult();
-
-                        };
-
-                        it["responds with 404"] = () =>
-                        {
-                            response.StatusCode.should_be(HttpStatusCode.NotFound);
-                        };
+                        response = client.DeleteAsync("/api/Containers/" + handle).GetAwaiter().GetResult();
+                        response.StatusCode.should_be(HttpStatusCode.NotFound);
                     };
                 };
             };

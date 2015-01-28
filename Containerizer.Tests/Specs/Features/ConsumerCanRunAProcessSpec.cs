@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using Containerizer.Services.Implementations;
 using NSpec;
+using System.Net.Http;
 
 #endregion
 
@@ -32,26 +33,30 @@ namespace Containerizer.Tests.Specs.Features
         private void describe_consumer_can_run_a_process()
         {
             ClientWebSocket client = null;
+            HttpClient httpClient = null;
+            string handle = null;
+            before = () =>
+            {
+                httpClient = new HttpClient { BaseAddress = new Uri("http://localhost:" + port) };
+                handle = Helpers.CreateContainer(httpClient);
+            };
+            after = () => Helpers.DestroyContainer(httpClient, handle);
 
             context["given that I am a consumer of the api"] = () =>
             {
-                string containerId = Guid.NewGuid().ToString();
                 string containerPath = null;
 
                 before = () =>
                 {
-                    containerPath = new ContainerPathService().GetContainerRoot(containerId);
-                    Directory.CreateDirectory(containerPath);
+                    containerPath = Helpers.GetContainerPath(handle);
                     File.WriteAllBytes(containerPath + "/myfile.bat",
                         new UTF8Encoding(true).GetBytes(
                             "@echo off\r\n@echo Hi Fred\r\n@echo Jane is good\r\n@echo Jill is better\r\n"));
 
                     client = new ClientWebSocket();
-                    client.ConnectAsync(new Uri("ws://localhost:" + port + "/api/containers/" + containerId + "/run"),
+                    client.ConnectAsync(new Uri("ws://localhost:" + port + "/api/containers/" + handle + "/run"),
                         CancellationToken.None).GetAwaiter().GetResult();
                 };
-
-                after = () => Directory.Delete(containerPath, true);
 
                 describe["when I send a start request"] = () =>
                 {

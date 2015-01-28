@@ -16,7 +16,7 @@ namespace Containerizer.Tests.Specs.Features
     {
         private void describe_()
         {
-            context["Given that I'm a consumer of the containerizer API"] = () =>
+            xcontext["Given that I'm a consumer of the containerizer API"] = () =>
             {
                 HttpClient client = null;
 

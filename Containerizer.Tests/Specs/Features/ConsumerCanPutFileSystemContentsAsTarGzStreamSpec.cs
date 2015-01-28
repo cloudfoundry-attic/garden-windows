@@ -14,7 +14,7 @@ namespace Containerizer.Tests.Specs.Features
     internal class ConsumerCanPutFileSystemContentsAsTarGzStream : nspec
     {
         private string directoryPath;
-        private string id;
+        private string handle;
         private int port;
         private string tgzName;
 
@@ -34,9 +34,7 @@ namespace Containerizer.Tests.Specs.Features
         private void after_each()
         {
             Helpers.RemoveExistingSite("Containerizer.Tests", "ContainerizerTestsApplicationPool");
-            Helpers.RemoveExistingSite(id, id);
             Directory.Delete(directoryPath, true);
-            Directory.Delete(new ContainerPathService().GetContainerRoot(id), true);
         }
 
         private void describe_stream_in()
@@ -54,8 +52,10 @@ namespace Containerizer.Tests.Specs.Features
                 {
                     before = () =>
                     {
-                        id = Helpers.CreateContainer(client);
+                        handle = Helpers.CreateContainer(client);
                     };
+
+                    after = () => Helpers.DestroyContainer(client, handle);
 
                     context["when I PUT a request to /api/Containers/:id/files?destination=%2F"] = () =>
                     {
@@ -69,7 +69,7 @@ namespace Containerizer.Tests.Specs.Features
                             var streamContent = new StreamContent(fileStream);
                             streamContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
                             content.Add(streamContent);
-                            string path = "/api/containers/" + id + "/files?destination=%2F";
+                            string path = "/api/containers/" + handle + "/files?destination=%2F";
                             responseMessage = client.PutAsync(path, streamContent).GetAwaiter().GetResult();
                         };
 
@@ -81,9 +81,7 @@ namespace Containerizer.Tests.Specs.Features
 
                         it["sees the new file in the container"] = () =>
                         {
-                            string fileContent =
-                                File.ReadAllText(Path.Combine(new ContainerPathService().GetContainerRoot(id),
-                                    "file.txt"));
+                            string fileContent = File.ReadAllText(Path.Combine(Helpers.GetContainerPath(handle), "file.txt"));
                             fileContent.should_be("stuff!!!!");
                         };
 

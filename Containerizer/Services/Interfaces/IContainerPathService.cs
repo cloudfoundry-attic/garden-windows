@@ -10,11 +10,7 @@ namespace Containerizer.Services.Interfaces
     {
         string GetContainerRoot(string id);
 
-        void CreateContainerDirectory(string id);
-
         string GetSubdirectory(string id, string destination);
-
-        void DeleteContainerDirectory(string id);
 
         IEnumerable<string> ContainerIds();
     }

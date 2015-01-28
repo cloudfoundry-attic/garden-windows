@@ -12,6 +12,7 @@ namespace Containerizer.Services.Interfaces
         Dictionary<string, string> GetAll(string handle);
         void Set(string handle, string key, string value);
         void BulkSet(string handle, Dictionary<string, string> properties);
+        void BulkSetWithContainerPath(string containerPath, Dictionary<string, string> properties);
         void Destroy(string handle, string key);
     }
 }

@@ -6,6 +6,7 @@ using System.Net.Http;
 using Containerizer.Services.Implementations;
 using NSpec;
 using SharpCompress.Reader;
+using IronFoundry.Container;
 
 #endregion
 
@@ -14,8 +15,7 @@ namespace Containerizer.Tests.Specs.Features
     internal class ConsumerCanGetFileSystemContentsAsTarStreamSpec : nspec
     {
         private HttpClient client;
-        private string containerPath;
-        private string id;
+        private string handle;
 
         private void before_each()
         {
@@ -24,16 +24,15 @@ namespace Containerizer.Tests.Specs.Features
                 true);
 
             client = new HttpClient {BaseAddress = new Uri("http://localhost:" + port)};
-            id = Helpers.CreateContainer(client);
-            containerPath = new ContainerPathService().GetContainerRoot(id);
+            handle = Helpers.CreateContainer(client);
+            var containerPath = Helpers.GetContainerPath(handle);
             File.WriteAllText(Path.Combine(containerPath, "file.txt"), "stuff!!!!");
         }
 
         private void after_each()
         {
+            Helpers.DestroyContainer(client, handle);
             Helpers.RemoveExistingSite("Containerizer.Tests", "ContainerizerTestsApplicationPool");
-            Helpers.RemoveExistingSite(id, id);
-            Directory.Delete(containerPath, true);
         }
 
         private void describe_stream_out()
@@ -43,7 +42,7 @@ namespace Containerizer.Tests.Specs.Features
                 it["streams the file as a tarball"] = () =>
                 {
                     HttpResponseMessage getTask =
-                        client.GetAsync("/api/containers/" + id + "/files?source=/file.txt").GetAwaiter().GetResult();
+                        client.GetAsync("/api/containers/" + handle + "/files?source=/file.txt").GetAwaiter().GetResult();
                     getTask.IsSuccessStatusCode.should_be_true();
                     Stream tarStream = getTask.Content.ReadAsStreamAsync().GetAwaiter().GetResult();
                     using (IReader tar = ReaderFactory.Open(tarStream))

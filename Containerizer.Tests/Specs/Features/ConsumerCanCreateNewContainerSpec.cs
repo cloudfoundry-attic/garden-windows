@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using Microsoft.Web.Administration;
 using Newtonsoft.Json.Linq;
 using NSpec;
+using System.Net.Http.Headers;
+using System.Text;
 
 #endregion
 
@@ -40,6 +42,7 @@ namespace Containerizer.Tests.Specs.Features
                 before = () =>
                 {
                     client = new HttpClient {BaseAddress = new Uri("http://localhost:" + port)};
+                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 };
 
                 context["when I post a request"] = () =>
@@ -54,7 +57,7 @@ namespace Containerizer.Tests.Specs.Features
                         Task<HttpResponseMessage> postTask = client.PostAsync("/api/Containers",
                             new StringContent(
                                 "{\"Handle\": \"" + handle + "\", \"Properties\":{\"" + propertyKey + "\":\"" +
-                                propertyValue + "\"}}"));
+                                propertyValue + "\"}}", Encoding.UTF8, "application/json"));
                         postTask.Wait();
                         HttpResponseMessage postResult = postTask.Result;
                         Task<string> readTask = postResult.Content.ReadAsStringAsync();

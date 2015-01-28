@@ -11,6 +11,9 @@ using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using Microsoft.Web.Administration;
 using Newtonsoft.Json.Linq;
+using IronFoundry.Container;
+using Containerizer.Services.Implementations;
+using System.Text;
 
 #endregion
 
@@ -31,7 +34,7 @@ namespace Containerizer.Tests.Specs
         public static string CreateContainer(HttpClient client)
         {
             var handle = Guid.NewGuid().ToString();
-            var postTask = client.PostAsync("/api/Containers", new StringContent("{Handle: \"" + handle + "\"}"));
+            var postTask = client.PostAsync("/api/Containers", new StringContent("{Handle: \"" + handle + "\"}", Encoding.UTF8, "application/json"));
             postTask.Wait();
             var postResult = postTask.Result;
             var readTask = postResult.Content.ReadAsStringAsync();
@@ -39,6 +42,11 @@ namespace Containerizer.Tests.Specs
             var response = readTask.Result;
             var json = JObject.Parse(response);
             return json["id"].ToString();
+        }
+
+        public static string GetContainerPath(string handle)
+        {
+            return Path.Combine(ContainerPathService.GetContainerRoot(), new ContainerHandleHelper().GenerateId(handle), "user");
         }
 
         public static void SetupSiteInIIS(string applicationFolderName, string siteName, string applicationPoolName,
@@ -74,6 +82,12 @@ namespace Containerizer.Tests.Specs
                 }
                 throw;
             }
+        }
+
+        public static void DestroyContainer(HttpClient client, string handle)
+        {
+            var response = client.DeleteAsync("/api/Containers/" + handle).GetAwaiter().GetResult();
+            response.EnsureSuccessStatusCode();
         }
 
         public static void RemoveExistingSite(string siteName, string applicationPoolName)

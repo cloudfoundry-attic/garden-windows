@@ -50,6 +50,21 @@ namespace Containerizer.Tests.Specs.Services
                 };
             };
 
+            describe["#BulkSetWithContainerPath"] = () =>
+            {
+                it["stores the dictionary to disk"] = () =>
+                {
+                    propService.BulkSetWithContainerPath(containerDirectory, new Dictionary<string, string>
+                    {
+                        { "mysecret", "dontread" },
+                    });
+
+                    File.ReadAllText(Path.Combine(containerDirectory, "properties.json")).should_be(
+                        "{\"mysecret\":\"dontread\"}"
+                        );
+                };
+            };
+
             describe["#Set"] = () =>
             {
                 it["stores the dictionary to disk"] = () =>
