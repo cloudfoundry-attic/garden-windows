@@ -40,6 +40,7 @@ namespace Containerizer
             containerBuilder.RegisterType<NetController>();
             containerBuilder.RegisterType<PropertiesController>();
             containerBuilder.RegisterType<RunController>();
+            containerBuilder.RegisterType<InfoController>();
             container = containerBuilder.Build();
         }
 

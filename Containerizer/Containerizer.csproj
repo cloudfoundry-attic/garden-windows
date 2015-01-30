@@ -47,17 +47,14 @@
     <Reference Include="ICSharpCode.SharpZipLib">
       <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
-    <Reference Include="IronFoundry.Container, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\IronFoundry.Container.0.20150130.092743-DevLocal\lib\net45\IronFoundry.Container.dll</HintPath>
+    <Reference Include="IronFoundry.Container">
+      <HintPath>..\packages\IronFoundry.Container.0.20150130.121732-DevLocal\lib\net45\IronFoundry.Container.dll</HintPath>
     </Reference>
-    <Reference Include="IronFoundry.Container.Host, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\IronFoundry.Container.0.20150130.092743-DevLocal\lib\net45\IronFoundry.Container.Host.exe</HintPath>
+    <Reference Include="IronFoundry.Container.Host">
+      <HintPath>..\packages\IronFoundry.Container.0.20150130.121732-DevLocal\lib\net45\IronFoundry.Container.Host.exe</HintPath>
     </Reference>
-    <Reference Include="IronFoundry.Container.Shared, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\IronFoundry.Container.0.20150130.092743-DevLocal\lib\net45\IronFoundry.Container.Shared.dll</HintPath>
+    <Reference Include="IronFoundry.Container.Shared">
+      <HintPath>..\packages\IronFoundry.Container.0.20150130.121732-DevLocal\lib\net45\IronFoundry.Container.Shared.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Web.Administration, Version=7.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -73,10 +70,11 @@
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Newtonsoft.Json.6.0.7\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="NLog">
-      <HintPath>..\packages\NLog.2.1.0\lib\net45\NLog.dll</HintPath>
+    <Reference Include="NLog, Version=3.2.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\NLog.3.2.0.0\lib\net45\NLog.dll</HintPath>
     </Reference>
     <Reference Include="NSpec">
       <HintPath>..\packages\nspec.0.9.68\lib\NSpec.dll</HintPath>
@@ -121,6 +119,7 @@
   <ItemGroup>
     <Compile Include="App_Start\DependencyResolver.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Controllers\InfoController.cs" />
     <Compile Include="Controllers\PropertiesController.cs" />
     <Compile Include="Controllers\NetController.cs" />
     <Compile Include="Controllers\RunController.cs" />
@@ -138,6 +137,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\ArgumentEscaper.cs" />
+    <Compile Include="Models\ContainerInfo.cs" />
     <Compile Include="Models\ContainerSpecApiModel.cs" />
     <Compile Include="Models\ProcessStreamEvent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

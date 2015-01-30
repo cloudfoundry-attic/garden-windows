@@ -16,6 +16,7 @@ namespace Containerizer.Tests.Specs.Services
     internal class ContainerPathServiceSpec : nspec
     {
         // *** FIXME - deprecated - delete me.
+        // ContainerPathService is going away, to be replaced by IContainerService and IContainer.
         private ContainerPathService containerPathService;
         private string id;
         private string returnedPath;

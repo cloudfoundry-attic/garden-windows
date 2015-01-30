@@ -6,11 +6,18 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using Containerizer.Services.Interfaces;
 using Newtonsoft.Json;
+using IronFoundry.Container;
+using System;
 
 #endregion
 
 namespace Containerizer.Controllers
 {
+    public class NetInRequest
+    {
+        public int HostPort { get; set; }
+    }
+
     public class NetInResponse
     {
         [JsonProperty("hostPort")]
@@ -19,23 +26,31 @@ namespace Containerizer.Controllers
 
     public class NetController : ApiController
     {
-        private readonly INetInService netInService;
+        private readonly IContainerService containerService;
 
-
-        public NetController(INetInService netInService)
+        public NetController(IContainerService containerService)
         {
-            this.netInService = netInService;
+            this.containerService = containerService;
         }
 
         [Route("api/containers/{id}/net/in")]
         [HttpPost]
-        public async Task<IHttpActionResult> Create(string id)
+        public IHttpActionResult Create(string id, NetInRequest request)
         {
-            NameValueCollection formData = await Request.Content.ReadAsFormDataAsync();
-
-            int hostPort = int.Parse(formData.Get("hostPort"));
-            hostPort = netInService.AddPort(hostPort, id);
-            return Json(new NetInResponse {HostPort = hostPort});
+            var container = containerService.GetContainerByHandle(id);
+            if (container == null)
+            {
+                return NotFound(); 
+            }
+            try
+            {
+                var returnedPort = container.ReservePort(request.HostPort);
+                return Json(new NetInResponse { HostPort = returnedPort });
+            }
+            catch (Exception ex)
+            {
+                return InternalServerError(ex);
+            }
         }
     }
 }

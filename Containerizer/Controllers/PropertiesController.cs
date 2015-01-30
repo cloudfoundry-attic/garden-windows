@@ -54,7 +54,7 @@ namespace Containerizer.Controllers
                 var dictionary = propertyService.GetAll(id);
                 json = JsonConvert.SerializeObject(dictionary, new KeyValuePairConverter());
             }
-            catch (System.IO.FileNotFoundException e)
+            catch (System.IO.FileNotFoundException)
             {
                 json = "{}";
             }

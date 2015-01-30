@@ -12,7 +12,6 @@ namespace Containerizer.Tests.Specs.Features
     internal class ConsumerCanDestoryContainerSpec : nspec
     {
         // Containerizer.Controllers.ContainersController containersController;
-        private string id;
         private int port;
 
         private void before_each()
