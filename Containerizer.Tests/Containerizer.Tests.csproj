@@ -38,15 +38,15 @@
     </Reference>
     <Reference Include="IronFoundry.Container, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\IronFoundry.Container.0.20150128.172101-DevLocal\lib\net45\IronFoundry.Container.dll</HintPath>
+      <HintPath>..\packages\IronFoundry.Container.0.20150130.092743-DevLocal\lib\net45\IronFoundry.Container.dll</HintPath>
     </Reference>
     <Reference Include="IronFoundry.Container.Host, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\IronFoundry.Container.0.20150128.172101-DevLocal\lib\net45\IronFoundry.Container.Host.exe</HintPath>
+      <HintPath>..\packages\IronFoundry.Container.0.20150130.092743-DevLocal\lib\net45\IronFoundry.Container.Host.exe</HintPath>
     </Reference>
     <Reference Include="IronFoundry.Container.Shared, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\IronFoundry.Container.0.20150128.172101-DevLocal\lib\net45\IronFoundry.Container.Shared.dll</HintPath>
+      <HintPath>..\packages\IronFoundry.Container.0.20150130.092743-DevLocal\lib\net45\IronFoundry.Container.Shared.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.WebSockets, Version=0.2.3.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
