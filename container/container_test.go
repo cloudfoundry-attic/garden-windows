@@ -388,6 +388,53 @@ var _ = Describe("container", func() {
 		})
 	})
 
+	Describe("Stop Container", func() {
+		Context("container exists", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/containers/containerhandle/stop"),
+						ghttp.RespondWith(200, ""),
+					),
+				)
+			})
+
+			It("should stop the container", func() {
+				err := container.Stop(true)
+				Ω(err).NotTo(HaveOccurred())
+				Ω(server.ReceivedRequests()).Should(HaveLen(1))
+			})
+		})
+
+		Context("container does not exist", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/containers/containerhandle/stop"),
+						ghttp.RespondWith(404, ""),
+					),
+				)
+			})
+
+			It("should stop the container", func() {
+				err := container.Stop(true)
+				Ω(err).To(HaveOccurred())
+				Ω(err.Error()).To(Equal("404 Not Found"))
+			})
+		})
+
+		Context("containerizer server is not available", func() {
+			BeforeEach(func() {
+				server.Close()
+			})
+
+			It("should stop the container", func() {
+				err := container.Stop(true)
+				Ω(err).To(HaveOccurred())
+			})
+		})
+	})
+
 	Describe("SetProperty", func() {
 		payloadText := "value"
 

@@ -50,6 +50,15 @@ func (container *container) Handle() string {
 }
 
 func (container *container) Stop(kill bool) error {
+	requestUrl := container.containerizerURL
+	requestUrl.Path += "/api/containers/" + container.Handle() + "/stop"
+	response, err := http.Post(requestUrl.String(), "text/plain", nil)
+	if err != nil {
+		return err
+	}
+	if response.StatusCode != http.StatusOK {
+		return errors.New(response.Status)
+	}
 	return nil
 }
 
