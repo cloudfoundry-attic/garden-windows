@@ -75,24 +75,37 @@ namespace Containerizer.Tests.Specs.Controllers
                         mockContainer.Setup(x => x.ReservePort(requestedHostPort)).Returns(8765);
                     };
 
-                    it["returns the port that the net in service returns"] = () =>
-                    {
-                        var jsonResult = result.should_cast_to<JsonResult<NetInResponse>>();
-                        jsonResult.Content.HostPort.should_be(8765);
-                    };
-                };
+                    it["calls reservePort on the container"] = () =>
+                        {
+                            mockContainer.Verify(x => x.ReservePort(requestedHostPort));
+                        };
 
-                context["reserving the port in the container fails and throws an exception"] = () =>
-                {
-                    before = () =>
+                    context["container reservePort succeeds and returns a port"] = () =>
                     {
-                        mockContainer.Setup(x => x.ReservePort(requestedHostPort)).Throws(new Exception("BOOM"));
+                        before = () =>
+                        {
+                            mockContainer.Setup(x => x.ReservePort(requestedHostPort)).Returns(8765);
+                        };
+
+                        it["returns the port that the net in service returns"] = () =>
+                        {
+                            var jsonResult = result.should_cast_to<JsonResult<NetInResponse>>();
+                            jsonResult.Content.HostPort.should_be(8765);
+                        };
                     };
 
-                    it["returns an error"] = () =>
+                    context["reserving the port in the container fails and throws an exception"] = () =>
                     {
-                        var errorResult = result.should_cast_to<ExceptionResult>();
-                        errorResult.Exception.Message.should_be("BOOM");
+                        before = () =>
+                        {
+                            mockContainer.Setup(x => x.ReservePort(requestedHostPort)).Throws(new Exception("BOOM"));
+                        };
+
+                        it["returns an error"] = () =>
+                        {
+                            var errorResult = result.should_cast_to<ExceptionResult>();
+                            errorResult.Exception.Message.should_be("BOOM");
+                        };
                     };
                 };
             };

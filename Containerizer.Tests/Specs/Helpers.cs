@@ -14,6 +14,9 @@ using Newtonsoft.Json.Linq;
 using IronFoundry.Container;
 using Containerizer.Services.Implementations;
 using System.Text;
+using System.Net.Sockets;
+using System.DirectoryServices.AccountManagement;
+using System.DirectoryServices;
 
 #endregion
 
@@ -151,32 +154,37 @@ namespace Containerizer.Tests.Specs
 
         public static bool PortIsUsed(int port)
         {
-            var sm = ServerManager.OpenRemote("localhost");
-            var ports = new List<int>();
-
-            foreach (var site in sm.Sites)
+            using (var s = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
             {
-                Boolean isStarted;
                 try
                 {
-                    isStarted = site.State == ObjectState.Started;
+                    s.Connect("localhost", port);
+                    return true;
                 }
-
-                catch(UnauthorizedAccessException ex)
+                catch (SocketException)
                 {
-                   throw new Exception("Try restarting Visual Studio in Administrator mode.", ex); 
+                    return false;
                 }
+            }
+        }
 
-                if (isStarted)
+        public static void RemoveAllWardenUsers()
+        {
+            using (var context = new PrincipalContext(ContextType.Machine))
+            {
+                using (var searcher = new PrincipalSearcher(new UserPrincipal(context)))
                 {
-                    foreach (var binding in site.Bindings)
+                    foreach (var result in searcher.FindAll())
                     {
-                        ports.Add(binding.EndPoint.Port);
+                        var de = result.GetUnderlyingObject() as DirectoryEntry;
+                        if (de.Name.StartsWith("c_"))
+                        {
+                            Console.WriteLine("DELETE: " + de.Name);
+                            result.Delete();
+                        }
                     }
                 }
             }
-
-            return ports.Any(x => x == port);
         }
     }
 }
