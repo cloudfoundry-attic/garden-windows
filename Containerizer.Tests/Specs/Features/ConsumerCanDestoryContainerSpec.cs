@@ -44,10 +44,10 @@ namespace Containerizer.Tests.Specs.Features
                 {
                     it["responds with 200 and then 404"] = () =>
                     {
-                        var response = client.DeleteAsync("/api/Containers/" + handle).GetAwaiter().GetResult();
+                        var response = client.DeleteAsync("/api/containers/" + handle).GetAwaiter().GetResult();
                         response.StatusCode.should_be(HttpStatusCode.OK);
 
-                        response = client.DeleteAsync("/api/Containers/" + handle).GetAwaiter().GetResult();
+                        response = client.DeleteAsync("/api/containers/" + handle).GetAwaiter().GetResult();
                         response.StatusCode.should_be(HttpStatusCode.NotFound);
                     };
                 };
