@@ -6,7 +6,7 @@ using Containerizer.Services.Interfaces;
 using Newtonsoft.Json;
 using System.IO;
 
-#endregion 
+#endregion
 
 namespace Containerizer.Services.Implementations
 {
@@ -14,7 +14,8 @@ namespace Containerizer.Services.Implementations
     {
         private IContainerPathService pathService;
 
-        public PropertyService(IContainerPathService pathService) {
+        public PropertyService(IContainerPathService pathService)
+        {
             this.pathService = pathService;
         }
 
@@ -32,9 +33,12 @@ namespace Containerizer.Services.Implementations
         {
             Dictionary<string, string> properties;
             var propertiesFileName = GetFileNameFromHandle(handle);
-            if (File.Exists(propertiesFileName)) {
+            if (File.Exists(propertiesFileName))
+            {
                 properties = GetAll(handle);
-            } else {
+            }
+            else
+            {
                 properties = new Dictionary<string, string>();
             }
             properties[key] = value;
@@ -71,7 +75,9 @@ namespace Containerizer.Services.Implementations
         }
 
         private void WritePropertiesToDisk(string propertiesFileName, Dictionary<string, string> properties)
-        { 
+        {
+            if (properties == null)
+                properties = new Dictionary<string, string>();
             File.WriteAllText(propertiesFileName, JsonConvert.SerializeObject(properties));
         }
 

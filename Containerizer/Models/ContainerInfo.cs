@@ -38,8 +38,10 @@ namespace Containerizer.Models
         public ContainerInfoApiModel()
         {
             MappedPorts = new List<PortMappingApiModel>();
+            Properties = new Dictionary<string, string>();
         }
 
         public List<PortMappingApiModel> MappedPorts;
+        public Dictionary<string, string> Properties;
     }
 }

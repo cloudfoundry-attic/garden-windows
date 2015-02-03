@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using NSpec;
+using Newtonsoft.Json.Linq;
 
 #endregion
 
@@ -58,8 +59,8 @@ namespace Containerizer.Tests.Specs.Features
                         client.PutAsync(path(0), content(0)).Wait();
                         client.PutAsync(path(1), content(1)).Wait();
 
-                        var indexPath = "/api/containers/" + containerId + "/properties";
-                        var indexResponse = client.GetAsync(indexPath).Result.Content.ReadAsJson();
+                        var indexPath = "/api/containers/" + containerId + "/info";
+                        var indexResponse = client.GetAsync(indexPath).Result.Content.ReadAsJson()["Properties"] as JObject;
 
                         Action<int> verifyIndex =
                             n => indexResponse[properties[n].Key].ToString().should_be(properties[n].Value);
@@ -69,10 +70,10 @@ namespace Containerizer.Tests.Specs.Features
 
                         client.DeleteAsync(path(1)).Wait();
 
-                        indexResponse = client.GetAsync(indexPath).Result.Content.ReadAsJson();
+                        indexResponse = client.GetAsync(indexPath).Result.Content.ReadAsJson()["Properties"] as JObject;
                         indexResponse.Count.should_be(1);
 
-                        var showResponse = client.GetAsync(path(0)).Result.Content.ReadAsJson();
+                        var showResponse = client.GetAsync(path(0)).Result.Content.ReadAsJson(); 
                         showResponse["value"].ToString().should_be(properties[0].Value);
                     };
                 };

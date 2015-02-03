@@ -37,67 +37,7 @@ namespace Containerizer.Tests.Specs.Controllers
                 key = "some:key";
                 value = "value";
             };
-
-            describe[Controller.Index] = () =>
-            {
-                HttpResponseMessage result = null;
-
-                act = () => result = propertiesController.Index(containerHandle).Result;
-
-                context["properties exist"] = () =>
-                {
-                    string key1 = null;
-                    string key2 = null;
-
-                    before = () =>
-                    {
-                        key1 = Guid.NewGuid().ToString();
-                        key2 = Guid.NewGuid().ToString();
-
-                        var properties = new Dictionary<string, string>
-                        {
-                            {key1, "hello"},
-                            {key2, "keytothecity"}
-                        };
-                        mockPropertyService.Setup(x => x.GetAll(containerHandle))
-                            .Returns(() =>
-                            {
-                                return properties;
-                            });
-                    };
-
-                    it["returns a successful status code"] = () =>
-                    {
-                        result.VerifiesSuccessfulStatusCode();
-                    };
-
-                    it["returns the correct properties"] = () =>
-                    {
-                        var json = result.Content.ReadAsJson();
-                        json[key1].ToString().should_be("hello");
-                        json[key2].ToString().should_be("keytothecity");
-                    };
-                };
-
-                context["properties do not yet exist"] = () =>
-                {
-                    before = () =>
-                    {
-                        mockPropertyService.Setup(x => x.GetAll(containerHandle)).Throws(new FileNotFoundException());
-                    };
-
-                    it["returns a successful status code"] = () =>
-                    {
-                        result.VerifiesSuccessfulStatusCode();
-                    };
-
-                    it["returns the correct properties"] = () =>
-                    {
-                        result.Content.ReadAsString().should_be("{}");
-                    };
-                };
-            };
-
+                 
             describe[Controller.Show] = () =>
             {
                 IHttpActionResult result = null;

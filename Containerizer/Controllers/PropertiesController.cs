@@ -22,7 +22,6 @@ namespace Containerizer.Controllers
     {
         private readonly IPropertyService propertyService;
 
-
         public PropertiesController(IPropertyService propertyService)
         {
             this.propertyService = propertyService;
@@ -42,32 +41,6 @@ namespace Containerizer.Controllers
             string requestBody = await Request.Content.ReadAsStringAsync();
             propertyService.Set(id, propertyKey, requestBody);
             return Json(new GetPropertyResponse {Value = "I did a thing"});
-        }
-
-        [Route("api/containers/{id}/properties")]
-        [HttpGet]
-        public Task<HttpResponseMessage> Index(string id)
-        {
-            string json;
-            try
-            {
-                var dictionary = propertyService.GetAll(id);
-                json = JsonConvert.SerializeObject(dictionary, new KeyValuePairConverter());
-            }
-            catch (System.IO.FileNotFoundException)
-            {
-                json = "{}";
-            }
-
-            var response = new HttpResponseMessage
-            {
-                Content = new StringContent(
-                    json,
-                    Encoding.UTF8,
-                    "application/json"
-                    )
-            };
-            return Task.FromResult(response);
         }
 
         [Route("api/containers/{handle}/properties/{key}")]

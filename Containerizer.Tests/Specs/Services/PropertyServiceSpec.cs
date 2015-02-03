@@ -48,6 +48,18 @@ namespace Containerizer.Tests.Specs.Services
                         "{\"mysecret\":\"dontread\"}"
                         );
                 };
+
+                context["passed in properties are null"] = () =>
+                {
+                    it["sets an empty hash"] = () =>
+                    {
+                        propService.BulkSet(handle, null);
+
+                        File.ReadAllText(Path.Combine(containerDirectory, "properties.json")).should_be(
+                            "{}"
+                        );
+                    };
+                };
             };
 
             describe["#BulkSetWithContainerPath"] = () =>

@@ -6,16 +6,21 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using Containerizer.Models;
+using Containerizer.Services.Interfaces;
+using System.IO;
 
 namespace Containerizer.Controllers
 {
     public class InfoController : ApiController
     {
         private readonly IContainerService containerService;
+        private readonly IPropertyService propertyService;
 
-        public InfoController(IContainerService containerService)
+
+        public InfoController(IContainerService containerService, IPropertyService propertyService)
         {
             this.containerService = containerService;
+            this.propertyService = propertyService;
         }
 
         [Route("api/containers/{handle}/info")]
@@ -26,13 +31,20 @@ namespace Containerizer.Controllers
             {
                 return NotFound();
             }
+
+            var properties = propertyService.GetAll(handle);
+
             var rawInfo = container.GetInfo();
             var portMappings = new List<PortMappingApiModel>();
             foreach (int reservedPort in rawInfo.ReservedPorts)
             {
                 portMappings.Add(new PortMappingApiModel { HostPort = reservedPort, ContainerPort = 8080 });
             }
-            var apiResponse = new ContainerInfoApiModel { MappedPorts = portMappings };
+            var apiResponse = new ContainerInfoApiModel
+            {
+                MappedPorts = portMappings,
+                Properties = properties
+            };
             return Json(apiResponse);
         }
     }

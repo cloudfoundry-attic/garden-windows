@@ -10,6 +10,7 @@ using System.Web.Http;
 using Containerizer.Models;
 using System.Web.Http.Results;
 using IronFoundry.Container;
+using Containerizer.Services.Interfaces;
 
 namespace Containerizer.Tests.Specs.Controllers
 {
@@ -20,6 +21,7 @@ namespace Containerizer.Tests.Specs.Controllers
             describe[Controller.Index] = () =>
             {
                 Mock<IContainerService> mockContainerService = null;
+                Mock<IPropertyService> mockPropertService = null;
                 string handle = "container-handle";
                 InfoController controller = null;
                 IHttpActionResult result = null;
@@ -37,7 +39,13 @@ namespace Containerizer.Tests.Specs.Controllers
                     mockContainerService.Setup(x => x.GetContainerByHandle(handle))
                         .Returns(mockContainer.Object);
 
-                    controller = new InfoController(mockContainerService.Object);
+                    mockPropertService = new Mock<IPropertyService>();
+                    mockPropertService.Setup(x => x.GetAll(handle)).Returns(new Dictionary<string, string>
+                    {
+                        {"Keymaster", "Gatekeeper"}
+                    });
+
+                    controller = new InfoController(mockContainerService.Object, mockPropertService.Object);
                 };
 
                 act = () =>
@@ -52,7 +60,14 @@ namespace Containerizer.Tests.Specs.Controllers
                     portMapping.HostPort.should_be(expectedHostPort);
                     portMapping.ContainerPort.should_be(8080);
                 };
-               
+
+                it["returns container properties"] = () =>
+                {
+                    var jsonResult = result.should_cast_to<JsonResult<ContainerInfoApiModel>>();
+                    var properties = jsonResult.Content.Properties;
+                    properties["Keymaster"].should_be("Gatekeeper");
+                };
+
                 context["when the container does not exist"] = () =>
                 {
                     before = () =>

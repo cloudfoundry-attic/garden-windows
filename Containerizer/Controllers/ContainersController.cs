@@ -59,12 +59,9 @@ namespace Containerizer.Controllers
                 throw new HttpResponseException(HttpStatusCode.InternalServerError);
             }
 
-            if (spec.Properties != null)
-            {
-                var containerPath = container.Directory.MapUserPath("");
-                propertyService.BulkSetWithContainerPath(containerPath, spec.Properties);
-            }
-            
+            var containerPath = container.Directory.MapUserPath("");
+            propertyService.BulkSetWithContainerPath(containerPath, spec.Properties);
+              
             return new CreateResponse
             {
                 Id = container.Handle
