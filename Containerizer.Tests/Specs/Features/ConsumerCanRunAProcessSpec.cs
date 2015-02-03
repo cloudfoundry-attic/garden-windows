@@ -9,6 +9,7 @@ using System.Threading;
 using Containerizer.Services.Implementations;
 using NSpec;
 using System.Net.Http;
+using Newtonsoft.Json.Linq;
 
 #endregion
 
@@ -45,13 +46,18 @@ namespace Containerizer.Tests.Specs.Features
             context["given that I am a consumer of the api"] = () =>
             {
                 string containerPath = null;
+                int hostPort = 0;
 
                 before = () =>
                 {
                     containerPath = Helpers.GetContainerPath(handle);
                     File.WriteAllBytes(containerPath + "/myfile.bat",
                         new UTF8Encoding(true).GetBytes(
-                            "@echo off\r\n@echo Hi Fred\r\n@echo Jane is good\r\n@echo Jill is better\r\n"));
+                            "@echo off\r\n@echo Hi Fred\r\n@echo Jane is good\r\n@echo Jill is better\r\nset PORT\r\n"));
+
+                    var response = httpClient.PostAsJsonAsync("/api/containers/" + handle + "/net/in", new { hostPort = 0 }).GetAwaiter().GetResult();
+                    var json = response.Content.ReadAsJson() as JObject;
+                    hostPort = json["hostPort"].Value<int>();
 
                     client = new ClientWebSocket();
                     client.ConnectAsync(new Uri("ws://localhost:" + port + "/api/containers/" + handle + "/run"),
@@ -86,13 +92,18 @@ namespace Containerizer.Tests.Specs.Features
                                 string message = Encoding.Default.GetString(receiveBuffer);
                                 messages.Add(message.Substring(0, result.Count));
                             }
-                        } while (messages.Count < 4);
+                        } while (messages.Count < 5);
                     };
 
                     it["should run a process, return stdout and close the socket"] = () =>
                     {
                         messages.should_contain("{\"type\":\"stdout\",\"data\":\"Hi Fred\\r\\n\"}");
                         messages.should_contain("{\"type\":\"close\"}");
+                    };
+
+                    it["should set PORT env variable"] = () =>
+                    {
+                        messages.should_contain("{\"type\":\"stdout\",\"data\":\"PORT=" + hostPort + "\\r\\n\"}");
                     };
                 };
             };

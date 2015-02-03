@@ -7,6 +7,7 @@ using Containerizer.Models;
 using Containerizer.Services.Interfaces;
 using Microsoft.Web.WebSockets;
 using Newtonsoft.Json;
+using IronFoundry.Container;
 
 #endregion
 
@@ -16,10 +17,12 @@ namespace Containerizer.Controllers
     {
         private readonly string containerRoot;
         private readonly IProcessFacade process;
+        private readonly IContainer container;
 
-        public ContainerProcessHandler(string containerId, IContainerPathService pathService, IProcessFacade process)
+        public ContainerProcessHandler(string containerId, IContainerPathService pathService, IContainerService containerService, IProcessFacade process)
         {
             containerRoot = pathService.GetContainerRoot(containerId);
+            this.container = containerService.GetContainerByHandle(containerId);
             this.process = process;
         }
 
@@ -39,7 +42,11 @@ namespace Containerizer.Controllers
                 process.StartInfo.Arguments = processSpec.Arguments();
                 process.OutputDataReceived += OutputDataHandler;
                 process.ErrorDataReceived += OutputErrorDataHandler;
-
+                
+                var reservedPorts = container.GetInfo().ReservedPorts;
+                if (reservedPorts.Count > 0)
+                    process.StartInfo.EnvironmentVariables["PORT"] = reservedPorts[0].ToString();
+                
                 try
                 {
                     process.Start();
