@@ -11,7 +11,5 @@ namespace Containerizer.Services.Interfaces
         string GetContainerRoot(string id);
 
         string GetSubdirectory(string id, string destination);
-
-        IEnumerable<string> ContainerIds();
     }
 }

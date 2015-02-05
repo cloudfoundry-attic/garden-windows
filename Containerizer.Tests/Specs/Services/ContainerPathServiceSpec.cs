@@ -39,29 +39,6 @@ namespace Containerizer.Tests.Specs.Services
                 expectedPath = Path.Combine(rootDir, "containerizer", id);
             };
 
-            xdescribe["#ContainerIds"] = () =>
-            {
-                before = () =>
-                {
-                    string rootPath = containerPathService.GetContainerRoot(".");
-                    Directory.CreateDirectory(Path.Combine(rootPath, "MyFirstContainer"));
-                    Directory.CreateDirectory(Path.Combine(rootPath, "MySecondContainer"));
-                };
-                after = () =>
-                {
-                    string rootPath = containerPathService.GetContainerRoot(".");
-                    Directory.Delete(Path.Combine(rootPath, "MyFirstContainer"), true);
-                    Directory.Delete(Path.Combine(rootPath, "MySecondContainer"), true);
-                };
-
-                it["returns all the container ids"] = () =>
-                {
-                    IEnumerable<string> ids = containerPathService.ContainerIds();
-                    ids.should_contain("MyFirstContainer");
-                    ids.should_contain("MySecondContainer");
-                };
-            };
-
             xdescribe["#GetContainerRoot"] = () =>
             {
                 before = () =>

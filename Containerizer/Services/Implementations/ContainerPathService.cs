@@ -29,11 +29,6 @@ namespace Containerizer.Services.Implementations
             return containerService.GetContainerByHandle(id).Directory.MapUserPath(destination);
         }
 
-        public IEnumerable<string> ContainerIds()
-        {
-            return containerService.GetContainers().Select(x => x.Handle);
-        }
-
         public static string GetContainerRoot()
         {
             string rootDir = Directory.GetDirectoryRoot(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
