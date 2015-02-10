@@ -4,6 +4,7 @@ using System;
 using System.IO;
 using Containerizer.Services.Implementations;
 using Containerizer.Services.Interfaces;
+using IronFoundry.Container;
 using Moq;
 using NSpec;
 
@@ -14,15 +15,20 @@ namespace Containerizer.Tests.Specs.Services
     internal class StreamInServiceSpec : nspec
     {
         private string id;
-        private Mock<IContainerPathService> mockIContainerPathService;
         private Mock<ITarStreamService> mockITarStreamService;
+        private Mock<IContainerService> mockIContainerService;
+        private Mock<IContainer> mockIContainer;
+        private Mock<IContainerDirectory> mockIContainerDirectory;
         private StreamInService streamInService;
 
         private void before_each()
         {
-            mockIContainerPathService = new Mock<IContainerPathService>();
             mockITarStreamService = new Mock<ITarStreamService>();
-            streamInService = new StreamInService(mockIContainerPathService.Object, mockITarStreamService.Object);
+            mockIContainerService = new Mock<IContainerService>();
+            mockIContainer = new Mock<IContainer>();
+            mockIContainerDirectory = new Mock<IContainerDirectory>();
+
+            streamInService = new StreamInService(mockIContainerService.Object, mockITarStreamService.Object);
             id = Guid.NewGuid().ToString();
         }
 
@@ -32,8 +38,10 @@ namespace Containerizer.Tests.Specs.Services
 
             before = () =>
             {
-                mockIContainerPathService.Setup(x => x.GetSubdirectory(It.IsAny<string>(), It.IsAny<string>()))
-                    .Returns(() => @"C:\a\path\file.txt");
+                mockIContainerService.Setup(x => x.GetContainerByHandle(It.IsAny<string>())).Returns(mockIContainer.Object);
+                mockIContainer.Setup(x => x.Directory).Returns(mockIContainerDirectory.Object);
+                mockIContainerDirectory.Setup(x => x.MapUserPath("file.txt")).Returns(@"C:\a\path\file.txt");
+
                 stream = new MemoryStream();
                 streamInService.StreamInFile(stream, id, "file.txt");
             };
