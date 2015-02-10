@@ -11,17 +11,12 @@ using IronFoundry.Container;
 
 namespace Containerizer.Services.Implementations
 {
-    public class ContainerPathService : IContainerPathService
+    public class ContainerPathService
     {
         private IContainerService containerService;
         public ContainerPathService(IContainerService containerService)
         {
             this.containerService = containerService;
-        }
-
-        public string GetContainerRoot(string id)
-        {
-            return containerService.GetContainerByHandle(id).Directory.MapUserPath("");
         }
 
         public static string GetContainerRoot()

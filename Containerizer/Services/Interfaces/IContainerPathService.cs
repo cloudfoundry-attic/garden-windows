@@ -6,8 +6,4 @@ using System.Collections.Generic;
 
 namespace Containerizer.Services.Interfaces
 {
-    public interface IContainerPathService
-    {
-        string GetContainerRoot(string id);
-    }
 }

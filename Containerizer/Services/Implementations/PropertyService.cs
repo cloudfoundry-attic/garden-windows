@@ -5,6 +5,7 @@ using System.Web;
 using Containerizer.Services.Interfaces;
 using Newtonsoft.Json;
 using System.IO;
+using IronFoundry.Container;
 
 #endregion
 
@@ -12,11 +13,11 @@ namespace Containerizer.Services.Implementations
 {
     public class PropertyService : IPropertyService
     {
-        private IContainerPathService pathService;
+        private IContainerService containerService;
 
-        public PropertyService(IContainerPathService pathService)
+        public PropertyService(IContainerService containerService)
         {
-            this.pathService = pathService;
+            this.containerService = containerService;
         }
 
         public string Get(string handle, string key)
@@ -83,7 +84,8 @@ namespace Containerizer.Services.Implementations
 
         private string GetFileNameFromHandle(string handle)
         {
-            return GetFileName(pathService.GetContainerRoot(handle));
+            IContainer container = containerService.GetContainerByHandle(handle);
+            return GetFileName(container.Directory.MapUserPath(""));
         }
 
         private string GetFileName(string containerPath)

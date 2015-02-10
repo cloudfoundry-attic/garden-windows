@@ -1,11 +1,11 @@
 ﻿using System;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
 using Containerizer.Services.Implementations;
 using Containerizer.Services.Interfaces;
+using IronFoundry.Container;
 using Microsoft.Web.Administration;
 using Moq;
 using NSpec;
@@ -16,18 +16,27 @@ namespace Containerizer.Tests.Specs.Services
     {
         private void describe_()
         {
-            Mock<IContainerPathService> mockPathService = null;
+            Mock<IContainerService> mockContainerService = null;
+            Mock<IContainer> mockContainer = null;
+            Mock<IContainerDirectory> mockIContainerDirectory = null;
             PropertyService propService = null;
             string handle = null;
             string containerDirectory = null;
             before = () =>
             {
                 handle = Guid.NewGuid().ToString();
-                mockPathService = new Mock<IContainerPathService>();
+                mockContainerService = new Mock<IContainerService>();
+                mockContainer = new Mock<IContainer>();
+                mockIContainerDirectory = new Mock<IContainerDirectory>();
+
                 containerDirectory = Path.Combine(Path.GetTempPath(), handle);
                 Directory.CreateDirectory(containerDirectory);
-                mockPathService.Setup(x => x.GetContainerRoot(handle)).Returns(containerDirectory);
-                propService = new PropertyService(mockPathService.Object);
+
+                mockContainerService.Setup(x => x.GetContainerByHandle(It.IsAny<string>())).Returns(mockContainer.Object);
+                mockContainer.Setup(x => x.Directory).Returns(mockIContainerDirectory.Object);
+                mockIContainerDirectory.Setup(x => x.MapUserPath("")).Returns(containerDirectory);
+
+                propService = new PropertyService(mockContainerService.Object);
             };
 
             after = () =>

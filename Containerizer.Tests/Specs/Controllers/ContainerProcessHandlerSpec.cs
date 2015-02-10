@@ -24,21 +24,20 @@ namespace Containerizer.Tests.Specs.Controllers
         private string containerId;
         private byte[] fakeStandardInput;
         private ContainerProcessHandler handler;
-        private Mock<IContainerPathService> mockPathService;
         private Mock<IProcessFacade> mockProcess;
         private ProcessStartInfo startInfo;
         Mock<IContainerService> mockContainerService = null;
         Mock<IContainer> mockContainer = null;
         private int expectedHostPort = 6336;
+        private Mock<IContainerDirectory> mockContainerDirectory;
 
         private void before_each()
         {
 
             mockContainerService = new Mock<IContainerService>();
+            mockContainerDirectory = new Mock<IContainerDirectory>();
 
             containerId = new Guid().ToString();
-            mockPathService = new Mock<IContainerPathService>();
-            mockPathService.Setup(x => x.GetContainerRoot(containerId)).Returns("C:\\A\\Directory");
             mockProcess = new Mock<IProcessFacade>();
             startInfo = new ProcessStartInfo();
 
@@ -51,11 +50,13 @@ namespace Containerizer.Tests.Specs.Controllers
                 });
 
 
+            mockContainer.Setup(x => x.Directory).Returns(mockContainerDirectory.Object);
+            mockContainerDirectory.Setup(x => x.MapUserPath("")).Returns(@"C:\A\Directory\user");
 
             mockProcess.Setup(x => x.StartInfo).Returns(startInfo);
             mockProcess.Setup(x => x.Start());
 
-            handler = new ContainerProcessHandler(containerId, mockPathService.Object, mockContainerService.Object, mockProcess.Object);
+            handler = new ContainerProcessHandler(containerId, mockContainerService.Object, mockProcess.Object);
 
 
             fakeStandardInput = new byte[4096];
@@ -106,12 +107,12 @@ namespace Containerizer.Tests.Specs.Controllers
 
             it["sets working directory"] = () =>
             {
-                startInfo.WorkingDirectory.should_be("C:\\A\\Directory");
+                startInfo.WorkingDirectory.should_be("C:\\A\\Directory\\user");
             };
 
             it["sets start info correctly"] = () =>
             {
-                startInfo.FileName.should_be("C:\\A\\Directory\\foo.exe");
+                startInfo.FileName.should_be("C:\\A\\Directory\\user\\foo.exe");
                 startInfo.Arguments.should_be("\"some\" \"args\"");
             };
 

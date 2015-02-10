@@ -145,7 +145,6 @@
     <Compile Include="Specs\Services\PropertyServiceSpec.cs" />
     <Compile Include="Specs\Services\StreamInServiceSpec.cs" />
     <Compile Include="Specs\Services\TarStreamServiceSpec.cs" />
-    <Compile Include="Specs\Services\ContainerPathServiceSpec.cs" />
     <Compile Include="Specs\Services\StreamOutServiceSpec.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>

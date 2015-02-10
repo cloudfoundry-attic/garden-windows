@@ -19,9 +19,9 @@ namespace Containerizer.Controllers
         private readonly IProcessFacade process;
         private readonly IContainer container;
 
-        public ContainerProcessHandler(string containerId, IContainerPathService pathService, IContainerService containerService, IProcessFacade process)
+        public ContainerProcessHandler(string containerId, IContainerService containerService, IProcessFacade process)
         {
-            containerRoot = pathService.GetContainerRoot(containerId);
+            containerRoot = containerService.GetContainerByHandle(containerId).Directory.MapUserPath("");
             this.container = containerService.GetContainerByHandle(containerId);
             this.process = process;
         }

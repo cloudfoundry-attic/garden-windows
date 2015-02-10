@@ -24,15 +24,12 @@ namespace Containerizer.Controllers
 
     public class ContainersController : ApiController
     {
-        private readonly IContainerPathService containerPathService;
         private readonly IContainerService containerService;
         private readonly IPropertyService propertyService;
 
 
-        public ContainersController(IContainerPathService containerPathService,
-            IContainerService containerService, IPropertyService propertyService)
+        public ContainersController(IContainerService containerService, IPropertyService propertyService)
         {
-            this.containerPathService = containerPathService;
             this.containerService = containerService;
             this.propertyService = propertyService;
         }

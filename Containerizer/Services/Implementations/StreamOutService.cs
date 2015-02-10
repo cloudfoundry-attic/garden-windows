@@ -2,6 +2,7 @@
 
 using System.IO;
 using Containerizer.Services.Interfaces;
+using IronFoundry.Container;
 
 #endregion
 
@@ -9,19 +10,20 @@ namespace Containerizer.Services.Implementations
 {
     public class StreamOutService : IStreamOutService
     {
-        private readonly IContainerPathService containerPathService;
+        private readonly IContainerService containerService;
         private readonly ITarStreamService tarStreamService;
 
-        public StreamOutService(IContainerPathService containerPathService, ITarStreamService tarStreamService)
+        public StreamOutService(IContainerService containerService, ITarStreamService tarStreamService)
         {
-            this.containerPathService = containerPathService;
+            this.containerService = containerService;
             this.tarStreamService = tarStreamService;
         }
 
         public Stream StreamOutFile(string id, string source)
         {
-            string rootDir = containerPathService.GetContainerRoot(id);
-            string path = rootDir + source;
+            IContainer container = containerService.GetContainerByHandle(id);
+
+            string path = container.Directory.MapUserPath(source);
             Stream stream = tarStreamService.WriteTarToStream(path);
             return stream;
         }

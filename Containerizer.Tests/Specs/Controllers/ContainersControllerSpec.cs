@@ -33,17 +33,14 @@ namespace Containerizer.Tests.Specs.Controllers
         private void describe_()
         {
             ContainersController containersController = null;
-            Mock<IContainerPathService> mockContainerPathService = null;
             Mock<IContainerService> mockContainerService = null;
             Mock<IPropertyService> mockPropertyService = null;
 
             before = () =>
             {
-                mockContainerPathService = new Mock<IContainerPathService>();
                 mockContainerService = new Mock<IContainerService>();
                 mockPropertyService = new Mock<IPropertyService>();
-                containersController = new ContainersController(mockContainerPathService.Object,
-                    mockContainerService.Object, mockPropertyService.Object)
+                containersController = new ContainersController(mockContainerService.Object, mockPropertyService.Object)
                 {
                     Configuration = new HttpConfiguration(),
                     Request = new HttpRequestMessage()
