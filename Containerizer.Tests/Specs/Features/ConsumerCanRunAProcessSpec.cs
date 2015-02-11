@@ -38,7 +38,7 @@ namespace Containerizer.Tests.Specs.Features
             string handle = null;
             before = () =>
             {
-                httpClient = new HttpClient { BaseAddress = new Uri("http://localhost:" + port) };
+                httpClient = new HttpClient {BaseAddress = new Uri("http://localhost:" + port)};
                 handle = Helpers.CreateContainer(httpClient);
             };
             after = () => Helpers.DestroyContainer(httpClient, handle);
@@ -48,62 +48,72 @@ namespace Containerizer.Tests.Specs.Features
                 string containerPath = null;
                 int hostPort = 0;
 
-                before = () =>
+                context["I have a file to run in my container"] = () =>
                 {
-                    containerPath = Helpers.GetContainerPath(handle);
-                    File.WriteAllBytes(containerPath + "/myfile.bat",
-                        new UTF8Encoding(true).GetBytes(
-                            "@echo off\r\n@echo Hi Fred\r\n@echo Jane is good\r\n@echo Jill is better\r\nset PORT\r\n"));
-
-                    var response = httpClient.PostAsJsonAsync("/api/containers/" + handle + "/net/in", new { hostPort = 0 }).GetAwaiter().GetResult();
-                    var json = response.Content.ReadAsJson() as JObject;
-                    hostPort = json["hostPort"].Value<int>();
-
-                    client = new ClientWebSocket();
-                    client.ConnectAsync(new Uri("ws://localhost:" + port + "/api/containers/" + handle + "/run"),
-                        CancellationToken.None).GetAwaiter().GetResult();
-                };
-
-                describe["when I send a start request"] = () =>
-                {
-                    List<String> messages = null;
-
                     before = () =>
                     {
-                        var encoder = new UTF8Encoding();
-                        byte[] buffer =
-                            encoder.GetBytes(
-                                "{\"type\":\"run\", \"pspec\":{\"Path\":\"myfile.bat\", Args:[\"/all\"]}}");
-                        client.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true,
-                            CancellationToken.None);
+                        containerPath = Helpers.GetContainerPath(handle);
+                        File.WriteAllBytes(containerPath + "/myfile.bat",
+                            new UTF8Encoding(true).GetBytes(
+                                "@echo off\r\n@echo Hi Fred\r\n@echo Jane is good\r\n@echo Jill is better\r\nset PORT\r\n"));
 
-                        messages = new List<string>();
-                        var receiveBuffer = new byte[1024];
-                        var receiveBufferSegment = new ArraySegment<byte>(receiveBuffer);
-                        WebSocketReceiveResult result;
-                        do
+                        var response =
+                            httpClient.PostAsJsonAsync("/api/containers/" + handle + "/net/in", new {hostPort = 0})
+                                .GetAwaiter()
+                                .GetResult();
+                        var json = response.Content.ReadAsJson() as JObject;
+                        hostPort = json["hostPort"].Value<int>();
+
+                        client = new ClientWebSocket();
+                        client.ConnectAsync(new Uri("ws://localhost:" + port + "/api/containers/" + handle + "/run"),
+                            CancellationToken.None).GetAwaiter().GetResult();
+                    };
+
+                    describe["when I send a start request"] = () =>
+                    {
+                        List<String> messages = null;
+
+                        before = () =>
                         {
-                            result =
-                                client.ReceiveAsync(receiveBufferSegment, CancellationToken.None)
-                                    .GetAwaiter()
-                                    .GetResult();
-                            if (result.Count > 0)
+                            var encoder = new UTF8Encoding();
+                            byte[] buffer =
+                                encoder.GetBytes(
+                                    "{\"type\":\"run\", \"pspec\":{\"Path\":\"myfile.bat\", Args:[\"/all\"]}}");
+                            client.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true,
+                                CancellationToken.None);
+
+                            messages = new List<string>();
+                            var receiveBuffer = new byte[1024];
+                            var receiveBufferSegment = new ArraySegment<byte>(receiveBuffer);
+                            WebSocketReceiveResult result;
+                            do
                             {
-                                string message = Encoding.Default.GetString(receiveBuffer);
-                                messages.Add(message.Substring(0, result.Count));
-                            }
-                        } while (messages.Count < 5);
-                    };
+                                result =
+                                    client.ReceiveAsync(receiveBufferSegment, CancellationToken.None)
+                                        .GetAwaiter()
+                                        .GetResult();
+                                if (result.Count > 0)
+                                {
+                                    string message = Encoding.Default.GetString(receiveBuffer);
+                                    if (message.Contains("error"))
+                                    {
+                                        throw new Exception("websocket returned an error message");
+                                    }
+                                    messages.Add(message.Substring(0, result.Count));
+                                }
+                            } while (messages.Count < 5);
+                        };
 
-                    it["should run a process, return stdout and close the socket"] = () =>
-                    {
-                        messages.should_contain("{\"type\":\"stdout\",\"data\":\"Hi Fred\\r\\n\"}");
-                        messages.should_contain("{\"type\":\"close\"}");
-                    };
+                        it["should run a process, return stdout and close the socket"] = () =>
+                        {
+                            messages.should_contain("{\"type\":\"stdout\",\"data\":\"Hi Fred\\r\\n\"}");
+                            messages.should_contain("{\"type\":\"close\"}");
+                        };
 
-                    it["should set PORT env variable"] = () =>
-                    {
-                        messages.should_contain("{\"type\":\"stdout\",\"data\":\"PORT=" + hostPort + "\\r\\n\"}");
+                        it["should set PORT env variable"] = () =>
+                        {
+                            messages.should_contain("{\"type\":\"stdout\",\"data\":\"PORT=" + hostPort + "\\r\\n\"}");
+                        };
                     };
                 };
             };
