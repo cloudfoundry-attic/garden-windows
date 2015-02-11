@@ -1,24 +1,19 @@
 ﻿#region
 
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using Containerizer.Services.Interfaces;
 using IronFoundry.Container;
 
 #endregion
 
-namespace Containerizer.Services.Implementations
+namespace Containerizer.Factories
 {
-    public class ContainerPathService
+    public class ContainerServiceFactory
     {
-        private IContainerService containerService;
-        public ContainerPathService(IContainerService containerService)
+        public IContainerService New()
         {
-            this.containerService = containerService;
+            return new ContainerService(GetContainerRoot(), "Users");
         }
-
         public static string GetContainerRoot()
         {
             string rootDir = Directory.GetDirectoryRoot(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));

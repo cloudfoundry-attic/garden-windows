@@ -23,7 +23,7 @@ namespace Containerizer.Tests.Specs.Services
 
                 before = () =>
                 {
-                    containerService = new ContainerService(new ContainerPathService());
+                    containerService = new ContainerService(new ContainerServiceFactory());
                     containerId =
                         containerService.CreateContainer(Guid.NewGuid().ToString());
                     containerId.should_not_be_null();

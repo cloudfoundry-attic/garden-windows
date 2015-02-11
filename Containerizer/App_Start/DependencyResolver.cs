@@ -9,6 +9,7 @@ using Containerizer.Services.Implementations;
 using Containerizer.Services.Interfaces;
 using IronFoundry.Container;
 using System.IO;
+using Containerizer.Factories;
 
 #endregion
 
@@ -21,7 +22,7 @@ namespace Containerizer
 
         static DependencyResolver()
         {
-            containerService = new ContainerService(ContainerPathService.GetContainerRoot(), "Users");
+            containerService = new ContainerServiceFactory().New();
         }
 
         public DependencyResolver()

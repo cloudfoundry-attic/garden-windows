@@ -17,6 +17,7 @@ using System.Text;
 using System.Net.Sockets;
 using System.DirectoryServices.AccountManagement;
 using System.DirectoryServices;
+using Containerizer.Factories;
 
 #endregion
 
@@ -49,7 +50,7 @@ namespace Containerizer.Tests.Specs
 
         public static string GetContainerPath(string handle)
         {
-            return Path.Combine(ContainerPathService.GetContainerRoot(), new ContainerHandleHelper().GenerateId(handle), "user");
+            return Path.Combine(ContainerServiceFactory.GetContainerRoot(), new ContainerHandleHelper().GenerateId(handle), "user");
         }
 
         public static void SetupSiteInIIS(string applicationFolderName, string siteName, string applicationPoolName,
