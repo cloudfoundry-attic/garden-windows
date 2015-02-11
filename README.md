@@ -38,6 +38,7 @@ tests
 
 ![open solution](https://github.com/pivotal-cf-experimental/containerizer/blob/master/README_images/open_solution.png)
 
+9) Publish the app to IIS. Make sure it's container pool identity is set to "LocalSystem"
 
 advanced debugging
 ==================
