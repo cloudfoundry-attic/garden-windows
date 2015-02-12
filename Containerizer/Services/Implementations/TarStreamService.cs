@@ -52,43 +52,5 @@ namespace Containerizer.Services.Implementations
                 }
             }
         }
-
-        public void CreateTarGzFromDirectory(string sourceDirectoryName, string destinationArchiveFileName)
-        {
-            string tarPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".tar");
-            try
-            {
-                using (Stream stream = File.OpenWrite(tarPath))
-                {
-                    using (
-                        IWriter writer = WriterFactory.Open(stream, ArchiveType.Tar,
-                            new CompressionInfo {Type = CompressionType.None}))
-                    {
-                        if (File.Exists(sourceDirectoryName))
-                        {
-                            var info = new FileInfo(sourceDirectoryName);
-                            writer.Write(info.Name, info);
-                        }
-                        else
-                        {
-                            writer.WriteAll(sourceDirectoryName, "*", SearchOption.AllDirectories);
-                        }
-                    }
-                }
-                using (Stream stream = File.OpenWrite(destinationArchiveFileName))
-                {
-                    using (
-                        IWriter writer = WriterFactory.Open(stream, ArchiveType.GZip,
-                            new CompressionInfo {Type = CompressionType.GZip}))
-                    {
-                        writer.Write("Tar.tar", tarPath);
-                    }
-                }
-            }
-            finally
-            {
-                if (File.Exists(tarPath)) File.Delete(tarPath);
-            }
-        }
     }
 }
