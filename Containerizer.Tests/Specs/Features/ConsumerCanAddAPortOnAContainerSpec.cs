@@ -28,7 +28,6 @@ namespace Containerizer.Tests.Specs.Features
 
                 before = () =>
                 {
-                    // Create a container (POST)
                     int port = 8088;
                     Helpers.SetupSiteInIIS("Containerizer", "Containerizer.Tests", "ContainerizerTestsApplicationPool",
                         port, true);
@@ -37,7 +36,6 @@ namespace Containerizer.Tests.Specs.Features
 
                 after = () =>
                 {
-                    // Nuke the container
                     Helpers.RemoveExistingSite("Containerizer.Tests", "ContainerizerTestsApplicationPool");
                 };
 

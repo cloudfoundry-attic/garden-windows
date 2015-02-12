@@ -9,7 +9,7 @@ using NSpec;
 
 namespace Containerizer.Tests.Specs.Features
 {
-    internal class ConsumerCanDestoryContainerSpec : nspec
+    internal class ConsumerCanDestroyContainerSpec : nspec
     {
         // Containerizer.Controllers.ContainersController containersController;
         private int port;
