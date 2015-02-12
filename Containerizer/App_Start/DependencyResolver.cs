@@ -30,7 +30,6 @@ namespace Containerizer
             var containerBuilder = new ContainerBuilder();
 
             containerBuilder.Register(context => containerService).As<IContainerService>();
-            containerBuilder.RegisterType<NetInService>().As<INetInService>();
             containerBuilder.RegisterType<StreamInService>().As<IStreamInService>();
             containerBuilder.RegisterType<StreamOutService>().As<IStreamOutService>();
             containerBuilder.RegisterType<TarStreamService>().As<ITarStreamService>();
