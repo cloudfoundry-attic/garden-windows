@@ -63,10 +63,7 @@ func (container *container) Stop(kill bool) error {
 }
 
 func (container *container) Info() (garden.ContainerInfo, error) {
-	url := container.containerizerURL.String() + "/api/containers/" + container.Handle() + "/properties"
-	container.logger.Info("GETTING INFO", lager.Data{
-		"url": url,
-	})
+	url := container.containerizerURL.String() + "/api/containers/" + container.Handle() + "/info"
 	response, err := http.Get(url)
 	if err != nil {
 		container.logger.Info("ERROR GETTING PROPERTIES", lager.Data{
@@ -79,28 +76,16 @@ func (container *container) Info() (garden.ContainerInfo, error) {
 	if err != nil {
 		return garden.ContainerInfo{}, err
 	}
-	properties := garden.Properties{}
-	err = json.Unmarshal(rawJSON, &properties)
+	containerInfo := garden.ContainerInfo{}
+	err = json.Unmarshal(rawJSON, &containerInfo)
 	if err != nil {
 		container.logger.Info("ERROR UNMARSHALING PROPERTIES", lager.Data{
 			"error": err,
 		})
 		return garden.ContainerInfo{}, nil
 	}
-	mappedPorts := garden.PortMapping{
-		HostPort:      8080,
-		ContainerPort: 8080,
-	}
-	containerInfo := garden.ContainerInfo{
-		Properties:  properties,
-		HostIP:      "HOST_IP",
-		ContainerIP: "CONTAINER_IP",
-		ExternalIP:  container.containerizerHost(),
-		MappedPorts: []garden.PortMapping{mappedPorts},
-	}
-	container.logger.Info("CONTAINER INFO", lager.Data{
-		"containerInfo": containerInfo,
-	})
+
+	containerInfo.ExternalIP = container.containerizerHost()
 
 	return containerInfo, nil
 }

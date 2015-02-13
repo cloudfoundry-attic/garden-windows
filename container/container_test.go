@@ -51,8 +51,8 @@ var _ = Describe("container", func() {
 		BeforeEach(func() {
 			server.AppendHandlers(
 				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/api/containers/containerhandle/properties"),
-					ghttp.RespondWith(200, `{"Keymaster": "Gatekeeper"}`),
+					ghttp.VerifyRequest("GET", "/api/containers/containerhandle/info"),
+					ghttp.RespondWith(200, `{"Properties":{"Keymaster": "Gatekeeper"},"MappedPorts":[{"ContainerPort":8080,"HostPort":6543}]}`),
 					func(w http.ResponseWriter, req *http.Request) {
 						req.Body.Close()
 					},
@@ -64,8 +64,13 @@ var _ = Describe("container", func() {
 			info, err := container.Info()
 			Ω(err).NotTo(HaveOccurred())
 			Ω(info.Properties).Should(Equal(garden.Properties{"Keymaster": "Gatekeeper"}))
+
 			expectedHost := strings.Split(containerizerURL.Host, ":")[0]
 			Ω(info.ExternalIP).Should(Equal(expectedHost))
+
+			Ω(len(info.MappedPorts)).Should(Equal(1))
+			Ω(info.MappedPorts[0].ContainerPort).Should(Equal(uint32(8080)))
+			Ω(info.MappedPorts[0].HostPort).Should(Equal(uint32(6543)))
 		})
 	})
 
