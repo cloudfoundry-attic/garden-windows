@@ -65,8 +65,16 @@ namespace Containerizer.Tests.Specs.Features
                         hostPort = json["hostPort"].Value<int>();
 
                         client = new ClientWebSocket();
-                        client.ConnectAsync(new Uri("ws://localhost:" + port + "/api/containers/" + handle + "/run"),
-                            CancellationToken.None).GetAwaiter().GetResult();
+                        try
+                        {
+                            client.ConnectAsync(
+                                new Uri("ws://localhost:" + port + "/api/containers/" + handle + "/run"),
+                                CancellationToken.None).GetAwaiter().GetResult();
+                        }
+                        catch (WebSocketException ex)
+                        {
+                            throw new Exception("Make sure to enable websockets following instructions in the README.", ex);
+                        }
                     };
 
                     describe["when I send a start request"] = () =>
