@@ -44,21 +44,17 @@
     <Reference Include="Autofac">
       <HintPath>..\packages\Autofac.3.5.2\lib\net40\Autofac.dll</HintPath>
     </Reference>
-    <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
-    </Reference>
     <Reference Include="IronFoundry.Container, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\IronFoundry.Container.0.20150205.165316-DevLocal\lib\net45\IronFoundry.Container.dll</HintPath>
+      <HintPath>..\packages\IronFoundry.Container.0.20150213.165802-DevLocal\lib\net45\IronFoundry.Container.dll</HintPath>
     </Reference>
     <Reference Include="IronFoundry.Container.Host, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\IronFoundry.Container.0.20150205.165316-DevLocal\lib\net45\IronFoundry.Container.Host.exe</HintPath>
+      <HintPath>..\packages\IronFoundry.Container.0.20150213.165802-DevLocal\lib\net45\IronFoundry.Container.Host.exe</HintPath>
     </Reference>
     <Reference Include="IronFoundry.Container.Shared, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\IronFoundry.Container.0.20150205.165316-DevLocal\lib\net45\IronFoundry.Container.Shared.dll</HintPath>
+      <HintPath>..\packages\IronFoundry.Container.0.20150213.165802-DevLocal\lib\net45\IronFoundry.Container.Shared.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Web.Administration, Version=7.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
