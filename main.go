@@ -43,7 +43,7 @@ func main() {
 	cf_lager.AddFlags(flag.CommandLine)
 	flag.Parse()
 
-	logger := cf_lager.New("garden-windows")
+	logger, _ := cf_lager.New("garden-windows")
 
 	netBackend, err := backend.NewDotNetBackend(*containerizerURL, logger)
 	if err != nil {
