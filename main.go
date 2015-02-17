@@ -7,8 +7,8 @@ import (
 	"syscall"
 
 	"github.com/cloudfoundry-incubator/cf-lager"
+	"github.com/cloudfoundry-incubator/garden-windows/backend"
 	"github.com/cloudfoundry-incubator/garden/server"
-	"github.com/pivotal-cf-experimental/garden-windows/backend"
 	"github.com/pivotal-golang/lager"
 )
 

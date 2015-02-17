@@ -7,9 +7,9 @@ import (
 	"sync"
 
 	"code.google.com/p/go.net/websocket"
+	"github.com/cloudfoundry-incubator/garden-windows/container"
 	"github.com/gorilla/mux"
 	"github.com/hydrogen18/stoppableListener"
-	"github.com/pivotal-cf-experimental/garden-windows/container"
 )
 
 type TestWebSocketServer struct {

@@ -12,7 +12,7 @@ import (
 	"strings"
 
 	"github.com/cloudfoundry-incubator/garden"
-	"github.com/pivotal-cf-experimental/garden-windows/process"
+	"github.com/cloudfoundry-incubator/garden-windows/process"
 
 	"code.google.com/p/go.net/websocket"
 	"github.com/pivotal-golang/lager"

@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/cloudfoundry-incubator/garden"
-	"github.com/pivotal-cf-experimental/garden-windows/container"
+	"github.com/cloudfoundry-incubator/garden-windows/container"
 	"github.com/pivotal-golang/lager"
 )
 
