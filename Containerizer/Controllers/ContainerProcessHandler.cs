@@ -1,29 +1,43 @@
 ﻿#region
 
 using System;
-using System.Diagnostics;
-using Containerizer.Facades;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
+using System.Threading.Tasks;
 using Containerizer.Models;
-using Containerizer.Services.Interfaces;
+using IronFoundry.Container;
 using Microsoft.Web.WebSockets;
 using Newtonsoft.Json;
-using IronFoundry.Container;
 
 #endregion
 
 namespace Containerizer.Controllers
 {
-    public class ContainerProcessHandler : WebSocketHandler
+    public interface IWebSocketEventSender
     {
-        private readonly string containerRoot;
-        private readonly IProcessFacade process;
-        private readonly IContainer container;
+        void SendEvent(string messageType, string message);
+    }
 
-        public ContainerProcessHandler(string containerId, IContainerService containerService, IProcessFacade process)
+    public class ContainerProcessHandler : WebSocketHandler, IWebSocketEventSender
+    {
+        private readonly IContainer container;
+        private readonly string containerRoot;
+
+        public ContainerProcessHandler(string containerId, IContainerService containerService)
         {
             containerRoot = containerService.GetContainerByHandle(containerId).Directory.MapUserPath("");
-            this.container = containerService.GetContainerByHandle(containerId);
-            this.process = process;
+            container = containerService.GetContainerByHandle(containerId);
+        }
+
+        public void SendEvent(string messageType, string message)
+        {
+            var data = JsonConvert.SerializeObject(new ProcessStreamEvent
+            {
+                MessageType = messageType,
+                Data = message
+            }, Formatting.None);
+            Send(data);
         }
 
         public override void OnMessage(string message)
@@ -32,67 +46,71 @@ namespace Containerizer.Controllers
 
             if (streamEvent.MessageType == "run" && streamEvent.ApiProcessSpec != null)
             {
-                ApiProcessSpec processSpec = streamEvent.ApiProcessSpec;
-                process.StartInfo.UseShellExecute = false;
-                process.StartInfo.RedirectStandardOutput = true;
-                process.StartInfo.RedirectStandardError = true;
-                process.StartInfo.RedirectStandardInput = true;
-                process.StartInfo.WorkingDirectory = containerRoot;
-                process.StartInfo.FileName = containerRoot + '\\' + processSpec.Path;
-                process.StartInfo.Arguments = processSpec.Arguments();
-                process.OutputDataReceived += OutputDataHandler;
-                process.ErrorDataReceived += OutputErrorDataHandler;
-                
+                var processSpec = new ProcessSpec
+                {
+                    DisablePathMapping = false,
+                    Privileged = false,
+                    WorkingDirectory = containerRoot,
+                    ExecutablePath = streamEvent.ApiProcessSpec.Path,
+                    Environment = new Dictionary<string, string>(),
+                    Arguments = streamEvent.ApiProcessSpec.Args
+                };
                 var reservedPorts = container.GetInfo().ReservedPorts;
                 if (reservedPorts.Count > 0)
-                    process.StartInfo.EnvironmentVariables["PORT"] = reservedPorts[0].ToString();
-                
-                try
-                {
-                    process.Start();
-                }
-                catch (Exception e)
-                {
-                    SendEvent("error", e.Message);
-                    return;
-                }
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
+                    processSpec.Environment["PORT"] = reservedPorts[0].ToString();
 
-                process.EnableRaisingEvents = true;
-                process.Exited += ProcessExitedHandler;
-            }
-            else if (streamEvent.MessageType == "stdin")
-            {
-                process.StandardInput.Write(streamEvent.Data);
+                Task.Factory.StartNew(() =>
+                {
+                    try
+                    {
+                        var process = container.Run(processSpec, new ProcessIO(this));
+                        Task.Factory.StartNew(() =>
+                        {
+                            process.WaitForExit();
+                            SendEvent("close", null);
+                        });
+                    }
+                    catch (Exception e)
+                    {
+                        SendEvent("error", e.Message);
+                    }
+                }).GetAwaiter().GetResult();
             }
         }
 
-        private void SendEvent(string messageType, string message)
+        private class WSWriter : TextWriter
         {
-            string data = JsonConvert.SerializeObject(new ProcessStreamEvent
+            private readonly string streamName;
+            private readonly IWebSocketEventSender ws;
+
+            public WSWriter(string streamName, IWebSocketEventSender ws)
             {
-                MessageType = messageType,
-                Data = message
-            }, Formatting.None);
-            Send(data);
+                this.streamName = streamName;
+                this.ws = ws;
+            }
+
+            public override Encoding Encoding
+            {
+                get { return Encoding.Default; }
+            }
+
+            public override void Write(string value)
+            {
+                ws.SendEvent(streamName, value + "\r\n");
+            }
         }
 
-        private void OutputDataHandler(object sendingProcess, DataReceivedEventArgs outLine)
+        private class ProcessIO : IProcessIO
         {
-            if (outLine.Data == null) return;
-            SendEvent("stdout", outLine.Data + "\r\n");
-        }
+            public ProcessIO(IWebSocketEventSender ws)
+            {
+                StandardOutput = new WSWriter("stdout", ws);
+                StandardError = new WSWriter("stderr", ws);
+            }
 
-        private void OutputErrorDataHandler(object sendingProcess, DataReceivedEventArgs outLine)
-        {
-            if (outLine.Data == null) return;
-            SendEvent("stderr", outLine.Data + "\r\n");
-        }
-
-        private void ProcessExitedHandler(object sendingProcess, EventArgs e)
-        {
-            SendEvent("close", null);
+            public TextWriter StandardOutput { get; set; }
+            public TextWriter StandardError { get; set; }
+            public TextReader StandardInput { get; set; }
         }
     }
 }

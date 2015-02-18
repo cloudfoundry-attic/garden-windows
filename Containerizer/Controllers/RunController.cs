@@ -28,7 +28,7 @@ namespace Containerizer.Controllers
         [HttpGet]
         public Task<HttpResponseMessage> Index(string id)
         {
-            HttpContext.Current.AcceptWebSocketRequest(new ContainerProcessHandler(id, containerService, new ProcessFacade()));
+            HttpContext.Current.AcceptWebSocketRequest(new ContainerProcessHandler(id, containerService));
             HttpResponseMessage response = Request.CreateResponse(HttpStatusCode.SwitchingProtocols);
             return Task.FromResult(response);
         }

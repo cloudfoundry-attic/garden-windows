@@ -3,13 +3,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
-using Containerizer.Services.Implementations;
-using NSpec;
-using System.Net.Http;
 using Newtonsoft.Json.Linq;
+using NSpec;
 
 #endregion
 
@@ -46,7 +45,7 @@ namespace Containerizer.Tests.Specs.Features
             context["given that I am a consumer of the api"] = () =>
             {
                 string containerPath = null;
-                int hostPort = 0;
+                var hostPort = 0;
 
                 context["I have a file to run in my container"] = () =>
                 {
@@ -61,7 +60,7 @@ namespace Containerizer.Tests.Specs.Features
                             httpClient.PostAsJsonAsync("/api/containers/" + handle + "/net/in", new {hostPort = 0})
                                 .GetAwaiter()
                                 .GetResult();
-                        var json = response.Content.ReadAsJson() as JObject;
+                        var json = response.Content.ReadAsJson();
                         hostPort = json["hostPort"].Value<int>();
 
                         client = new ClientWebSocket();
@@ -73,7 +72,8 @@ namespace Containerizer.Tests.Specs.Features
                         }
                         catch (WebSocketException ex)
                         {
-                            throw new Exception("Make sure to enable websockets following instructions in the README.", ex);
+                            throw new Exception("Make sure to enable websockets following instructions in the README.",
+                                ex);
                         }
                     };
 
@@ -84,7 +84,7 @@ namespace Containerizer.Tests.Specs.Features
                         before = () =>
                         {
                             var encoder = new UTF8Encoding();
-                            byte[] buffer =
+                            var buffer =
                                 encoder.GetBytes(
                                     "{\"type\":\"run\", \"pspec\":{\"Path\":\"myfile.bat\", Args:[\"/all\"]}}");
                             client.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true,
@@ -102,25 +102,23 @@ namespace Containerizer.Tests.Specs.Features
                                         .GetResult();
                                 if (result.Count > 0)
                                 {
-                                    string message = Encoding.Default.GetString(receiveBuffer);
+                                    var message = Encoding.Default.GetString(receiveBuffer);
                                     if (message.Contains("error"))
                                     {
                                         throw new Exception("websocket returned an error message");
                                     }
                                     messages.Add(message.Substring(0, result.Count));
                                 }
-                            } while (messages.Count < 5);
+                            } while (messages.Count < 7);
                         };
 
                         it["should run a process, return stdout and close the socket"] = () =>
                         {
                             messages.should_contain("{\"type\":\"stdout\",\"data\":\"Hi Fred\\r\\n\"}");
-                            messages.should_contain("{\"type\":\"close\"}");
-                        };
 
-                        it["should set PORT env variable"] = () =>
-                        {
                             messages.should_contain("{\"type\":\"stdout\",\"data\":\"PORT=" + hostPort + "\\r\\n\"}");
+
+                            messages.should_contain("{\"type\":\"close\"}");
                         };
                     };
                 };

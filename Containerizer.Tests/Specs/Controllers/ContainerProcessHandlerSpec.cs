@@ -1,19 +1,15 @@
 ﻿#region
 
 using System;
-using System.Diagnostics;
-using System.IO;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Containerizer.Controllers;
-using Containerizer.Facades;
-using Containerizer.Services.Interfaces;
 using Containerizer.Tests.Specs.Facades;
+using IronFoundry.Container;
 using Moq;
 using NSpec;
-using IronFoundry.Container;
-using System.Collections.Generic;
 
 #endregion
 
@@ -21,62 +17,73 @@ namespace Containerizer.Tests.Specs.Controllers
 {
     internal class ContainerProcessHandlerSpec : nspec
     {
+        private readonly int expectedHostPort = 6336;
+        private bool allowProcessToFinish;
         private string containerId;
         private byte[] fakeStandardInput;
         private ContainerProcessHandler handler;
-        private Mock<IProcessFacade> mockProcess;
-        private ProcessStartInfo startInfo;
-        Mock<IContainerService> mockContainerService = null;
-        Mock<IContainer> mockContainer = null;
-        private int expectedHostPort = 6336;
+        private Mock<IContainer> mockContainer;
         private Mock<IContainerDirectory> mockContainerDirectory;
+        private Mock<IContainerProcess> mockContainerProcess;
+        private Mock<IContainerService> mockContainerService;
+        private IProcessIO processIO;
+        private ProcessSpec processSpec;
 
         private void before_each()
         {
-
             mockContainerService = new Mock<IContainerService>();
             mockContainerDirectory = new Mock<IContainerDirectory>();
 
             containerId = new Guid().ToString();
-            mockProcess = new Mock<IProcessFacade>();
-            startInfo = new ProcessStartInfo();
 
             mockContainer = new Mock<IContainer>();
             mockContainerService.Setup(x => x.GetContainerByHandle(containerId)).Returns(mockContainer.Object);
             mockContainer.Setup(x => x.GetInfo()).Returns(
                 new ContainerInfo
                 {
-                    ReservedPorts = new List<int> { expectedHostPort },
+                    ReservedPorts = new List<int> {expectedHostPort}
                 });
 
 
             mockContainer.Setup(x => x.Directory).Returns(mockContainerDirectory.Object);
             mockContainerDirectory.Setup(x => x.MapUserPath("")).Returns(@"C:\A\Directory\user");
 
-            mockProcess.Setup(x => x.StartInfo).Returns(startInfo);
-            mockProcess.Setup(x => x.Start());
+            allowProcessToFinish = false;
+            mockContainerProcess = new Mock<IContainerProcess>();
+            mockContainerProcess.Setup(x => x.WaitForExit()).Callback(() =>
+            {
+                while (!allowProcessToFinish)
+                    Task.Delay(10);
+            }).Returns(null);
+            mockContainer.Setup(x => x.Run(It.IsAny<ProcessSpec>(), It.IsAny<IProcessIO>()))
+                .Callback<ProcessSpec, IProcessIO>((processSpec, processIO) =>
+                {
+                    this.processSpec = processSpec;
+                    this.processIO = processIO;
+                })
+                .Returns(mockContainerProcess.Object);
 
-            handler = new ContainerProcessHandler(containerId, mockContainerService.Object, mockProcess.Object);
+            handler = new ContainerProcessHandler(containerId, mockContainerService.Object);
+        }
 
-
-            fakeStandardInput = new byte[4096];
-            var stream = new StreamWriter(new MemoryStream(fakeStandardInput)) { AutoFlush = true };
-            mockProcess.Setup(x => x.StandardInput).Returns(stream);
+        private void after_each()
+        {
+            allowProcessToFinish = true;
         }
 
         private void SendProcessOutputEvent(string message)
         {
-            mockProcess.Raise(mock => mock.OutputDataReceived += null, Helpers.CreateMockDataReceivedEventArgs(message));
+            processIO.StandardOutput.Write(message);
         }
 
         private void SendProcessErrorEvent(string message)
         {
-            mockProcess.Raise(mock => mock.ErrorDataReceived += null, Helpers.CreateMockDataReceivedEventArgs(message));
+            processIO.StandardError.Write(message);
         }
 
         private void SendProcessExitEvent()
         {
-            mockProcess.Raise(mock => mock.Exited += null, (EventArgs)null);
+            allowProcessToFinish = true;
         }
 
         private string WaitForWebSocketMessage(FakeWebSocket websocket)
@@ -86,7 +93,7 @@ namespace Containerizer.Tests.Specs.Controllers
             {
                 return "no message sent (test)";
             }
-            byte[] byteArray = websocket.LastSentBuffer.Array;
+            var byteArray = websocket.LastSentBuffer.Array;
             return Encoding.Default.GetString(byteArray);
         }
 
@@ -97,28 +104,29 @@ namespace Containerizer.Tests.Specs.Controllers
             before = () =>
             {
                 handler.WebSocketContext = new FakeAspNetWebSocketContext();
-                websocket = (FakeWebSocket)handler.WebSocketContext.WebSocket;
+                websocket = (FakeWebSocket) handler.WebSocketContext.WebSocket;
             };
 
             act =
                 () =>
+                {
                     handler.OnMessage(
                         "{\"type\":\"run\", \"pspec\":{\"Path\":\"foo.exe\", \"Args\":[\"some\", \"args\"]}}");
+                };
 
-            it["sets working directory"] = () =>
-            {
-                startInfo.WorkingDirectory.should_be("C:\\A\\Directory\\user");
-            };
+            it["sets working directory"] = () => { processSpec.WorkingDirectory.should_be("C:\\A\\Directory\\user"); };
+
 
             it["sets start info correctly"] = () =>
             {
-                startInfo.FileName.should_be("C:\\A\\Directory\\user\\foo.exe");
-                startInfo.Arguments.should_be("\"some\" \"args\"");
+                processSpec.ExecutablePath.should_be("foo.exe");
+                processSpec.Arguments.should_be(new List<string> {"some", "args"});
             };
 
             it["sets PORT on the environment variable"] = () =>
             {
-                startInfo.EnvironmentVariables["PORT"].should_be("6336");
+                processSpec.Environment.ContainsKey("PORT").should_be_true();
+                processSpec.Environment["PORT"].should_be("6336");
             };
 
             context["when a port has not been reserved"] = () =>
@@ -128,90 +136,52 @@ namespace Containerizer.Tests.Specs.Controllers
                     mockContainer.Setup(x => x.GetInfo()).Returns(
                         new ContainerInfo
                         {
-                            ReservedPorts = new List<int>(),
+                            ReservedPorts = new List<int>()
                         });
                 };
 
-                it["does not set PORT env variable"] = () =>
-                {
-                    startInfo.EnvironmentVariables["PORT"].should_be_null();
-                };
+                it["does not set PORT env variable"] =
+                    () => { processSpec.Environment.ContainsKey("PORT").should_be_false(); };
             };
 
-            it["runs something"] = () =>
-            {
-                mockProcess.Verify(x => x.Start());
-            };
+            it["runs something"] =
+                () => { mockContainer.Verify(x => x.Run(It.IsAny<ProcessSpec>(), It.IsAny<IProcessIO>())); };
 
 
             context["when process.start raises an error"] = () =>
             {
-                before = () => mockProcess.Setup(mock => mock.Start()).Throws(new Exception("An Error Message"));
+                before = () =>
+                    mockContainer.Setup(mock => mock.Run(It.IsAny<ProcessSpec>(), It.IsAny<IProcessIO>()))
+                        .Throws(new Exception("An Error Message"));
 
                 it["sends the error over the socket"] = () =>
                 {
-                    string message = WaitForWebSocketMessage(websocket);
+                    var message = WaitForWebSocketMessage(websocket);
                     message.should_be("{\"type\":\"error\",\"data\":\"An Error Message\"}");
                 };
             };
 
-            describe["standard in"] = () =>
-            {
-                it["writes the data from the socket to the process' stdin"] = () =>
-                {
-                    handler.OnMessage("{\"type\":\"stdin\", \"data\":\"stdin data\"}");
-                    string fakeStdinString = Encoding.Default.GetString(fakeStandardInput);
-                    fakeStdinString.should_start_with("stdin data");
-                };
-            };
+            xdescribe["standard in"] = () => { };
 
             describe["standard out"] = () =>
             {
-                context["when an event with data is triggered"] = () =>
+                it["sends over socket"] = () =>
                 {
-                    it["sends over socket"] = () =>
-                    {
-                        SendProcessOutputEvent("Hi");
+                    SendProcessOutputEvent("Hi");
 
-                        string message = WaitForWebSocketMessage(websocket);
-                        message.should_be("{\"type\":\"stdout\",\"data\":\"Hi\\r\\n\"}");
-                    };
-                };
-
-                context["when an event without data is triggered"] = () =>
-                {
-                    it["sends an empty string over the socket"] = () =>
-                    {
-                        SendProcessOutputEvent(null);
-
-                        string message = WaitForWebSocketMessage(websocket);
-                        message.should_be("no message sent (test)");
-                    };
+                    var message = WaitForWebSocketMessage(websocket);
+                    message.should_be("{\"type\":\"stdout\",\"data\":\"Hi\\r\\n\"}");
                 };
             };
 
             describe["standard error"] = () =>
             {
-                context["when an event with data is triggered"] = () =>
+                it["sends over socket"] = () =>
                 {
-                    it["sends over socket"] = () =>
-                    {
-                        SendProcessErrorEvent("Hi");
+                    SendProcessErrorEvent("Hi");
 
-                        string message = WaitForWebSocketMessage(websocket);
-                        message.should_be("{\"type\":\"stderr\",\"data\":\"Hi\\r\\n\"}");
-                    };
-                };
-
-                context["when an event without data is triggered"] = () =>
-                {
-                    it["sends an empty string over the socket"] = () =>
-                    {
-                        SendProcessErrorEvent(null);
-
-                        string message = WaitForWebSocketMessage(websocket);
-                        message.should_be("no message sent (test)");
-                    };
+                    var message = WaitForWebSocketMessage(websocket);
+                    message.should_be("{\"type\":\"stderr\",\"data\":\"Hi\\r\\n\"}");
                 };
             };
 
@@ -221,7 +191,7 @@ namespace Containerizer.Tests.Specs.Controllers
                 {
                     SendProcessExitEvent();
 
-                    string message = WaitForWebSocketMessage(websocket);
+                    var message = WaitForWebSocketMessage(websocket);
                     message.should_be("{\"type\":\"close\"}");
                 };
             };
