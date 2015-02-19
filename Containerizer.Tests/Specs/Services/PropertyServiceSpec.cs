@@ -30,11 +30,13 @@ namespace Containerizer.Tests.Specs.Services
                 mockIContainerDirectory = new Mock<IContainerDirectory>();
 
                 containerDirectory = Path.Combine(Path.GetTempPath(), handle);
+                var containerUserDirectory = Path.Combine(containerDirectory, "user");
                 Directory.CreateDirectory(containerDirectory);
+                Directory.CreateDirectory(containerUserDirectory);
 
                 mockContainerService.Setup(x => x.GetContainerByHandle(It.IsAny<string>())).Returns(mockContainer.Object);
                 mockContainer.Setup(x => x.Directory).Returns(mockIContainerDirectory.Object);
-                mockIContainerDirectory.Setup(x => x.MapUserPath("")).Returns(containerDirectory);
+                mockContainer.Setup(x => x.Directory.RootPath).Returns(containerDirectory);
 
                 propService = new PropertyService(mockContainerService.Object);
             };

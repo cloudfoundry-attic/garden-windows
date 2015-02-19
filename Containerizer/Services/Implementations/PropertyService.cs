@@ -85,7 +85,7 @@ namespace Containerizer.Services.Implementations
         private string GetFileNameFromHandle(string handle)
         {
             IContainer container = containerService.GetContainerByHandle(handle);
-            return GetFileName(container.Directory.MapUserPath(""));
+            return GetFileName(container.Directory.RootPath);
         }
 
         private string GetFileName(string containerPath)

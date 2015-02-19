@@ -74,18 +74,17 @@ namespace Containerizer.Tests.Specs.Controllers
             {
 
                 string containerHandle = null;
-                string containerUserPath = null;
+                string containerPath = null;
                 ContainerSpecApiModel specModel = null;
                 CreateResponse result = null;
 
                 before = () =>
                 {
                     containerHandle = Guid.NewGuid().ToString();
-                    containerUserPath = Path.Combine(@"C:\containerizer", containerHandle, @"user");
+                    containerPath = Path.Combine(@"C:\containerizer", containerHandle);
 
                     var mockContainerDirectory = new Mock<IContainerDirectory>();
-                    mockContainerDirectory.Setup(x => x.MapUserPath(It.IsAny<string>()))
-                        .Returns((string path) => Path.Combine(containerUserPath, path));
+                    mockContainerDirectory.Setup(x => x.RootPath).Returns(containerPath);
 
                     var mockContainer = new Mock<IContainer>();
                     mockContainer.Setup(x => x.Handle).Returns(containerHandle);
@@ -125,7 +124,7 @@ namespace Containerizer.Tests.Specs.Controllers
                     {
                         mockPropertyService.Verify(
                             x =>
-                                x.BulkSetWithContainerPath(containerUserPath, It.Is((Dictionary<string, string> y) => y[key] == value)));
+                                x.BulkSetWithContainerPath(containerPath, It.Is((Dictionary<string, string> y) => y[key] == value)));
                     };
                 };
 
