@@ -52,7 +52,10 @@ namespace Containerizer.Controllers
                     Privileged = false,
                     WorkingDirectory = containerRoot,
                     ExecutablePath = streamEvent.ApiProcessSpec.Path,
-                    Environment = new Dictionary<string, string>(),
+                    Environment = new Dictionary<string, string>
+                    {
+                        { "ARGJSON", JsonConvert.SerializeObject(streamEvent.ApiProcessSpec.Args) }
+                    },
                     Arguments = streamEvent.ApiProcessSpec.Args
                 };
                 var info = container.GetInfo();

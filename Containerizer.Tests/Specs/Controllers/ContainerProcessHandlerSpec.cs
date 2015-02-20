@@ -122,6 +122,12 @@ namespace Containerizer.Tests.Specs.Controllers
                     processSpec.Arguments.should_be(new List<string> { "some", "args" });
                 };
 
+                it["stores command line arguments in ENV[ARGJSON]"] = () =>
+                {
+                    processSpec.Environment.ContainsKey("ARGJSON").should_be_true();
+                    processSpec.Environment["ARGJSON"].should_be("[\"some\",\"args\"]");
+                };
+
                 it["runs something"] =
                     () => { mockContainer.Verify(x => x.Run(It.IsAny<ProcessSpec>(), It.IsAny<IProcessIO>())); };
 
