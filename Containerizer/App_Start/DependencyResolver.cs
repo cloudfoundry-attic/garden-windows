@@ -8,6 +8,8 @@ using Containerizer.Controllers;
 using Containerizer.Services.Implementations;
 using Containerizer.Services.Interfaces;
 using IronFoundry.Container;
+using IronFoundry.Container.Internal;
+using IronFoundry.Container.Utilities;
 using System.IO;
 using Containerizer.Factories;
 
@@ -19,10 +21,13 @@ namespace Containerizer
     {
         private readonly Autofac.IContainer container;
         private static IContainerService containerService;
+        private static IContainerPropertyService containerPropertyService;
 
         static DependencyResolver()
         {
             containerService = new ContainerServiceFactory().New();
+            var fileSystemManager = new FileSystemManager();
+            containerPropertyService = new LocalFilePropertyService(fileSystemManager, "properties.json");
         }
 
         public DependencyResolver()
@@ -33,7 +38,7 @@ namespace Containerizer
             containerBuilder.RegisterType<StreamInService>().As<IStreamInService>();
             containerBuilder.RegisterType<StreamOutService>().As<IStreamOutService>();
             containerBuilder.RegisterType<TarStreamService>().As<ITarStreamService>();
-            containerBuilder.RegisterType<PropertyService>().As<IPropertyService>();
+            containerBuilder.Register(context => containerPropertyService).As<IContainerPropertyService>();
             containerBuilder.RegisterType<ContainersController>();
             containerBuilder.RegisterType<FilesController>();
             containerBuilder.RegisterType<NetController>();

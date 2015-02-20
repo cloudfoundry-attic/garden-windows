@@ -25,10 +25,10 @@ namespace Containerizer.Controllers
     public class ContainersController : ApiController
     {
         private readonly IContainerService containerService;
-        private readonly IPropertyService propertyService;
+        private readonly IContainerPropertyService propertyService;
 
 
-        public ContainersController(IContainerService containerService, IPropertyService propertyService)
+        public ContainersController(IContainerService containerService, IContainerPropertyService propertyService)
         {
             this.containerService = containerService;
             this.propertyService = propertyService;
@@ -56,8 +56,7 @@ namespace Containerizer.Controllers
                 throw new HttpResponseException(HttpStatusCode.InternalServerError);
             }
 
-            var containerPath = container.Directory.RootPath;
-            propertyService.BulkSetWithContainerPath(containerPath, spec.Properties);
+            propertyService.SetProperties(container, spec.Properties);
               
             return new CreateResponse
             {

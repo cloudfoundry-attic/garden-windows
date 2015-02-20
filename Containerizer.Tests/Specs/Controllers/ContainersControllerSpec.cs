@@ -34,12 +34,12 @@ namespace Containerizer.Tests.Specs.Controllers
         {
             ContainersController containersController = null;
             Mock<IContainerService> mockContainerService = null;
-            Mock<IPropertyService> mockPropertyService = null;
+            Mock<IContainerPropertyService> mockPropertyService = null;
 
             before = () =>
             {
                 mockContainerService = new Mock<IContainerService>();
-                mockPropertyService = new Mock<IPropertyService>();
+                mockPropertyService = new Mock<IContainerPropertyService>();
                 containersController = new ContainersController(mockContainerService.Object, mockPropertyService.Object)
                 {
                     Configuration = new HttpConfiguration(),
@@ -77,18 +77,15 @@ namespace Containerizer.Tests.Specs.Controllers
                 string containerPath = null;
                 ContainerSpecApiModel specModel = null;
                 CreateResponse result = null;
+                Mock<IContainer> mockContainer = null;
 
                 before = () =>
                 {
                     containerHandle = Guid.NewGuid().ToString();
                     containerPath = Path.Combine(@"C:\containerizer", containerHandle);
 
-                    var mockContainerDirectory = new Mock<IContainerDirectory>();
-                    mockContainerDirectory.Setup(x => x.RootPath).Returns(containerPath);
-
-                    var mockContainer = new Mock<IContainer>();
+                    mockContainer = new Mock<IContainer>();
                     mockContainer.Setup(x => x.Handle).Returns(containerHandle);
-                    mockContainer.Setup(x => x.Directory).Returns(mockContainerDirectory.Object);
                     
                     mockContainerService.Setup(x => x.CreateContainer(It.IsAny<ContainerSpec>()))
                         .Returns(mockContainer.Object);
@@ -124,7 +121,7 @@ namespace Containerizer.Tests.Specs.Controllers
                     {
                         mockPropertyService.Verify(
                             x =>
-                                x.BulkSetWithContainerPath(containerPath, It.Is((Dictionary<string, string> y) => y[key] == value)));
+                                x.SetProperties(mockContainer.Object, It.Is((Dictionary<string, string> y) => y[key] == value)));
                     };
                 };
 

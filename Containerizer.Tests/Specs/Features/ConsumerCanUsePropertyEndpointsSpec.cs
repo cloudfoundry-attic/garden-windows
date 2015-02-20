@@ -56,8 +56,10 @@ namespace Containerizer.Tests.Specs.Features
                             n => "/api/containers/" + containerId + "/properties/" + properties[n].Key;
                         Func<int, StringContent> content = n => new StringContent(properties[n].Value);
 
-                        client.PutAsync(path(0), content(0)).Wait();
-                        client.PutAsync(path(1), content(1)).Wait();
+                        var result1 = client.PutAsync(path(0), content(0)).Result;
+                        var result2 = client.PutAsync(path(1), content(1)).Result;
+                        result1.IsSuccessStatusCode.should_be_true();
+                        result2.IsSuccessStatusCode.should_be_true();
 
                         var indexPath = "/api/containers/" + containerId + "/info";
                         var indexResponse = client.GetAsync(indexPath).Result.Content.ReadAsJson()["Properties"] as JObject;

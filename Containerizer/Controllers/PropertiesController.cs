@@ -7,6 +7,7 @@ using System.Web.Http;
 using Containerizer.Services.Interfaces;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using IronFoundry.Container;
 
 #endregion
 
@@ -20,26 +21,30 @@ namespace Containerizer.Controllers
 
     public class PropertiesController : ApiController
     {
-        private readonly IPropertyService propertyService;
+        private readonly IContainerPropertyService propertyService;
+        private readonly IContainerService containerService;
 
-        public PropertiesController(IPropertyService propertyService)
+        public PropertiesController(IContainerPropertyService propertyService, IContainerService containerService)
         {
             this.propertyService = propertyService;
+            this.containerService = containerService;
         }
 
         [Route("api/containers/{handle}/properties/{propertyKey}")]
         [HttpGet]
         public Task<IHttpActionResult> Show(string handle, string propertyKey)
         {
-            return Task.FromResult((IHttpActionResult)Json(new GetPropertyResponse {Value = propertyService.Get(handle, propertyKey)}));
+            var container = containerService.GetContainerByHandle(handle);
+            return Task.FromResult((IHttpActionResult)Json(new GetPropertyResponse {Value = propertyService.GetProperty(container, propertyKey)}));
         }
 
-        [Route("api/containers/{id}/properties/{propertyKey}")]
+        [Route("api/containers/{handle}/properties/{propertyKey}")]
         [HttpPut]
-        public async Task<IHttpActionResult> Update(string id, string propertyKey)
+        public async Task<IHttpActionResult> Update(string handle, string propertyKey)
         {
             string requestBody = await Request.Content.ReadAsStringAsync();
-            propertyService.Set(id, propertyKey, requestBody);
+            var container = containerService.GetContainerByHandle(handle);
+            propertyService.SetProperty(container, propertyKey, requestBody);
             return Json(new GetPropertyResponse {Value = "I did a thing"});
         }
 
@@ -47,7 +52,8 @@ namespace Containerizer.Controllers
         [HttpDelete]
         public Task<IHttpActionResult> Destroy(string handle, string key)
         {
-            propertyService.Destroy(handle, key);
+            var container = containerService.GetContainerByHandle(handle);
+            propertyService.RemoveProperty(container, key);
             return Task.FromResult((IHttpActionResult)Ok());
         }
     }

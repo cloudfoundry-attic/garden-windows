@@ -21,7 +21,7 @@ namespace Containerizer.Tests.Specs.Controllers
             describe[Controller.Index] = () =>
             {
                 Mock<IContainerService> mockContainerService = null;
-                Mock<IPropertyService> mockPropertService = null;
+                Mock<IContainerPropertyService> mockPropertyService = null;
                 string handle = "container-handle";
                 InfoController controller = null;
                 IHttpActionResult result = null;
@@ -39,13 +39,13 @@ namespace Containerizer.Tests.Specs.Controllers
                     mockContainerService.Setup(x => x.GetContainerByHandle(handle))
                         .Returns(mockContainer.Object);
 
-                    mockPropertService = new Mock<IPropertyService>();
-                    mockPropertService.Setup(x => x.GetAll(handle)).Returns(new Dictionary<string, string>
+                    mockPropertyService = new Mock<IContainerPropertyService>();
+                    mockPropertyService.Setup(x => x.GetProperties(mockContainer.Object)).Returns(new Dictionary<string, string>
                     {
                         {"Keymaster", "Gatekeeper"}
                     });
 
-                    controller = new InfoController(mockContainerService.Object, mockPropertService.Object);
+                    controller = new InfoController(mockContainerService.Object, mockPropertyService.Object);
                 };
 
                 act = () =>

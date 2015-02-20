@@ -10,6 +10,7 @@ using Containerizer.Controllers;
 using Containerizer.Services.Interfaces;
 using Moq;
 using NSpec;
+using IronFoundry.Container;
 
 #endregion
 
@@ -19,7 +20,9 @@ namespace Containerizer.Tests.Specs.Controllers
     {
         private void describe_()
         {
-            Mock<IPropertyService> mockPropertyService = null;
+            Mock<IContainerPropertyService> mockPropertyService = null;
+            Mock<IContainerService> mockContainerService = null;
+            Mock<IContainer> mockContainer = null;
             PropertiesController propertiesController = null;
             string containerHandle = null;
             string key = null;
@@ -27,8 +30,10 @@ namespace Containerizer.Tests.Specs.Controllers
 
             before = () =>
             {
-                mockPropertyService = new Mock<IPropertyService>();
-                propertiesController = new PropertiesController(mockPropertyService.Object)
+                mockPropertyService = new Mock<IContainerPropertyService>();
+                mockContainerService = new Mock<IContainerService>();
+                mockContainer = new Mock<IContainer>();
+                propertiesController = new PropertiesController(mockPropertyService.Object, mockContainerService.Object)
                 {
                     Configuration = new HttpConfiguration(),
                     Request = new HttpRequestMessage()
@@ -36,6 +41,12 @@ namespace Containerizer.Tests.Specs.Controllers
                 containerHandle = Guid.NewGuid().ToString();
                 key = "some:key";
                 value = "value";
+
+                mockContainerService.Setup(x => x.GetContainerByHandle(containerHandle))
+                        .Returns(() =>
+                        {
+                            return mockContainer.Object;
+                        });
             };
                  
             describe[Controller.Show] = () =>
@@ -46,7 +57,7 @@ namespace Containerizer.Tests.Specs.Controllers
                 before = () =>
                 {
                     propertyValue = "a lion, a hippo, the number 25";
-                    mockPropertyService.Setup(x => x.Get(containerHandle, key))
+                    mockPropertyService.Setup(x => x.GetProperty(mockContainer.Object, key))
                         .Returns(() =>
                         {
                             return propertyValue;
@@ -83,7 +94,7 @@ namespace Containerizer.Tests.Specs.Controllers
 
                 it["calls the propertyService set method"] = () =>
                 {
-                    mockPropertyService.Verify(x => x.Set(containerHandle, key, value));
+                    mockPropertyService.Verify(x => x.SetProperty(mockContainer.Object, key, value));
                 };
 
                 it["returns a successful status code"] = () =>
@@ -102,7 +113,7 @@ namespace Containerizer.Tests.Specs.Controllers
 
                 it["calls the propertyService destroy method"] = () =>
                 {
-                    mockPropertyService.Verify(x => x.Destroy(containerHandle, key));
+                    mockPropertyService.Verify(x => x.RemoveProperty(mockContainer.Object, key));
                 };
 
                 it["returns a successful status code"] = () =>

@@ -14,10 +14,10 @@ namespace Containerizer.Controllers
     public class InfoController : ApiController
     {
         private readonly IContainerService containerService;
-        private readonly IPropertyService propertyService;
+        private readonly IContainerPropertyService propertyService;
 
 
-        public InfoController(IContainerService containerService, IPropertyService propertyService)
+        public InfoController(IContainerService containerService, IContainerPropertyService propertyService)
         {
             this.containerService = containerService;
             this.propertyService = propertyService;
@@ -32,7 +32,7 @@ namespace Containerizer.Controllers
                 return NotFound();
             }
 
-            var properties = propertyService.GetAll(handle);
+            var properties = propertyService.GetProperties(container);
 
             var rawInfo = container.GetInfo();
             var portMappings = new List<PortMappingApiModel>();
