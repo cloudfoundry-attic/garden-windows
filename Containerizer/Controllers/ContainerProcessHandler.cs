@@ -55,9 +55,9 @@ namespace Containerizer.Controllers
                     Environment = new Dictionary<string, string>(),
                     Arguments = streamEvent.ApiProcessSpec.Args
                 };
-                var reservedPorts = container.GetInfo().ReservedPorts;
-                if (reservedPorts.Count > 0)
-                    processSpec.Environment["PORT"] = reservedPorts[0].ToString();
+                var info = container.GetInfo();
+                if (info != null && info.ReservedPorts.Count > 0)
+                    processSpec.Environment["PORT"] = info.ReservedPorts[0].ToString();
 
                 Task.Factory.StartNew(() =>
                 {
@@ -74,7 +74,7 @@ namespace Containerizer.Controllers
                     {
                         SendEvent("error", e.Message);
                     }
-                }).GetAwaiter().GetResult();
+                });
             }
         }
 
