@@ -137,11 +137,9 @@
     <Compile Include="Models\ProcessStreamEvent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Factories\ContainerServiceFactory.cs" />
-    <Compile Include="Services\Implementations\PropertyService.cs" />
     <Compile Include="Services\Implementations\StreamInService.cs" />
     <Compile Include="Services\Implementations\StreamOutService.cs" />
     <Compile Include="Services\Implementations\TarStreamService.cs" />
-    <Compile Include="Services\Interfaces\IPropertyService.cs" />
     <Compile Include="Services\Interfaces\IStreamOutService.cs" />
     <Compile Include="Services\Interfaces\IStreamInService.cs" />
     <Compile Include="Services\Interfaces\ITarStreamService.cs" />
