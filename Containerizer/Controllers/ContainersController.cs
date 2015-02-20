@@ -64,6 +64,20 @@ namespace Containerizer.Controllers
             };
         }
 
+        [Route("api/containers/{id}/stop")]
+        [HttpPost]
+        public IHttpActionResult Stop(string id)
+        {
+            var container = containerService.GetContainerByHandle(id);
+            if (container != null)
+            {
+                container.Stop(true);
+                return Ok();
+            }
+
+            return NotFound();
+        }
+
         [Route("api/containers/{id}")]
         [HttpDelete]
         public IHttpActionResult Destroy(string id)

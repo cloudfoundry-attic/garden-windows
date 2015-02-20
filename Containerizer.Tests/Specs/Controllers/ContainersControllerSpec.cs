@@ -143,6 +143,46 @@ namespace Containerizer.Tests.Specs.Controllers
                 };
             };
 
+            describe["#Stop"] = () =>
+            {
+                IHttpActionResult result = null;
+
+                act = () => result = containersController.Stop("MySecondContainer");
+
+                context["a handle which exists"] = () =>
+                {
+                    Mock<IContainer> mockContainer = null;
+                    before = () =>
+                    {
+                        mockContainer = new Mock<IContainer>();
+                        mockContainerService.Setup(x => x.GetContainerByHandle("MySecondContainer")).Returns(mockContainer.Object);
+                    };
+
+                    it["returns 200"] = () =>
+                    {
+                        result.should_cast_to<System.Web.Http.Results.OkResult>();
+                    };
+
+                    it["calls delete on the containerPathService"] = () =>
+                    {
+                        mockContainer.Verify(x => x.Stop(true));
+                    };
+                };
+
+                context["a handle which does not exist"] = () =>
+                {
+                    before = () =>
+                    {
+                        mockContainerService.Setup(x => x.GetContainerByHandle("MySecondContainer")).Returns(null as IContainer);
+                    };
+
+                    it["returns 404"] = () =>
+                    {
+                        result.should_cast_to<System.Web.Http.Results.NotFoundResult>();
+                    };
+                };
+            };
+
             describe["#Destroy"] = () =>
             {
                 IHttpActionResult result = null;
