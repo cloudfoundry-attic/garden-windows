@@ -69,7 +69,10 @@ namespace Containerizer.Controllers
                         var process = container.Run(processSpec, new ProcessIO(this));
                         Task.Factory.StartNew(() =>
                         {
-                            process.WaitForExit();
+                            try
+                            {
+                                process.WaitForExit();
+                            } catch (OperationCanceledException e) { }
                             SendEvent("close", null);
                         });
                     }
