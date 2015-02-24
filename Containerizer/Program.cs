@@ -12,27 +12,6 @@ namespace Containerizer
 {
     public class Program
     {
-        public class WS : WebSocketConnection
-        {
-            public override Task OnMessageReceived(ArraySegment<byte> message, WebSocketMessageType type)
-            {
-                Console.WriteLine(message);
-                return SendText(message, true);
-            }
-        }
-        static void Main2(string[] args)
-        {
-            WebApp.Start(new StartOptions("http://localhost:8989"), startup =>
-            {
-                startup.MapWebSocketPattern<WS>("/captures/(?<capture1>.+)/(?<capture2>.+)");
-            });
-
-            var client = new ClientWebSocket();
-            client.ConnectAsync(new Uri("ws://localhost:8989/captures/fred/james"), CancellationToken.None).Wait();
-            client.SendAsync(new ArraySegment<byte>(new UTF8Encoding(true).GetBytes("foo")), WebSocketMessageType.Text, true, CancellationToken.None).Wait();
-            Console.ReadLine();
-        }
-
         static void Main(string[] args)
         {
             // Start OWIN host 
