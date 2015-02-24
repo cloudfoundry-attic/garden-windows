@@ -11,31 +11,20 @@ namespace Containerizer.Tests.Specs.Features
 {
     internal class ConsumerCanDestroyContainerSpec : nspec
     {
-        // Containerizer.Controllers.ContainersController containersController;
-        private int port;
-
-        private void before_each()
-        {
-            port = 8088;
-            Helpers.SetupSiteInIIS("Containerizer", "Containerizer.Tests", "ContainerizerTestsApplicationPool", port,
-                true);
-        }
-
-        private void after_each()
-        {
-            Helpers.RemoveExistingSite("Containerizer.Tests", "ContainerizerTestsApplicationPool");
-        }
-
         private void describe_consumer_can_destroy_a_container()
         {
+            Helpers.ContainarizerProcess process = null;
             HttpClient client = null;
             string handle = null;
+
+            before = () => process = Helpers.CreateContainerizerProcess();
+            after = () => process.Dispose();
 
             context["given that I am a consumer of the api and a container exists"] = () =>
             {
                 before = () =>
                 {
-                    client = new HttpClient { BaseAddress = new Uri("http://localhost:" + port) };
+                    client = process.GetClient();
 
                     handle = Helpers.CreateContainer(client);
                 };

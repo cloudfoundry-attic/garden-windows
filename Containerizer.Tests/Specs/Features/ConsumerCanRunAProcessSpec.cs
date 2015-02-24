@@ -16,31 +16,24 @@ namespace Containerizer.Tests.Specs.Features
 {
     internal class ConsumerCanRunAProcessSpec : nspec
     {
-        private int port;
-
-        private void before_each()
-        {
-            port = 8088;
-            Helpers.SetupSiteInIIS("Containerizer", "Containerizer.Tests", "ContainerizerTestsApplicationPool", port,
-                true);
-        }
-
-        private void after_each()
-        {
-            Helpers.RemoveExistingSite("Containerizer.Tests", "ContainerizerTestsApplicationPool");
-        }
-
         private void describe_consumer_can_run_a_process()
         {
             ClientWebSocket client = null;
             HttpClient httpClient = null;
             string handle = null;
+            Helpers.ContainarizerProcess process = null;
+
             before = () =>
             {
-                httpClient = new HttpClient {BaseAddress = new Uri("http://localhost:" + port)};
+                process = Helpers.CreateContainerizerProcess();
+                httpClient = process.GetClient();
                 handle = Helpers.CreateContainer(httpClient);
             };
-            after = () => Helpers.DestroyContainer(httpClient, handle);
+            after = () =>
+            {
+                Helpers.DestroyContainer(httpClient, handle);
+                process.Dispose();
+            };
 
             context["given that I am a consumer of the api"] = () =>
             {
@@ -67,7 +60,7 @@ namespace Containerizer.Tests.Specs.Features
                         try
                         {
                             client.ConnectAsync(
-                                new Uri("ws://localhost:" + port + "/api/containers/" + handle + "/run"),
+                                new Uri("ws://localhost:" + process.Port + "/api/containers/" + handle + "/run"),
                                 CancellationToken.None).GetAwaiter().GetResult();
                         }
                         catch (WebSocketException ex)

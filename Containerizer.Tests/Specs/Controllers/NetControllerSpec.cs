@@ -50,7 +50,7 @@ namespace Containerizer.Tests.Specs.Controllers
                     result = netController.Create(containerId, new NetInRequest { HostPort = requestedHostPort });
                 };
 
-                it["reserves the port in the container"] = () =>
+                it["reserves the Port in the container"] = () =>
                 {
                     mockContainer.Verify(x => x.ReservePort(requestedHostPort));
                 };
@@ -68,7 +68,7 @@ namespace Containerizer.Tests.Specs.Controllers
                     };
                 };
 
-                context["reserving the port in the container succeeds and returns a port"] = () =>
+                context["reserving the Port in the container succeeds and returns a Port"] = () =>
                 {
                     before = () =>
                     {
@@ -80,21 +80,21 @@ namespace Containerizer.Tests.Specs.Controllers
                             mockContainer.Verify(x => x.ReservePort(requestedHostPort));
                         };
 
-                    context["container reservePort succeeds and returns a port"] = () =>
+                    context["container reservePort succeeds and returns a Port"] = () =>
                     {
                         before = () =>
                         {
                             mockContainer.Setup(x => x.ReservePort(requestedHostPort)).Returns(8765);
                         };
 
-                        it["returns the port that the net in service returns"] = () =>
+                        it["returns the Port that the net in service returns"] = () =>
                         {
                             var jsonResult = result.should_cast_to<JsonResult<NetInResponse>>();
                             jsonResult.Content.HostPort.should_be(8765);
                         };
                     };
 
-                    context["reserving the port in the container fails and throws an exception"] = () =>
+                    context["reserving the Port in the container fails and throws an exception"] = () =>
                     {
                         before = () =>
                         {

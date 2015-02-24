@@ -3,12 +3,14 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.WebSockets;
 using System.Text;
 using System.Threading.Tasks;
 using Containerizer.Models;
 using IronFoundry.Container;
 using Microsoft.Web.WebSockets;
 using Newtonsoft.Json;
+using Owin.WebSocket;
 
 #endregion
 
@@ -19,33 +21,51 @@ namespace Containerizer.Controllers
         void SendEvent(string messageType, string message);
     }
 
-    public class ContainerProcessHandler : WebSocketHandler, IWebSocketEventSender
+    [WebSocketRoute("/wsa")]
+    public class JimBob : WebSocketConnection
     {
-        private readonly IContainer container;
-        private readonly string containerRoot;
-
-        public ContainerProcessHandler(string containerId, IContainerService containerService)
+        public JimBob()
         {
-            containerRoot = containerService.GetContainerByHandle(containerId).Directory.MapUserPath("");
-            container = containerService.GetContainerByHandle(containerId);
+            
+        }
+
+        public override Task OnMessageReceived(ArraySegment<byte> message, WebSocketMessageType type)
+        {
+            return SendText(message, true);
+        }
+    }
+
+    public class ContainerProcessHandler : WebSocketConnection, IWebSocketEventSender
+    {
+        private readonly IContainerService containerService;
+
+        public ContainerProcessHandler(IContainerService containerService)
+        {
+            this.containerService = containerService;
         }
 
         public void SendEvent(string messageType, string message)
         {
-            var data = JsonConvert.SerializeObject(new ProcessStreamEvent
+            var jsonString = JsonConvert.SerializeObject(new ProcessStreamEvent
             {
                 MessageType = messageType,
                 Data = message
             }, Formatting.None);
-            Send(data);
+            var data = new UTF8Encoding(true).GetBytes(jsonString);
+            SendText(data, true);
         }
 
-        public override void OnMessage(string message)
+        public override Task OnMessageReceived(ArraySegment<byte> message, WebSocketMessageType type)
         {
-            var streamEvent = JsonConvert.DeserializeObject<ProcessStreamEvent>(message);
+            var bytes = new UTF8Encoding(true).GetString(message.Array, 0, message.Count);
+            var streamEvent = JsonConvert.DeserializeObject<ProcessStreamEvent>(bytes);
 
             if (streamEvent.MessageType == "run" && streamEvent.ApiProcessSpec != null)
             {
+                var handle = Arguments["handle"];
+                var containerRoot = containerService.GetContainerByHandle(handle).Directory.UserPath;
+                var container = containerService.GetContainerByHandle(handle);
+
                 var processSpec = new ProcessSpec
                 {
                     DisablePathMapping = false,
@@ -62,7 +82,7 @@ namespace Containerizer.Controllers
                 if (info != null && info.ReservedPorts.Count > 0)
                     processSpec.Environment["PORT"] = info.ReservedPorts[0].ToString();
 
-                Task.Factory.StartNew(() =>
+                return Task.Factory.StartNew(() =>
                 {
                     try
                     {
@@ -72,7 +92,7 @@ namespace Containerizer.Controllers
                             try
                             {
                                 process.WaitForExit();
-                            } catch (OperationCanceledException e) { }
+                            } catch (OperationCanceledException) { }
                             SendEvent("close", null);
                         });
                     }
@@ -82,6 +102,7 @@ namespace Containerizer.Controllers
                     }
                 });
             }
+            return null;
         }
 
         private class WSWriter : TextWriter

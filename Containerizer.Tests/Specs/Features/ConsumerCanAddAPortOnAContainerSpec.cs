@@ -25,19 +25,16 @@ namespace Containerizer.Tests.Specs.Features
             context["Given that I'm a consumer of the containerizer API"] = () =>
             {
                 HttpClient client = null;
+                Helpers.ContainarizerProcess process = null;
 
                 before = () =>
                 {
-                    int port = 8088;
-                    Helpers.SetupSiteInIIS("Containerizer", "Containerizer.Tests", "ContainerizerTestsApplicationPool",
-                        port, true);
-                    client = new HttpClient { BaseAddress = new Uri("http://localhost:" + port) };
+                    process = Helpers.CreateContainerizerProcess();
+                    client = process.GetClient();
                 };
 
-                after = () =>
-                {
-                    Helpers.RemoveExistingSite("Containerizer.Tests", "ContainerizerTestsApplicationPool");
-                };
+                after = () => process.Dispose();
+
 
                 context["And there exists a container with a given id"] = () =>
                 {

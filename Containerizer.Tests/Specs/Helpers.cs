@@ -17,7 +17,9 @@ using System.Text;
 using System.Net.Sockets;
 using System.DirectoryServices.AccountManagement;
 using System.DirectoryServices;
+using System.Net.Http.Headers;
 using Containerizer.Factories;
+using NSpec;
 
 #endregion
 
@@ -34,6 +36,17 @@ namespace Containerizer.Tests.Specs
 
     public static class Helpers
     {
+        public static string AssemblyDirectory
+        {
+            get
+            {
+                string codeBase = Assembly.GetExecutingAssembly().CodeBase;
+                UriBuilder uri = new UriBuilder(codeBase);
+                string path = Uri.UnescapeDataString(uri.Path);
+                return Path.GetDirectoryName(path);
+            }
+        }
+
         /// <returns>The newly created container's id.</returns>
         public static string CreateContainer(HttpClient client)
         {
@@ -53,39 +66,49 @@ namespace Containerizer.Tests.Specs
             return Path.Combine(ContainerServiceFactory.GetContainerRoot(), new ContainerHandleHelper().GenerateId(handle), "user");
         }
 
-        public static void SetupSiteInIIS(string applicationFolderName, string siteName, string applicationPoolName,
-            int port, bool privleged)
+        public class ContainarizerProcess : IDisposable
         {
-            try
+            private Process process;
+            public readonly int Port;
+
+            public ContainarizerProcess(int port)
             {
-                var serverManager = ServerManager.OpenRemote("localhost");
-                var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, applicationFolderName);
-
-                RemoveExistingSite(siteName, applicationPoolName);
-
-                Site mySite = serverManager.Sites.Add(siteName, path, port);
-                mySite.ServerAutoStart = true;
-
-                serverManager.ApplicationPools.Add(applicationPoolName);
-                mySite.Applications[0].ApplicationPoolName = applicationPoolName;
-                ApplicationPool apppool = serverManager.ApplicationPools[applicationPoolName];
-                if (privleged)
-                {
-                    apppool.ProcessModel.IdentityType = ProcessModelIdentityType.LocalSystem;
-                }
-                apppool.ManagedRuntimeVersion = "v4.0";
-                apppool.ManagedPipelineMode = ManagedPipelineMode.Integrated;
-
-                serverManager.CommitChanges();
+                this.Port = port;
             }
-            catch (COMException ex)
+
+            public void Start()
             {
-                if (ex.Message.Contains("2B72133B-3F5B-4602-8952-803546CE3344"))
-                {
-                    throw new Exception("Please install IIS.", ex);
-                }
-                throw;
+                process = new System.Diagnostics.Process();
+                process.StartInfo.UseShellExecute = false;
+                process.StartInfo.RedirectStandardOutput = true;
+                process.StartInfo.CreateNoWindow = true;
+                process.StartInfo.FileName = Path.Combine(Helpers.AssemblyDirectory, "..", "..", "..", "Containerizer", "bin",
+                    "Containerizer.exe");
+                process.StartInfo.Arguments = Port.ToString();
+                process.Start();
+                process.StandardOutput.ReadLine().should_start_with("SUCCESS");
             }
+
+            public HttpClient GetClient()
+            {
+                var client = new HttpClient { BaseAddress = new Uri("http://localhost:" + Port) };
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                return client;
+            }
+
+            public void Dispose()
+            {
+                process.Kill();
+                process.WaitForExit();
+            }
+        }
+
+        public static ContainarizerProcess CreateContainerizerProcess()
+        {
+            var port = new Random().Next(10000, 50000);
+            var process = new ContainarizerProcess(port);
+            process.Start();
+            return process;
         }
 
         public static void DestroyContainer(HttpClient client, string handle)
@@ -94,65 +117,7 @@ namespace Containerizer.Tests.Specs
             response.EnsureSuccessStatusCode();
         }
 
-        public static void RemoveExistingSite(string siteName, string applicationPoolName)
-        {
-            try
-            {
-                var serverManager = ServerManager.OpenRemote("localhost");
-                var existingSite = serverManager.Sites.FirstOrDefault(x => x.Name == siteName);
-                if (existingSite != null)
-                {
-                    serverManager.Sites.Remove(existingSite);
-                    serverManager.CommitChanges();
-                }
-
-                var existingAppPool = serverManager.ApplicationPools.FirstOrDefault(x => x.Name == applicationPoolName);
-                if (existingAppPool != null)
-                {
-                    serverManager.ApplicationPools.Remove(existingAppPool);
-                    serverManager.CommitChanges();
-                }
-            }
-            catch (COMException ex)
-            {
-                if (ex.Message.Contains("2B72133B-3F5B-4602-8952-803546CE3344"))
-                {
-                    throw new Exception("Please install IIS.", ex);
-                }
-                throw;
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                throw new Exception("Try running Visual Studio/test runner as Administrator instead.", ex);
-            }
-        }
-
-
-        public static DataReceivedEventArgs CreateMockDataReceivedEventArgs(string TestData)
-        {
-            var MockEventArgs =
-                (DataReceivedEventArgs) FormatterServices
-                    .GetUninitializedObject(typeof (DataReceivedEventArgs));
-
-            FieldInfo[] EventFields = typeof (DataReceivedEventArgs)
-                .GetFields(
-                    BindingFlags.NonPublic |
-                    BindingFlags.Instance |
-                    BindingFlags.DeclaredOnly);
-
-            if (EventFields.Any())
-            {
-                EventFields[0].SetValue(MockEventArgs, TestData);
-            }
-            else
-            {
-                throw new ApplicationException(
-                    "Failed to find _data field!");
-            }
-
-            return MockEventArgs;
-        }
-
+        /*
         public static bool PortIsUsed(int port)
         {
             using (var s = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
@@ -187,5 +152,6 @@ namespace Containerizer.Tests.Specs
                 }
             }
         }
+        */
     }
 }

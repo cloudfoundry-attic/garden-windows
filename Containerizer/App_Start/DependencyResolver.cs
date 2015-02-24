@@ -11,13 +11,16 @@ using IronFoundry.Container;
 using IronFoundry.Container.Internal;
 using IronFoundry.Container.Utilities;
 using System.IO;
+using System.Runtime.InteropServices;
 using Containerizer.Factories;
+using Microsoft.Owin.Hosting.Services;
+using Microsoft.Practices.ServiceLocation;
 
 #endregion
 
 namespace Containerizer
 {
-    public class DependencyResolver : IDependencyResolver
+    public class DependencyResolver : IDependencyResolver, IServiceLocator
     {
         private readonly Autofac.IContainer container;
         private static IContainerService containerService;
@@ -43,8 +46,8 @@ namespace Containerizer
             containerBuilder.RegisterType<FilesController>();
             containerBuilder.RegisterType<NetController>();
             containerBuilder.RegisterType<PropertiesController>();
-            containerBuilder.RegisterType<RunController>();
             containerBuilder.RegisterType<InfoController>();
+            containerBuilder.RegisterType<ContainerProcessHandler>();
             container = containerBuilder.Build();
         }
 
@@ -72,6 +75,42 @@ namespace Containerizer
         void IDisposable.Dispose()
         {
             container.Dispose();
+        }
+
+        IEnumerable<TService> IServiceLocator.GetAllInstances<TService>()
+        {
+            throw new NotImplementedException();
+        }
+
+        IEnumerable<object> IServiceLocator.GetAllInstances(Type serviceType)
+        {
+            throw new NotImplementedException();
+        }
+
+        TService IServiceLocator.GetInstance<TService>(string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        TService IServiceLocator.GetInstance<TService>()
+        {
+            Type type = typeof (TService);
+            return (TService)container.ResolveOptional(type);
+        }
+
+        object IServiceLocator.GetInstance(Type serviceType, string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        object IServiceLocator.GetInstance(Type serviceType)
+        {
+            throw new NotImplementedException();
+        }
+
+        object IServiceProvider.GetService(Type serviceType)
+        {
+            throw new NotImplementedException();
         }
     }
 }

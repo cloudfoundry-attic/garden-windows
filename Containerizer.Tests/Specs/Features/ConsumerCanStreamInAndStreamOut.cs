@@ -16,16 +16,13 @@ namespace Containerizer.Tests.Specs.Features
     {
         private string directoryPath;
         private string handle;
-        private int port;
         private string tgzName;
+        private Helpers.ContainarizerProcess process;
 
 
         private void before_each()
         {
-            port = 8088;
-            Helpers.SetupSiteInIIS("Containerizer", "Containerizer.Tests", "ContainerizerTestsApplicationPool", port,
-                true);
-
+            process = Helpers.CreateContainerizerProcess();
             CreateTarToSend();
         }
 
@@ -41,8 +38,8 @@ namespace Containerizer.Tests.Specs.Features
 
         private void after_each()
         {
-            Helpers.RemoveExistingSite("Containerizer.Tests", "ContainerizerTestsApplicationPool");
             Directory.Delete(directoryPath, true);
+            process.Dispose();
         }
 
         private void describe_stream_in()
@@ -51,18 +48,11 @@ namespace Containerizer.Tests.Specs.Features
             {
                 HttpClient client = null;
 
-                before = () =>
-                {
-                    client = new HttpClient { BaseAddress = new Uri("http://localhost:" + port) };
-                };
+                before = () => client = process.GetClient();
 
                 context["there exists a container with a given id"] = () =>
                 {
-                    before = () =>
-                    {
-                        handle = Helpers.CreateContainer(client);
-                    };
-
+                    before = () => handle = Helpers.CreateContainer(client);
                     after = () => Helpers.DestroyContainer(client, handle);
 
                     context["when I stream in a file into the container"] = () =>

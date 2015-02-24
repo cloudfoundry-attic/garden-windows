@@ -1,6 +1,7 @@
 ﻿#region
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -14,23 +15,25 @@ using System.Text;
 
 namespace Containerizer.Tests.Specs.Features
 {
+
+
+
+
     internal class ConsumerCanCreateNewContainerSpec : nspec
     {
         // Containerizer.Controllers.ContainersController containersController;
         private string id;
-        private int port;
+        private Helpers.ContainarizerProcess process;
 
         private void before_each()
         {
-            port = 8088;
-            Helpers.SetupSiteInIIS("Containerizer", "Containerizer.Tests", "ContainerizerTestsApplicationPool", port,
-                true);
+            process = Helpers.CreateContainerizerProcess();
         }
 
         private void after_each()
         {
-            Helpers.RemoveExistingSite("Containerizer.Tests", "ContainerizerTestsApplicationPool");
-            Helpers.RemoveExistingSite(id, id);
+            Helpers.DestroyContainer(process.GetClient(), id);
+            process.Dispose();
         }
 
         private void describe_consumer_can_create_new_container()
@@ -41,8 +44,7 @@ namespace Containerizer.Tests.Specs.Features
             {
                 before = () =>
                 {
-                    client = new HttpClient {BaseAddress = new Uri("http://localhost:" + port)};
-                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                    client = process.GetClient();
                 };
 
                 context["when I post a request"] = () =>
@@ -54,7 +56,7 @@ namespace Containerizer.Tests.Specs.Features
                     before = () =>
                     {
                         handle = Guid.NewGuid() + "-" + Guid.NewGuid();
-                        Task<HttpResponseMessage> postTask = client.PostAsync("/api/Containers",
+                        Task<HttpResponseMessage> postTask = client.PostAsync("/api/containers",
                             new StringContent(
                                 "{\"Handle\": \"" + handle + "\", \"Properties\":{\"" + propertyKey + "\":\"" +
                                 propertyValue + "\"}}", Encoding.UTF8, "application/json"));
@@ -71,11 +73,11 @@ namespace Containerizer.Tests.Specs.Features
                     {
                         id.should_be(handle);
 
-                        var listResponse = client.GetAsync("/api/Containers").Result.Content.ReadAsJsonArray();
+                        var listResponse = client.GetAsync("/api/containers").Result.Content.ReadAsJsonArray();
                         listResponse.Values<string>().Contains(handle).should_be_true();
 
                         var propertyResponse =
-                            client.GetAsync("/api/Containers/" + handle + "/properties/" + propertyKey)
+                            client.GetAsync("/api/containers/" + handle + "/properties/" + propertyKey)
                                 .Result.Content.ReadAsJson();
                         propertyResponse["value"].ToString().should_be(propertyValue);
                     };

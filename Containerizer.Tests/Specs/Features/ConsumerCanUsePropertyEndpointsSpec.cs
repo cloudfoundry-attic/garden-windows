@@ -17,33 +17,22 @@ namespace Containerizer.Tests.Specs.Features
             context["Given that I'm a consumer of the containerizer API"] = () =>
             {
                 HttpClient client = null;
+                Helpers.ContainarizerProcess process = null;
 
                 before = () =>
                 {
-                    int port = 8088;
-                    Helpers.SetupSiteInIIS("Containerizer", "Containerizer.Tests", "ContainerizerTestsApplicationPool",
-                        port, true);
-                    client = new HttpClient {BaseAddress = new Uri("http://localhost:" + port)};
+                    process = Helpers.CreateContainerizerProcess();
+                    client = process.GetClient();
                 };
 
-                after =
-                    () =>
-                    {
-                        Helpers.RemoveExistingSite("Containerizer.Tests", "ContainerizerTestsApplicationPool");
-                    };
+                after = () => process.Dispose();
 
                 context["And there exists a container with a given id"] = () =>
                 {
-                    string containerId = null;
+                    string handle = null;
 
-                    before = () =>
-                    {
-                        containerId = Helpers.CreateContainer(client);
-                    };
-                    after = () =>
-                    {
-                        Helpers.RemoveExistingSite(containerId, containerId);
-                    };
+                    before = () => handle = Helpers.CreateContainer(client);
+                    after = () => Helpers.DestroyContainer(client, handle);
 
                     it["allows the consumer to interact with the property endpoints correctly"] = () =>
                     {
@@ -53,7 +42,7 @@ namespace Containerizer.Tests.Specs.Features
                             new KeyValuePair<string, string>("hello", "goodbye"),
                         };
                         Func<int, string> path =
-                            n => "/api/containers/" + containerId + "/properties/" + properties[n].Key;
+                            n => "/api/containers/" + handle + "/properties/" + properties[n].Key;
                         Func<int, StringContent> content = n => new StringContent(properties[n].Value);
 
                         var result1 = client.PutAsync(path(0), content(0)).Result;
@@ -61,7 +50,7 @@ namespace Containerizer.Tests.Specs.Features
                         result1.IsSuccessStatusCode.should_be_true();
                         result2.IsSuccessStatusCode.should_be_true();
 
-                        var indexPath = "/api/containers/" + containerId + "/info";
+                        var indexPath = "/api/containers/" + handle + "/info";
                         var indexResponse = client.GetAsync(indexPath).Result.Content.ReadAsJson()["Properties"] as JObject;
 
                         Action<int> verifyIndex =
