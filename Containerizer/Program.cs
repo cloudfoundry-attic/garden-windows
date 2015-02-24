@@ -12,9 +12,16 @@ namespace Containerizer
 {
     public class Program
     {
+        private static readonly ManualResetEvent ExitLatch = new ManualResetEvent(false);
+
         static void Main(string[] args)
         {
             var port = (args.Length == 1 ? args[0] : "80");
+            Console.CancelKeyPress += (s, e) =>
+            {
+                e.Cancel = true;
+                ExitLatch.Set();
+            };
 
             // Start OWIN host 
             try
@@ -31,8 +38,8 @@ namespace Containerizer
                     Console.WriteLine(response);
                     Console.WriteLine(response.Content.ReadAsStringAsync().Result);
 
-                    Console.WriteLine("Hit a key");
-                    Console.ReadLine();
+                    Console.WriteLine("Control-C to quit.");
+                    ExitLatch.WaitOne();
                 }
             }
             catch (Exception ex)

@@ -21,20 +21,6 @@ namespace Containerizer.Controllers
         void SendEvent(string messageType, string message);
     }
 
-    [WebSocketRoute("/wsa")]
-    public class JimBob : WebSocketConnection
-    {
-        public JimBob()
-        {
-            
-        }
-
-        public override Task OnMessageReceived(ArraySegment<byte> message, WebSocketMessageType type)
-        {
-            return SendText(message, true);
-        }
-    }
-
     public class ContainerProcessHandler : WebSocketConnection, IWebSocketEventSender
     {
         private readonly IContainerService containerService;
@@ -86,7 +72,8 @@ namespace Containerizer.Controllers
                 {
                     try
                     {
-                        var process = container.Run(processSpec, new ProcessIO(this));
+                        var processIO = new ProcessIO(this);
+                        var process = container.Run(processSpec, processIO);
                         Task.Factory.StartNew(() =>
                         {
                             try
