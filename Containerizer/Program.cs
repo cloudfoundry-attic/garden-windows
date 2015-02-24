@@ -14,17 +14,19 @@ namespace Containerizer
     {
         static void Main(string[] args)
         {
+            var port = (args.Length == 1 ? args[0] : "80");
+
             // Start OWIN host 
             try
             {
-                using (WebApp.Start<Startup>("http://*:" + args[0] + "/"))
+                using (WebApp.Start<Startup>("http://*:" + port + "/"))
                 {
                     Console.WriteLine("SUCCESS: started");
 
                     // Create HttpCient and make a request to api/values 
                     HttpClient client = new HttpClient();
 
-                    var response = client.GetAsync("http://localhost:" + args[0] + "/api/ping").Result;
+                    var response = client.GetAsync("http://localhost:" + port + "/api/ping").Result;
 
                     Console.WriteLine(response);
                     Console.WriteLine(response.Content.ReadAsStringAsync().Result);
