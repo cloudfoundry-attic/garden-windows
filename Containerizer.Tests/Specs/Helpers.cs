@@ -116,42 +116,5 @@ namespace Containerizer.Tests.Specs
             var response = client.DeleteAsync("/api/Containers/" + handle).GetAwaiter().GetResult();
             response.EnsureSuccessStatusCode();
         }
-
-        /*
-        public static bool PortIsUsed(int port)
-        {
-            using (var s = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
-            {
-                try
-                {
-                    s.Connect("localhost", port);
-                    return true;
-                }
-                catch (SocketException)
-                {
-                    return false;
-                }
-            }
-        }
-
-        public static void RemoveAllWardenUsers()
-        {
-            using (var context = new PrincipalContext(ContextType.Machine))
-            {
-                using (var searcher = new PrincipalSearcher(new UserPrincipal(context)))
-                {
-                    foreach (var result in searcher.FindAll())
-                    {
-                        var de = result.GetUnderlyingObject() as DirectoryEntry;
-                        if (de.Name.StartsWith("c_"))
-                        {
-                            Console.WriteLine("DELETE: " + de.Name);
-                            result.Delete();
-                        }
-                    }
-                }
-            }
-        }
-        */
     }
 }
