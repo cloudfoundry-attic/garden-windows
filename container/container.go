@@ -14,7 +14,7 @@ import (
 	"github.com/cloudfoundry-incubator/garden"
 	"github.com/cloudfoundry-incubator/garden-windows/process"
 
-	"code.google.com/p/go.net/websocket"
+	"github.com/gorilla/websocket"
 	"github.com/pivotal-golang/lager"
 )
 
@@ -183,13 +183,12 @@ func (container *container) containerizerWS() string {
 }
 
 func (container *container) Run(processSpec garden.ProcessSpec, processIO garden.ProcessIO) (garden.Process, error) {
-	origin := "http://localhost/"
 	wsUri := container.containerizerWS() + "/api/containers/" + container.handle + "/run"
-	ws, err := websocket.Dial(wsUri, "", origin)
+	ws, _, err := websocket.DefaultDialer.Dial(wsUri, nil)
 	if err != nil {
 		return nil, err
 	}
-	websocket.JSON.Send(ws, ProcessStreamEvent{
+	websocket.WriteJSON(ws, ProcessStreamEvent{
 		MessageType:    "run",
 		ApiProcessSpec: processSpec,
 	})
@@ -204,6 +203,8 @@ func (container *container) Run(processSpec garden.ProcessSpec, processIO garden
 		}
 		close(proc.StreamOpen)
 	}()
+
+	// CLOSE WS SOMEWHERE ;; defer ws.Close() ;; FIXME
 
 	return proc, nil
 }
@@ -293,7 +294,7 @@ func streamWebsocketIOToContainerizer(ws *websocket.Conn, processIO garden.Proce
 func streamWebsocketIOFromContainerizer(ws *websocket.Conn, processIO garden.ProcessIO) error {
 	receiveStream := ProcessStreamEvent{}
 	for {
-		err := websocket.JSON.Receive(ws, &receiveStream)
+		err := websocket.ReadJSON(ws, &receiveStream)
 		if err != nil {
 			return err
 		}

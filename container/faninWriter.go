@@ -5,7 +5,7 @@ import (
 	"io"
 	"sync"
 
-	"code.google.com/p/go.net/websocket"
+	"github.com/gorilla/websocket"
 )
 
 type faninWriter struct {
@@ -26,7 +26,7 @@ func (w *faninWriter) Write(data []byte) (int, error) {
 		return 0, errors.New("write after close")
 	}
 
-	websocket.JSON.Send(w.ws, ProcessStreamEvent{
+	w.ws.WriteJSON(ProcessStreamEvent{
 		MessageType: "stdin",
 		Data:        string(data),
 	})

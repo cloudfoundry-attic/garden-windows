@@ -13,7 +13,7 @@ import (
 	"errors"
 	"strings"
 
-	"code.google.com/p/go.net/websocket"
+	"github.com/gorilla/websocket"
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/ghttp"
 	"github.com/pivotal-golang/lager/lagertest"
@@ -261,7 +261,7 @@ var _ = Describe("container", func() {
 			})
 			Ω(err).ShouldNot(HaveOccurred())
 
-			websocket.JSON.Send(testServer.handlerWS, netContainer.ProcessStreamEvent{
+			websocket.WriteJSON(testServer.handlerWS, netContainer.ProcessStreamEvent{
 				MessageType: "stdout",
 				Data:        "hello from windows",
 			})
@@ -275,7 +275,7 @@ var _ = Describe("container", func() {
 			})
 			Ω(err).ShouldNot(HaveOccurred())
 
-			websocket.JSON.Send(testServer.handlerWS, netContainer.ProcessStreamEvent{
+			websocket.WriteJSON(testServer.handlerWS, netContainer.ProcessStreamEvent{
 				MessageType: "stderr",
 				Data:        "error from windows",
 			})
@@ -291,11 +291,11 @@ var _ = Describe("container", func() {
 			})
 			Ω(err).ShouldNot(HaveOccurred())
 
-			websocket.JSON.Send(testServer.handlerWS, netContainer.ProcessStreamEvent{
+			websocket.WriteJSON(testServer.handlerWS, netContainer.ProcessStreamEvent{
 				MessageType: "stdout",
 				Data:        "hello from windows",
 			})
-			websocket.JSON.Send(testServer.handlerWS, netContainer.ProcessStreamEvent{
+			websocket.WriteJSON(testServer.handlerWS, netContainer.ProcessStreamEvent{
 				MessageType: "stderr",
 				Data:        "error from windows",
 			})
@@ -328,7 +328,7 @@ var _ = Describe("container", func() {
 			proc, err := container.Run(garden.ProcessSpec{}, garden.ProcessIO{})
 			Ω(err).ShouldNot(HaveOccurred())
 
-			websocket.JSON.Send(testServer.handlerWS, netContainer.ProcessStreamEvent{
+			websocket.WriteJSON(testServer.handlerWS, netContainer.ProcessStreamEvent{
 				MessageType: "close",
 			})
 
@@ -340,7 +340,7 @@ var _ = Describe("container", func() {
 				proc, err := container.Run(garden.ProcessSpec{}, garden.ProcessIO{})
 				Ω(err).ShouldNot(HaveOccurred())
 
-				websocket.JSON.Send(testServer.handlerWS, netContainer.ProcessStreamEvent{
+				websocket.WriteJSON(testServer.handlerWS, netContainer.ProcessStreamEvent{
 					MessageType: "error",
 					Data:        "An Error Message",
 				})
@@ -352,7 +352,7 @@ var _ = Describe("container", func() {
 				proc, err := container.Run(garden.ProcessSpec{}, garden.ProcessIO{})
 				Ω(err).ShouldNot(HaveOccurred())
 
-				websocket.JSON.Send(testServer.handlerWS, netContainer.ProcessStreamEvent{
+				websocket.WriteJSON(testServer.handlerWS, netContainer.ProcessStreamEvent{
 					MessageType: "error",
 				})
 

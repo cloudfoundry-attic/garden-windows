@@ -6,9 +6,9 @@ import (
 	"net/url"
 	"sync"
 
-	"code.google.com/p/go.net/websocket"
 	"github.com/cloudfoundry-incubator/garden-windows/container"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/websocket"
 	"github.com/hydrogen18/stoppableListener"
 )
 
@@ -19,6 +19,11 @@ type TestWebSocketServer struct {
 	listener  *stoppableListener.StoppableListener
 	wg        sync.WaitGroup
 	router    *mux.Router
+}
+
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
 }
 
 func (server *TestWebSocketServer) Start(containerId string) {
@@ -42,16 +47,27 @@ func (server *TestWebSocketServer) createListener() {
 }
 
 func (server *TestWebSocketServer) createWebSocketHandler(containerId string) {
-	testHandler := func(ws *websocket.Conn) {
+	testHandler := func(w http.ResponseWriter, r *http.Request) {
+		ws, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			if _, ok := err.(websocket.HandshakeError); !ok {
+				panic(err)
+			}
+			return
+		}
+		defer ws.Close()
+
 		server.handlerWS = ws
 		for {
 			var streamEvent container.ProcessStreamEvent
-			websocket.JSON.Receive(ws, &streamEvent)
-			server.events = append(server.events, streamEvent)
+			err := websocket.ReadJSON(ws, &streamEvent)
+			if err == nil {
+				server.events = append(server.events, streamEvent)
+			}
 		}
-
 	}
-	server.router.Handle("/api/containers/"+containerId+"/run", websocket.Handler(testHandler))
+
+	server.router.HandleFunc("/api/containers/"+containerId+"/run", testHandler)
 }
 
 func (server *TestWebSocketServer) startWithWaitGroup() {
