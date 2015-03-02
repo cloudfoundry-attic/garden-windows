@@ -24,6 +24,9 @@ namespace Containerizer.Controllers
     public class ContainerProcessHandler : WebSocketConnection, IWebSocketEventSender
     {
         private readonly IContainerService containerService;
+        private string containerRoot;
+        private IContainer container;
+        private int processId;
 
         public ContainerProcessHandler(IContainerService containerService)
         {
@@ -41,6 +44,14 @@ namespace Containerizer.Controllers
             SendText(data, true);
         }
 
+        public override void OnOpen()
+        {
+            var handle = Arguments["handle"];
+
+            containerRoot = containerService.GetContainerByHandle(handle).Directory.UserPath;
+            container = containerService.GetContainerByHandle(handle);
+        }
+
         public override Task OnMessageReceived(ArraySegment<byte> message, WebSocketMessageType type)
         {
             var bytes = new UTF8Encoding(true).GetString(message.Array, 0, message.Count);
@@ -48,9 +59,6 @@ namespace Containerizer.Controllers
 
             if (streamEvent.MessageType == "run" && streamEvent.ApiProcessSpec != null)
             {
-                var handle = Arguments["handle"];
-                var containerRoot = containerService.GetContainerByHandle(handle).Directory.UserPath;
-                var container = containerService.GetContainerByHandle(handle);
 
                 var processSpec = new ProcessSpec
                 {
@@ -74,14 +82,16 @@ namespace Containerizer.Controllers
                     {
                         var processIO = new ProcessIO(this);
                         var process = container.Run(processSpec, processIO);
-                        Task.Factory.StartNew(() =>
+                        processId = process.Id;
+                        try
                         {
-                            try
-                            {
-                                process.WaitForExit();
-                            } catch (OperationCanceledException) { }
-                            SendEvent("close", null);
-                        });
+                            process.WaitForExit();
+                        }
+                        catch (OperationCanceledException e)
+                        {
+                            // SendEvent("error", e.Message);
+                        }
+                        SendEvent("close", null);
                     }
                     catch (Exception e)
                     {
