@@ -39,6 +39,7 @@ namespace Containerizer.Controllers
         [HttpGet]
         public IReadOnlyList<string> Index()
         {
+            Console.WriteLine("Container#Index");
             return containerService.GetContainers().Select(x => x.Handle).ToList();
         }
 
@@ -46,6 +47,7 @@ namespace Containerizer.Controllers
         [HttpPost]
         public CreateResponse Create(ContainerSpecApiModel spec)
         {
+            Console.WriteLine("Container#Create: {0}", spec.Handle);
             var containerSpec = new ContainerSpec
             {
                 Handle = spec.Handle,
@@ -58,6 +60,8 @@ namespace Containerizer.Controllers
             }
 
             propertyService.SetProperties(container, spec.Properties);
+
+            Console.WriteLine("Container#Create: {0} => {1}", spec.Handle, container.Id);
               
             return new CreateResponse
             {
@@ -69,9 +73,11 @@ namespace Containerizer.Controllers
         [HttpPost]
         public IHttpActionResult Stop(string id)
         {
+            Console.WriteLine("Container#Stop: {0}", id);
             var container = containerService.GetContainerByHandle(id);
             if (container != null)
             {
+                Console.WriteLine("Container#Stop: {0} => {1}", id, container.Id);
                 container.Stop(true);
                 return Ok();
             }
@@ -83,10 +89,13 @@ namespace Containerizer.Controllers
         [HttpDelete]
         public IHttpActionResult Destroy(string id)
         {
+            Console.WriteLine("Container#Destroy: {0}", id);
             var container = containerService.GetContainerByHandle(id);
             if (container != null)
             {
+                Console.WriteLine("Container#Destroy: {0} => {1}", id, container.Id);
                 containerService.DestroyContainer(id);
+                Console.WriteLine("Container#Destroy (after): {0} => {1}", id, container.Id);
                 return Ok();
             }
 

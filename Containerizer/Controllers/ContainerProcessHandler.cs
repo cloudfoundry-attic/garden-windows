@@ -30,11 +30,13 @@ namespace Containerizer.Controllers
 
         public ContainerProcessHandler(IContainerService containerService)
         {
+            Console.WriteLine("Container Process Handler Constructor");
             this.containerService = containerService;
         }
 
         public void SendEvent(string messageType, string message)
         {
+            Console.WriteLine("SendEvent: {0} :: {1} :: {2}", processId.ToString(), messageType, message);
             var jsonString = JsonConvert.SerializeObject(new ProcessStreamEvent
             {
                 MessageType = messageType,
@@ -47,18 +49,31 @@ namespace Containerizer.Controllers
         public override void OnOpen()
         {
             var handle = Arguments["handle"];
+            Console.WriteLine("onOpen: {0}", handle);
 
             containerRoot = containerService.GetContainerByHandle(handle).Directory.UserPath;
             container = containerService.GetContainerByHandle(handle);
+        }
+
+        public override void OnClose(WebSocketCloseStatus? closeStatus, string closeStatusDescription)
+        {
+            Console.WriteLine("OnClose: {0} :: {1}", closeStatus.ToString(), closeStatusDescription);
+        }
+
+        public override void OnReceiveError(Exception error)
+        {
+            Console.WriteLine("OnReceiveError: {0}", error.Message);
         }
 
         public override Task OnMessageReceived(ArraySegment<byte> message, WebSocketMessageType type)
         {
             var bytes = new UTF8Encoding(true).GetString(message.Array, 0, message.Count);
             var streamEvent = JsonConvert.DeserializeObject<ProcessStreamEvent>(bytes);
+            Console.WriteLine("OnMessageReceived: {0}, {1}", container.Handle, streamEvent.MessageType);
 
             if (streamEvent.MessageType == "run" && streamEvent.ApiProcessSpec != null)
             {
+                Console.WriteLine("OnMessageReceived: {0} => {1} :: {2}", container.Handle, container.Id, streamEvent.ApiProcessSpec.Path);
 
                 var processSpec = new ProcessSpec
                 {

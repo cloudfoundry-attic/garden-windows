@@ -79,37 +79,44 @@ namespace Containerizer
 
         IEnumerable<TService> IServiceLocator.GetAllInstances<TService>()
         {
+            Console.WriteLine("NotImplementedException: IEnumerable<TService> IServiceLocator.GetAllInstances<TService>()");
             throw new NotImplementedException();
         }
 
         IEnumerable<object> IServiceLocator.GetAllInstances(Type serviceType)
         {
+            Console.WriteLine("NotImplementedException: IEnumerable<object> IServiceLocator.GetAllInstances(Type serviceType)");
             throw new NotImplementedException();
         }
 
         TService IServiceLocator.GetInstance<TService>(string key)
         {
+            Console.WriteLine("NotImplementedException: TService IServiceLocator.GetInstance<TService>(string key)");
             throw new NotImplementedException();
         }
 
         TService IServiceLocator.GetInstance<TService>()
         {
+            Console.WriteLine("TService IServiceLocator.GetInstance<TService>()");
             Type type = typeof (TService);
             return (TService)container.ResolveOptional(type);
         }
 
         object IServiceLocator.GetInstance(Type serviceType, string key)
         {
+            Console.WriteLine("NotImplementedException: object IServiceLocator.GetInstance(Type serviceType, string key)");
             throw new NotImplementedException();
         }
 
         object IServiceLocator.GetInstance(Type serviceType)
         {
+            Console.WriteLine("NotImplementedException: object IServiceLocator.GetInstance(Type serviceType)");
             throw new NotImplementedException();
         }
 
         object IServiceProvider.GetService(Type serviceType)
         {
+            Console.WriteLine("NotImplementedException: object IServiceProvider.GetService(Type serviceType)");
             throw new NotImplementedException();
         }
     }
