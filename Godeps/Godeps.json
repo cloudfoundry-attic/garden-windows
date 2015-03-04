@@ -15,8 +15,8 @@
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry-incubator/garden",
-			"Comment": "go-wshd-694-g83b1a5e",
-			"Rev": "83b1a5e6ab31d2444a231aca9cc3e2bd6dd110ec"
+			"Comment": "go-wshd-695-gd356eb6",
+			"Rev": "d356eb63bd745460364830d3902331329b03826f"
 		},
 		{
 			"ImportPath": "github.com/gogo/protobuf/proto",
