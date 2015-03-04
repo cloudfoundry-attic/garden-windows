@@ -154,7 +154,6 @@
     <Compile Include="Specs\Services\StreamInServiceSpec.cs" />
     <Compile Include="Specs\Services\TarStreamServiceSpec.cs" />
     <Compile Include="Specs\Services\StreamOutServiceSpec.cs" />
-    <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Containerizer\Containerizer.csproj">
