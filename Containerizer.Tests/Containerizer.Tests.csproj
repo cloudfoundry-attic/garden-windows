@@ -147,6 +147,7 @@
     <Compile Include="Specs\Features\ConsumerCanAddAPortOnAContainerSpec.cs" />
     <Compile Include="Specs\Features\ConsumerCanCreateNewContainerSpec.cs" />
     <Compile Include="Specs\Features\ConsumerCanRunAProcessSpec.cs" />
+    <Compile Include="Specs\HelperJobObject.cs" />
     <Compile Include="Specs\Helpers.cs" />
     <Compile Include="Specs\Models\ArgumentEscaperSpec.cs" />
     <Compile Include="Specs\Services\NetInServiceSpec.cs" />

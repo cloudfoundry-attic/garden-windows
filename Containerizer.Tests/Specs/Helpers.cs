@@ -19,6 +19,7 @@ using System.DirectoryServices.AccountManagement;
 using System.DirectoryServices;
 using System.Net.Http.Headers;
 using Containerizer.Factories;
+using Containerizer.Tests.Spec;
 using NSpec;
 
 #endregion
@@ -69,10 +70,12 @@ namespace Containerizer.Tests.Specs
         public class ContainarizerProcess : IDisposable
         {
             private Process process;
+            private Job job;
             public readonly int Port;
 
             public ContainarizerProcess(int port)
             {
+                this.job = new Job();
                 this.Port = port;
             }
 
@@ -82,10 +85,10 @@ namespace Containerizer.Tests.Specs
                 process.StartInfo.UseShellExecute = false;
                 process.StartInfo.RedirectStandardOutput = true;
                 process.StartInfo.CreateNoWindow = true;
-                process.StartInfo.FileName = Path.Combine(Helpers.AssemblyDirectory, "..", "..", "..", "Containerizer", "bin",
-                    "Containerizer.exe");
+                process.StartInfo.FileName = Path.Combine(Helpers.AssemblyDirectory, "..", "..", "..", "Containerizer", "bin", "Containerizer.exe");
                 process.StartInfo.Arguments = Port.ToString();
                 process.Start();
+                job.AddProcess(process.Handle);
                 process.StandardOutput.ReadLine().should_start_with("SUCCESS");
             }
 
@@ -98,8 +101,9 @@ namespace Containerizer.Tests.Specs
 
             public void Dispose()
             {
-                process.Kill();
-                process.WaitForExit();
+                job.Dispose();
+                //process.Kill();
+                //process.WaitForExit();
             }
         }
 
