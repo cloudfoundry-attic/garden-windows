@@ -69,7 +69,6 @@ namespace Containerizer.Tests.Specs
 
         public class ContainarizerProcess : IDisposable
         {
-            private Process process;
             private Job job;
             public readonly int Port;
 
@@ -81,7 +80,7 @@ namespace Containerizer.Tests.Specs
 
             public void Start()
             {
-                process = new System.Diagnostics.Process();
+                var process = new System.Diagnostics.Process();
                 process.StartInfo.UseShellExecute = false;
                 process.StartInfo.RedirectStandardOutput = true;
                 process.StartInfo.CreateNoWindow = true;
@@ -102,8 +101,6 @@ namespace Containerizer.Tests.Specs
             public void Dispose()
             {
                 job.Dispose();
-                //process.Kill();
-                //process.WaitForExit();
             }
         }
 
