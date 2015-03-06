@@ -1,3 +1,7 @@
 /gin-bin
 
 *.test.exe
+
+backend/junit.xml
+container/junit.xml
+process/junit.xml
