@@ -23,28 +23,21 @@ namespace Containerizer
                 ExitLatch.Set();
             };
 
-            // Start OWIN host 
-            try
+            // Start OWIN host
+            using (WebApp.Start<Startup>("http://*:" + port + "/"))
             {
-                using (WebApp.Start<Startup>("http://*:" + port + "/"))
-                {
-                    Console.WriteLine("SUCCESS: started");
+                Console.WriteLine("SUCCESS: started");
 
-                    // Create HttpCient and make a request to api/values 
-                    HttpClient client = new HttpClient();
+                // Create HttpCient and make a request to api/values 
+                HttpClient client = new HttpClient();
 
-                    var response = client.GetAsync("http://localhost:" + port + "/api/ping").Result;
+                var response = client.GetAsync("http://localhost:" + port + "/api/ping").Result;
 
-                    Console.WriteLine(response);
-                    Console.WriteLine(response.Content.ReadAsStringAsync().Result);
+                Console.WriteLine(response);
+                Console.WriteLine(response.Content.ReadAsStringAsync().Result);
 
-                    Console.WriteLine("Control-C to quit.");
-                    ExitLatch.WaitOne();
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("ERRROR: " + ex.Message);
+                Console.WriteLine("Control-C to quit.");
+                ExitLatch.WaitOne();
             }
         }
     }
