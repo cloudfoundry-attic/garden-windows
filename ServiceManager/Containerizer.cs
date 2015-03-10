@@ -5,10 +5,12 @@ using System.ComponentModel;
 using System.Configuration.Install;
 using System.Diagnostics;
 using System.DirectoryServices;
+using System.DirectoryServices.AccountManagement;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
+using System.Security.Principal;
 using System.Threading.Tasks;
 
 namespace ServiceManager
@@ -72,6 +74,9 @@ namespace ServiceManager
                 new string[]{Path.Combine(workingDir, "nssm.exe"), string.Format("remove {0} confirm", serviceName)},
             };
             RunCommands(workingDir, commands);
+            var ctx = new PrincipalContext(ContextType.Machine);
+            var user = UserPrincipal.FindByIdentity(ctx, "containerizer");
+            user.Delete();
         }
 
 
@@ -125,37 +130,18 @@ namespace ServiceManager
 
         private void CreateNewAdminUser(string userName, string password)
         {
-            // create the user
-            var localMachine = new DirectoryEntry("WinNT://" + Environment.MachineName);
-            DirectoryEntry user = null;
-
-            try
-            {
-                user = localMachine.Children.Find(userName, "user");
-            }
-            catch (COMException ex)
-            {
-                // user not found
-            }
-
-            // delete the user if it exists, this will make sure the user has the required permisions
+            var builtinAdminSid = new SecurityIdentifier(WellKnownSidType.BuiltinAdministratorsSid, null);
+            var ctx = new PrincipalContext(ContextType.Machine);
+            var user = UserPrincipal.FindByIdentity(ctx, userName);
             if (user != null)
             {
-                localMachine.Children.Remove(user);
+                user.Delete();
             }
-
-            // add the new user, set the password and the description
-            user = localMachine.Children.Add(userName, "user");
-            user.Invoke("SetPassword", new object[] { password });
-            user.Invoke("Put", new Object[] { "Description", "The user under which the containerizer run" });
-            user.CommitChanges();
-
-            // TODO: it is claimed that the Administrators group name changes with the locale
-            // get the administrator group and add our user to it
-            var group = localMachine.Children.Find("Administrators", "group");
-            group.Invoke("Add", new Object[] { user.Path.ToString() });
-            group.CommitChanges();
-
+            user = new UserPrincipal(ctx, userName, password, true);
+            var group = GroupPrincipal.FindByIdentity(ctx, builtinAdminSid.Value);
+            group.Members.Add(user);
+            user.Save();
+            group.Save();
             GrantUserLogOnAsAService(userName);
         }
 
