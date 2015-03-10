@@ -8,6 +8,7 @@ using System.DirectoryServices;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 namespace ServiceManager
@@ -28,12 +29,21 @@ namespace ServiceManager
             base.Install(stateSaver);
 
             var userName = "containerizer";
-            // TODO: make sure that this is a secure random number generator
-            var password = Guid.NewGuid().ToString();
+            var password = CreateSecurePassword();
 
             CreateNewAdminUser(userName, password);
             Console.Out.WriteLine("Created new user and set password to {0}", password);
             SetupService(userName, password);
+        }
+
+        private static string CreateSecurePassword()
+        {
+            using (var rng = new RNGCryptoServiceProvider())
+            {
+                byte[] tokenData = new byte[32];
+                rng.GetBytes(tokenData);
+                return Convert.ToBase64String(tokenData);
+            }
         }
 
         /*
