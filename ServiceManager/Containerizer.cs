@@ -88,6 +88,8 @@ namespace ServiceManager
                 new string[]{Path.Combine(workingDir, "nssm.exe"), string.Format("install {0} \"{1}\" 80", serviceName, containerizerExe)},
                 new string[]{Path.Combine(workingDir, "nssm.exe"), string.Format("set {0} Description \"Containerizer is the windows end of windows-garden for CF .Net\"", serviceName)},
                 new string[]{GetFullPath("sc.exe"), string.Format("config {0} obj= \".\\{1}\" password= {2}", serviceName, userName, password)},
+                new string[]{Path.Combine(workingDir, "nssm.exe"), string.Format("set {0} AppStdout \"{1}\"", serviceName, Path.Combine(workingDir, "containerizer.stdout.log"))},
+                new string[]{Path.Combine(workingDir, "nssm.exe"), string.Format("set {0} AppStderr \"{1}\"", serviceName, Path.Combine(workingDir, "containerizer.stderr.log"))},
                 new string[]{Path.Combine(workingDir, "nssm.exe"), string.Format("start {0}", serviceName)},
             };
             RunCommands(workingDir, commands);

@@ -49,6 +49,36 @@
     <Compile Include="Containerizer.Designer.cs">
       <DependentUpon>Containerizer.cs</DependentUpon>
     </Compile>
+    <Compile Include="Executor.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Executor.Designer.cs">
+      <DependentUpon>Executor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GardenWindows.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="GardenWindows.Designer.cs">
+      <DependentUpon>GardenWindows.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Consul.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Consul.Designer.cs">
+      <DependentUpon>Consul.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Rep.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Rep.Designer.cs">
+      <DependentUpon>Rep.cs</DependentUpon>
+    </Compile>
+    <Compile Include="LocalInstaller.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="LocalInstaller.Designer.cs">
+      <DependentUpon>LocalInstaller.cs</DependentUpon>
+    </Compile>
     <Compile Include="LsaWrapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

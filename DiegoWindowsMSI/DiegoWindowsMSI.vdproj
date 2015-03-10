@@ -15,6 +15,12 @@
     {
         "Entry"
         {
+        "MsmKey" = "8:_00B74E6377F8455285C1BE23F01163C0"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_015D2657E8FE3E77F93B86BB62DFF507"
         "OwnerKey" = "8:_71A07F2DDD5CF9BDF8F66CFCFEADF2F0"
         "MsmSig" = "8:_UNDEFINED"
@@ -962,6 +968,26 @@
         }
         "File"
         {
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_00B74E6377F8455285C1BE23F01163C0"
+            {
+            "SourcePath" = "8:go-executables\\consul.exe"
+            "TargetName" = "8:consul.exe"
+            "Tag" = "8:"
+            "Folder" = "8:_ACA42DBD8EC64991ABB3254FB6DDBC0A"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_015D2657E8FE3E77F93B86BB62DFF507"
             {
             "AssemblyRegister" = "3:1"
@@ -2133,7 +2159,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:DiegoWindows"
         "ProductCode" = "8:{07BD6A35-82CC-436F-9BBB-7A8E078D719E}"
-        "PackageCode" = "8:{61BF4C17-7E57-4CE3-B857-8D03FC157078}"
+        "PackageCode" = "8:{B417DCDD-7121-42CA-A28C-51D1C9795F4E}"
         "UpgradeCode" = "8:{C2E7A072-5486-4248-A743-6426722A9D96}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
