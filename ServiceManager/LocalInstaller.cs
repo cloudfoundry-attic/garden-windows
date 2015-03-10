@@ -9,14 +9,22 @@ namespace ServiceManager
     [RunInstaller(false)]
     public partial class LocalInstaller : System.Configuration.Install.Installer
     {
+        private string exeArguments;
+        private string executable;
+
         protected string serviceName;
-        protected string exeArguments;
 
-        public LocalInstaller()
+        public LocalInstaller(string serviceName, string exeArguments)
+            : this(serviceName, serviceName + ".exe", exeArguments)
         {
-            InitializeComponent();
+        }
 
-            Debugger.Launch();
+        public LocalInstaller(string serviceName, string executable, string exeArguments)
+        {
+            this.serviceName = serviceName;
+            this.executable = executable;
+            this.exeArguments = exeArguments;
+            InitializeComponent();
         }
 
         [System.Security.Permissions.SecurityPermission(System.Security.Permissions.SecurityAction.Demand)]
@@ -25,18 +33,25 @@ namespace ServiceManager
             base.Install(stateSaver);
 
             var workingDir = CodeBaseDirectory();
-            var fileName = Path.Combine(workingDir, serviceName + ".exe");
+            var fileName = Path.Combine(workingDir, executable);
             var commands = new string[][] {
                 new string[]{Path.Combine(workingDir, "nssm.exe"), string.Format("install {0} \"{1}\" {2}", serviceName, fileName, exeArguments)},              
                 new string[]{Path.Combine(workingDir, "nssm.exe"), string.Format("set {0} Description \"{0} for CF .Net\"", serviceName)},
                 new string[]{Path.Combine(workingDir, "nssm.exe"), string.Format("set {0} AppStdout \"{1}\"", serviceName, Path.Combine(workingDir, serviceName + ".stdout.log"))},
                 new string[]{Path.Combine(workingDir, "nssm.exe"), string.Format("set {0} AppStderr \"{1}\"", serviceName, Path.Combine(workingDir, serviceName + ".stderr.log"))},
+            };
+            RunCommands(workingDir, commands);
+
+            PreServiceStart();
+
+            commands = new string[][] {
                 new string[]{Path.Combine(workingDir, "nssm.exe"), string.Format("start {0}", serviceName)},
             };
             RunCommands(workingDir, commands);
         }
+        public virtual void PreServiceStart() { }
 
-        private static string CodeBaseDirectory()
+        protected static string CodeBaseDirectory()
         {
             return Path.GetFullPath(Path.Combine(System.Reflection.Assembly.GetExecutingAssembly().CodeBase.Replace("file:///", ""), ".."));
         }
@@ -54,10 +69,8 @@ namespace ServiceManager
             RunCommands(workingDir, commands);
         }
 
-
-        private static void RunCommands(string workingDir, string[][] commands)
+        protected static void RunCommands(string workingDir, string[][] commands)
         {
-
             foreach (var cmd in commands)
             {
                 Console.WriteLine("Executing {0} {1}", cmd[0], cmd[1]);
