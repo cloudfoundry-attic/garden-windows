@@ -66,10 +66,10 @@ namespace ServiceManager
                 new string[]{Path.Combine(workingDir, "nssm.exe"), string.Format("stop {0}", serviceName)},
                 new string[]{Path.Combine(workingDir, "nssm.exe"), string.Format("remove {0} confirm", serviceName)},
             };
-            RunCommands(workingDir, commands);
+            RunCommands(workingDir, commands, false);
         }
 
-        protected static void RunCommands(string workingDir, string[][] commands)
+        protected static void RunCommands(string workingDir, string[][] commands, bool throwOnFailure = true)
         {
             foreach (var cmd in commands)
             {
@@ -90,7 +90,7 @@ namespace ServiceManager
 
                 process.Start();
                 process.WaitForExit();
-                if (process.ExitCode != 0)
+                if (throwOnFailure && process.ExitCode != 0)
                 {
                     throw new Exception(process.StandardOutput.ReadToEnd());
                 }
