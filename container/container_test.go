@@ -31,11 +31,13 @@ var _ = Describe("container", func() {
 	var container garden.Container
 	var logger *lagertest.TestLogger
 	var containerizerURL url.URL
+	var externalIP string
 
 	BeforeEach(func() {
 		server = ghttp.NewServer()
 		u, _ := url.Parse(server.URL())
 		containerizerURL = *u
+		externalIP = "10.11.12.13"
 		logger = lagertest.NewTestLogger("container")
 		container = netContainer.NewContainer(containerizerURL, "containerhandle", logger)
 	})
@@ -52,7 +54,7 @@ var _ = Describe("container", func() {
 			server.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/containers/containerhandle/info"),
-					ghttp.RespondWith(200, `{"Properties":{"Keymaster": "Gatekeeper"},"MappedPorts":[{"ContainerPort":8080,"HostPort":6543}]}`),
+					ghttp.RespondWith(200, `{"Properties":{"Keymaster": "Gatekeeper"},"MappedPorts":[{"ContainerPort":8080,"HostPort":6543}], "ExternalIP":"`+externalIP+`"}`),
 					func(w http.ResponseWriter, req *http.Request) {
 						req.Body.Close()
 					},
@@ -65,8 +67,7 @@ var _ = Describe("container", func() {
 			Ω(err).NotTo(HaveOccurred())
 			Ω(info.Properties).Should(Equal(garden.Properties{"Keymaster": "Gatekeeper"}))
 
-			expectedHost := strings.Split(containerizerURL.Host, ":")[0]
-			Ω(info.ExternalIP).Should(Equal(expectedHost))
+			Ω(info.ExternalIP).Should(Equal(externalIP))
 
 			Ω(len(info.MappedPorts)).Should(Equal(1))
 			Ω(info.MappedPorts[0].ContainerPort).Should(Equal(uint32(8080)))

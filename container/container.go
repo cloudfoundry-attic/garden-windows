@@ -85,8 +85,6 @@ func (container *container) Info() (garden.ContainerInfo, error) {
 		return garden.ContainerInfo{}, nil
 	}
 
-	containerInfo.ExternalIP = container.containerizerHost()
-
 	return containerInfo, nil
 }
 
