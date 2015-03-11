@@ -21,7 +21,7 @@ namespace ServiceManager
         private string username;
         private string password;
 
-        public Containerizer() : base("containerizer", "bin\\containerizer.exe", "80")
+        public Containerizer() : base("containerizer", "bin\\containerizer.exe", "10.10.5.4 80")
         {
             username = "containerizer";
             password = CreateSecurePassword();
