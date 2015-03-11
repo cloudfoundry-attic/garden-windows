@@ -74,6 +74,7 @@ Global
 		{E59E28F3-8214-4EAF-B1E4-F6AAEA541235}.Release|ARM.ActiveCfg = Release
 		{E59E28F3-8214-4EAF-B1E4-F6AAEA541235}.Release|ARM.Build.0 = Release
 		{E59E28F3-8214-4EAF-B1E4-F6AAEA541235}.Release|Mixed Platforms.ActiveCfg = Release
+		{E59E28F3-8214-4EAF-B1E4-F6AAEA541235}.Release|Mixed Platforms.Build.0 = Release
 		{E59E28F3-8214-4EAF-B1E4-F6AAEA541235}.Release|x64.ActiveCfg = Release
 		{E59E28F3-8214-4EAF-B1E4-F6AAEA541235}.Release|x64.Build.0 = Release
 		{E59E28F3-8214-4EAF-B1E4-F6AAEA541235}.Release|x86.ActiveCfg = Release
