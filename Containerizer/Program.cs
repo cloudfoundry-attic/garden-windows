@@ -7,6 +7,9 @@ using System.Threading;
 using Owin.WebSocket;
 using Owin.WebSocket.Extensions;
 using System.Threading.Tasks;
+using Microsoft.Owin.Builder;
+using System.Net;
+using Containerizer.Services.Implementations;
 
 namespace Containerizer
 {
@@ -16,7 +19,14 @@ namespace Containerizer
 
         static void Main(string[] args)
         {
-            var port = (args.Length == 1 ? args[0] : "80");
+            if (args.Length != 2) {
+                Console.WriteLine("Usage: {0} [ExternalIP] [Port]", "Containerizer.exe");
+                return;
+            }
+
+            var externalIP = args[0];
+            var port = args[1];
+
             Console.CancelKeyPress += (s, e) =>
             {
                 e.Cancel = true;
@@ -24,9 +34,10 @@ namespace Containerizer
             };
 
             // Start OWIN host
+            DependencyResolver.ExternalIP = new ExternalIP(externalIP);
             using (WebApp.Start<Startup>("http://*:" + port + "/"))
-            {
-                Console.WriteLine("SUCCESS: started");
+            {         
+                Console.WriteLine("SUCCESS: started on {0} with externalIP {1}", port, externalIP);
 
                 // Create HttpCient and make a request to api/values 
                 HttpClient client = new HttpClient();

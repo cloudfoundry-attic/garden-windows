@@ -25,6 +25,7 @@ namespace Containerizer
         private readonly Autofac.IContainer container;
         private static IContainerService containerService;
         private static IContainerPropertyService containerPropertyService;
+        public static IExternalIP ExternalIP;
 
         static DependencyResolver()
         {
@@ -38,6 +39,7 @@ namespace Containerizer
             var containerBuilder = new ContainerBuilder();
 
             containerBuilder.Register(context => containerService).As<IContainerService>();
+            containerBuilder.Register(context => ExternalIP).As<IExternalIP>();
             containerBuilder.RegisterType<StreamInService>().As<IStreamInService>();
             containerBuilder.RegisterType<StreamOutService>().As<IStreamOutService>();
             containerBuilder.RegisterType<TarStreamService>().As<ITarStreamService>();
@@ -50,7 +52,6 @@ namespace Containerizer
             containerBuilder.RegisterType<ContainerProcessHandler>();
             container = containerBuilder.Build();
         }
-
 
         IDependencyScope IDependencyResolver.BeginScope()
         {

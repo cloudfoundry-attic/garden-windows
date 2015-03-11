@@ -7,6 +7,7 @@ using Containerizer.Controllers;
 using Microsoft.Owin.Logging;
 using Owin;
 using Owin.WebSocket.Extensions;
+using Containerizer.Services.Implementations;
 
 
 namespace Containerizer
@@ -26,27 +27,9 @@ namespace Containerizer
             json.SerializerSettings.PreserveReferencesHandling = Newtonsoft.Json.PreserveReferencesHandling.Objects;
             config.Formatters.Remove(config.Formatters.XmlFormatter);
 
-            //var builder = new ContainerBuilder();
-
-            // Register Web API controller in executing assembly.
-            //builder.RegisterApiControllers(Assembly.GetExecutingAssembly());
-
-            // Register a logger service to be used by the controller and middleware.
-            // builder.Register(c => new Logger()).As<ILogger>().InstancePerRequest();
-
-            // Autofac will add middleware to IAppBuilder in the order registered.
-            // The middleware will execute in the order added to IAppBuilder.
-            //builder.RegisterType<FirstMiddleware>().InstancePerRequest();
-            //builder.RegisterType<SecondMiddleware>().InstancePerRequest();
-
-            //var container = builder.Build();
-
             // Create and assign a dependency resolver for Web API to use.
             var dependencyResolver = new DependencyResolver();
             config.DependencyResolver = dependencyResolver;
-
-            // This should be the first middleware added to the IAppBuilder.
-            //app.UseAutofacMiddleware(container);
 
             // Make sure the Autofac lifetime scope is passed to Web API.
             app.UseAutofacWebApi(config);

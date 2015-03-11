@@ -14,13 +14,15 @@ namespace Containerizer.Controllers
     public class InfoController : ApiController
     {
         private readonly IContainerService containerService;
-        private readonly IContainerPropertyService propertyService;
+        private readonly IContainerPropertyService containerPropertyService;
+        private readonly IExternalIP externalIP;
 
 
-        public InfoController(IContainerService containerService, IContainerPropertyService propertyService)
+        public InfoController(IContainerService containerService, IContainerPropertyService containerPropertyService, IExternalIP externalIP)
         {
             this.containerService = containerService;
-            this.propertyService = propertyService;
+            this.containerPropertyService = containerPropertyService;
+            this.externalIP = externalIP;
         }
 
         [Route("api/containers/{handle}/info")]
@@ -32,7 +34,7 @@ namespace Containerizer.Controllers
                 return NotFound();
             }
 
-            var properties = propertyService.GetProperties(container);
+            var properties = containerPropertyService.GetProperties(container);
 
             var rawInfo = container.GetInfo();
             var portMappings = new List<PortMappingApiModel>();
@@ -43,7 +45,8 @@ namespace Containerizer.Controllers
             var apiResponse = new ContainerInfoApiModel
             {
                 MappedPorts = portMappings,
-                Properties = properties
+                Properties = properties,
+                ExternalIP = externalIP.ExternalIP(),
             };
             return Json(apiResponse);
         }

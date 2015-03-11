@@ -198,9 +198,11 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Factories\ContainerServiceFactory.cs" />
+    <Compile Include="Services\Implementations\ExternalIP.cs" />
     <Compile Include="Services\Implementations\StreamInService.cs" />
     <Compile Include="Services\Implementations\StreamOutService.cs" />
     <Compile Include="Services\Implementations\TarStreamService.cs" />
+    <Compile Include="Services\Interfaces\IExternalIP.cs" />
     <Compile Include="Services\Interfaces\IStreamOutService.cs" />
     <Compile Include="Services\Interfaces\IStreamInService.cs" />
     <Compile Include="Services\Interfaces\ITarStreamService.cs" />

@@ -22,10 +22,13 @@ namespace Containerizer.Tests.Specs.Controllers
             {
                 Mock<IContainerService> mockContainerService = null;
                 Mock<IContainerPropertyService> mockPropertyService = null;
+                Mock<IExternalIP> mockExternalIP = null; 
                 string handle = "container-handle";
                 InfoController controller = null;
                 IHttpActionResult result = null;
                 int expectedHostPort = 1337;
+                string expectedExternalIP = "10.11.12.13";
+
                 before = () =>
                 {
                     var mockContainer = new Mock<IContainer>();
@@ -45,7 +48,10 @@ namespace Containerizer.Tests.Specs.Controllers
                         {"Keymaster", "Gatekeeper"}
                     });
 
-                    controller = new InfoController(mockContainerService.Object, mockPropertyService.Object);
+                    mockExternalIP = new Mock<IExternalIP>();
+                    mockExternalIP.Setup(x => x.ExternalIP()).Returns(expectedExternalIP);
+
+                    controller = new InfoController(mockContainerService.Object, mockPropertyService.Object, mockExternalIP.Object);
                 };
 
                 act = () =>
@@ -66,6 +72,13 @@ namespace Containerizer.Tests.Specs.Controllers
                     var jsonResult = result.should_cast_to<JsonResult<ContainerInfoApiModel>>();
                     var properties = jsonResult.Content.Properties;
                     properties["Keymaster"].should_be("Gatekeeper");
+                };
+
+                it["returns the external ip address"] = () =>
+                {
+                    var jsonResult = result.should_cast_to<JsonResult<ContainerInfoApiModel>>();
+                    var extrernalIP = jsonResult.Content.ExternalIP;
+                    extrernalIP.should_be(expectedExternalIP);
                 };
 
                 context["when the container does not exist"] = () =>

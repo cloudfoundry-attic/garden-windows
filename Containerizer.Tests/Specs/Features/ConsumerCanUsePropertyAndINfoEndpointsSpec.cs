@@ -10,7 +10,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Containerizer.Tests.Specs.Features
 {
-    internal class ConsumerCanUsePropertyEndpointsSpec : nspec
+    internal class ConsumerCanUsePropertyAndInfoEndpointsSpec : nspec
     {
         private void describe_()
         {
@@ -51,10 +51,12 @@ namespace Containerizer.Tests.Specs.Features
                         result2.IsSuccessStatusCode.should_be_true();
 
                         var indexPath = "/api/containers/" + handle + "/info";
-                        var indexResponse = client.GetAsync(indexPath).Result.Content.ReadAsJson()["Properties"] as JObject;
+                        var indexResponse = client.GetAsync(indexPath).Result.Content.ReadAsJson() as JObject;
+
+                        indexResponse["ExternalIP"].ToString().should_be(process.ExternalIP);
 
                         Action<int> verifyIndex =
-                            n => indexResponse[properties[n].Key].ToString().should_be(properties[n].Value);
+                            n => indexResponse["Properties"][properties[n].Key].ToString().should_be(properties[n].Value);
 
                         verifyIndex(0);
                         verifyIndex(1);

@@ -70,11 +70,13 @@ namespace Containerizer.Tests.Specs
         public class ContainarizerProcess : IDisposable
         {
             private Job job;
+            public readonly string ExternalIP;
             public readonly int Port;
 
             public ContainarizerProcess(int port)
             {
                 this.job = new Job();
+                this.ExternalIP = "10.1.2." + new Random().Next(2, 253).ToString();
                 this.Port = port;
             }
 
@@ -85,7 +87,7 @@ namespace Containerizer.Tests.Specs
                 process.StartInfo.RedirectStandardOutput = true;
                 process.StartInfo.CreateNoWindow = true;
                 process.StartInfo.FileName = Path.Combine(Helpers.AssemblyDirectory, "..", "..", "..", "Containerizer", "bin", "Containerizer.exe");
-                process.StartInfo.Arguments = Port.ToString();
+                process.StartInfo.Arguments = ExternalIP + " " + Port.ToString();
                 process.Start();
                 job.AddProcess(process.Handle);
                 process.StandardOutput.ReadLine().should_start_with("SUCCESS");
