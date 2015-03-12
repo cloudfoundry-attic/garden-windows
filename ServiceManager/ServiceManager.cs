@@ -14,9 +14,9 @@ namespace ServiceManager
         private readonly LocalInstaller[] installers = new LocalInstaller[]{
             new Consul(),
             new Containerizer(),
-            new Rep(),
+            new GardenWindows(),
             new Executor(),
-            new GardenWindows()
+            new Rep(),
         };
 
         public ServiceManager()
@@ -42,7 +42,7 @@ namespace ServiceManager
         {
             base.Uninstall(savedState);
 
-            foreach (LocalInstaller installer in installers)
+            foreach (var installer in installers)
 	        {
                installer.Uninstall(savedState);
 	        }
