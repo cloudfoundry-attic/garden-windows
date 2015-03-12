@@ -30,8 +30,6 @@ namespace ServiceManager
         [System.Security.Permissions.SecurityPermission(System.Security.Permissions.SecurityAction.Demand)]
         public override void Install(IDictionary stateSaver)
         {
-            base.Install(stateSaver);
-
             var workingDir = CodeBaseDirectory();
             var fileName = Path.Combine(workingDir, executable);
             var commands = new string[][] {
@@ -49,9 +47,11 @@ namespace ServiceManager
             };
             RunCommands(workingDir, commands);
         }
+
+        // This method is inherited by actual service managers to run commands before the service is started
         public virtual void PreServiceStart() { }
 
-        protected static string CodeBaseDirectory()
+        public static string CodeBaseDirectory()
         {
             return Path.GetFullPath(Path.Combine(System.Reflection.Assembly.GetExecutingAssembly().CodeBase.Replace("file:///", ""), ".."));
         }
@@ -59,8 +59,6 @@ namespace ServiceManager
         [System.Security.Permissions.SecurityPermission(System.Security.Permissions.SecurityAction.Demand)]
         public override void Uninstall(IDictionary savedState)
         {
-            base.Uninstall(savedState);
-
             var workingDir = CodeBaseDirectory();
             var commands = new string[][] {
                 new string[]{Path.Combine(workingDir, "nssm.exe"), string.Format("stop {0}", serviceName)},
@@ -69,7 +67,7 @@ namespace ServiceManager
             RunCommands(workingDir, commands, false);
         }
 
-        protected static void RunCommands(string workingDir, string[][] commands, bool throwOnFailure = true)
+        public static void RunCommands(string workingDir, string[][] commands, bool throwOnFailure = true)
         {
             foreach (var cmd in commands)
             {

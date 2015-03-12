@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace ServiceManager
 {
-    [RunInstaller(true)]
+    [RunInstaller(false)]
     public partial class Containerizer : LocalInstaller
     {
         private string username;

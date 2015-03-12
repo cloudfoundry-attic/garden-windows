@@ -67,6 +67,12 @@
     <Compile Include="Consul.Designer.cs">
       <DependentUpon>Consul.cs</DependentUpon>
     </Compile>
+    <Compile Include="ServiceManager.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="ServiceManager.Designer.cs">
+      <DependentUpon>ServiceManager.cs</DependentUpon>
+    </Compile>
     <Compile Include="Rep.cs">
       <SubType>Component</SubType>
     </Compile>

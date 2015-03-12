@@ -2,7 +2,7 @@
 
 namespace ServiceManager
 {
-    [RunInstaller(true)]
+    [RunInstaller(false)]
     public partial class Executor : LocalInstaller
     {
         public Executor() : base("executor",
