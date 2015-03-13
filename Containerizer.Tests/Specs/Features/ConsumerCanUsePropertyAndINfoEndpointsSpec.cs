@@ -36,41 +36,67 @@ namespace Containerizer.Tests.Specs.Features
 
                     it["allows the consumer to interact with the property endpoints correctly"] = () =>
                     {
-                        var properties = new List<KeyValuePair<string, string>>
+                        var properties = new Dictionary<string, string>
                         {
-                            new KeyValuePair<string, string>("mysecret", "dontread"),
-                            new KeyValuePair<string, string>("hello", "goodbye"),
+                            {"mysecret", "dontread"},
+                            {"hello", "goodbye"},
                         };
-                        Func<int, string> path =
-                            n => "/api/containers/" + handle + "/properties/" + properties[n].Key;
-                        Func<int, StringContent> content = n => new StringContent(properties[n].Value);
 
-                        var result1 = client.PutAsync(path(0), content(0)).Result;
-                        var result2 = client.PutAsync(path(1), content(1)).Result;
-                        result1.IsSuccessStatusCode.should_be_true();
-                        result2.IsSuccessStatusCode.should_be_true();
-
-                        var indexPath = "/api/containers/" + handle + "/info";
-                        var indexResponse = client.GetAsync(indexPath).Result.Content.ReadAsJson() as JObject;
-
-                        indexResponse["ExternalIP"].ToString().should_be(process.ExternalIP);
-
-                        Action<int> verifyIndex =
-                            n => indexResponse["Properties"][properties[n].Key].ToString().should_be(properties[n].Value);
-
-                        verifyIndex(0);
-                        verifyIndex(1);
-
-                        client.DeleteAsync(path(1)).Wait();
-
-                        indexResponse = client.GetAsync(indexPath).Result.Content.ReadAsJson()["Properties"] as JObject;
-                        indexResponse.Count.should_be(1);
-
-                        var showResponse = client.GetAsync(path(0)).Result.Content.ReadAsJson(); 
-                        showResponse["value"].ToString().should_be(properties[0].Value);
+                        PutsProperties(client, handle, properties);
+                        GetsAllProperties(client, handle, properties);
+                        GetsInfo(client, process, handle, properties);
+                        GetsEachProperty(client, handle, properties);
+                        DeletesProperty(client, handle, properties);
                     };
                 };
             };
+        }
+
+        private static void DeletesProperty(HttpClient client, string handle, Dictionary<string,string> properties)
+        {
+            var infoPath = "/api/containers/" + handle + "/info";
+            client.DeleteAsync("/api/containers/" + handle + "/properties/hello").Wait();
+
+            var infoResponse = client.GetAsync(infoPath).Result.Content.ReadAsJson()["Properties"] as JObject;
+            infoResponse.Count.should_be(1);
+
+            var showResponse = client.GetAsync("/api/containers/" + handle + "/properties/mysecret").Result.Content.ReadAsJson();
+            showResponse["value"].ToString().should_be(properties["mysecret"]);
+        }
+
+        private static void GetsEachProperty(HttpClient client, string handle, Dictionary<string, string> properties)
+        {
+            foreach (var p in properties)
+            {
+                var result = client.GetAsync("/api/containers/" + handle + "/properties/" + p.Key).Result.Content.ReadAsJson();
+                result["value"].ToString().should_be(p.Value);
+            }
+        }
+
+        private static void GetsInfo(HttpClient client, Helpers.ContainarizerProcess process, string handle, Dictionary<string, string> properties)
+        {
+            var infoPath = "/api/containers/" + handle + "/info";
+            var infoResponse = client.GetAsync(infoPath).Result.Content.ReadAsJson() as JObject;
+
+            infoResponse["ExternalIP"].ToString().should_be(process.ExternalIP);
+            infoResponse["Properties"].ToObject<Dictionary<string, string>>().should_be(properties);
+        }
+
+        private static void GetsAllProperties(HttpClient client, string handle, Dictionary<string, string> properties)
+        {
+
+            var propertiesPath = "/api/containers/" + handle + "/properties";
+            var propertiesResponse = client.GetAsync(propertiesPath).Result.Content.ReadAsJson();
+            propertiesResponse.ToObject<Dictionary<string, string>>().should_be(properties);
+        }
+
+        private static void PutsProperties(HttpClient client, string handle, Dictionary<string, string> properties)
+        {
+            foreach (var p in properties)
+            {
+                var result = client.PutAsync("/api/containers/" + handle + "/properties/" + p.Key, new StringContent(p.Value)).Result;
+                result.IsSuccessStatusCode.should_be_true();
+            }
         }
     }
 }

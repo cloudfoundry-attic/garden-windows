@@ -48,6 +48,31 @@ namespace Containerizer.Tests.Specs.Controllers
                             return mockContainer.Object;
                         });
             };
+
+            /*
+            describe[Controller.Index] = () =>
+            {
+                Dictionary<string,string> result = null;
+                Dictionary<string,string> properties = null;
+
+                before = () =>
+                {
+                    properties = new Dictionary<string,string> { 
+                        { "wardrobe", "a lion" },
+                        { "a hippo", "the number 25" }
+                    };
+                    mockPropertyService.Setup(x => x.GetProperties(mockContainer.Object))
+                        .Returns(() => properties);
+ 
+                   result = propertiesController.Index(containerHandle);
+                };
+
+                it["returns the correct property value"] = () =>
+                {
+                    result.should_be(properties);
+                };
+            };
+             * */
                  
             describe[Controller.Show] = () =>
             {

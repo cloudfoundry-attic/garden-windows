@@ -8,6 +8,8 @@ using Containerizer.Services.Interfaces;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using IronFoundry.Container;
+using System.Collections.Generic;
+using System.Diagnostics;
 
 #endregion
 
@@ -28,6 +30,15 @@ namespace Containerizer.Controllers
         {
             this.propertyService = propertyService;
             this.containerService = containerService;
+        }
+
+        [Route("api/containers/{handle}/properties")]
+        [HttpGet]
+        public IHttpActionResult Index(string handle)
+        {
+            var container = containerService.GetContainerByHandle(handle);
+            var properties = propertyService.GetProperties(container);
+            return Json(properties);
         }
 
         [Route("api/containers/{handle}/properties/{propertyKey}")]
