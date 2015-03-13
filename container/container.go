@@ -62,10 +62,10 @@ func (container *container) Stop(kill bool) error {
 	return nil
 }
 
-func (container *container) parseJson(url string, output interface{}) error {
-	response, err := http.Get(url)
+func (container *container) parseJson(response *http.Response, err error, output interface{}) error {
 	if err != nil {
-		container.logger.Info("ERROR GETTING PROPERTIES", lager.Data{
+		container.logger.Info("ERROR GETTING JSON", lager.Data{
+			"url":   response.Request.URL.String(),
 			"error": err,
 		})
 		return err
@@ -77,7 +77,8 @@ func (container *container) parseJson(url string, output interface{}) error {
 	}
 	err = json.Unmarshal(rawJSON, output)
 	if err != nil {
-		container.logger.Info("ERROR UNMARSHALING PROPERTIES", lager.Data{
+		container.logger.Info("ERROR UNMARSHALING JSON", lager.Data{
+			"url":   response.Request.URL.String(),
 			"error": err,
 		})
 		return err
@@ -88,34 +89,17 @@ func (container *container) parseJson(url string, output interface{}) error {
 func (container *container) GetProperties() (garden.Properties, error) {
 	url := container.containerizerURL.String() + "/api/containers/" + container.Handle() + "/properties"
 	properties := garden.Properties{}
-	err := container.parseJson(url, &properties)
+	response, err := http.Get(url)
+	err = container.parseJson(response, err, &properties)
 	return properties, err
 }
 
 func (container *container) Info() (garden.ContainerInfo, error) {
 	url := container.containerizerURL.String() + "/api/containers/" + container.Handle() + "/info"
 	response, err := http.Get(url)
-	if err != nil {
-		container.logger.Info("ERROR GETTING PROPERTIES", lager.Data{
-			"error": err,
-		})
-		return garden.ContainerInfo{}, err
-	}
-	defer response.Body.Close()
-	rawJSON, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return garden.ContainerInfo{}, err
-	}
-	containerInfo := garden.ContainerInfo{}
-	err = json.Unmarshal(rawJSON, &containerInfo)
-	if err != nil {
-		container.logger.Info("ERROR UNMARSHALING PROPERTIES", lager.Data{
-			"error": err,
-		})
-		return garden.ContainerInfo{}, nil
-	}
-
-	return containerInfo, nil
+	info := garden.ContainerInfo{}
+	err = container.parseJson(response, err, &info)
+	return info, err
 }
 
 func (container *container) StreamIn(dstPath string, tarStream io.Reader) error {
@@ -179,20 +163,13 @@ func (container *container) CurrentMemoryLimits() (garden.MemoryLimits, error) {
 func (container *container) NetIn(hostPort, containerPort uint32) (uint32, uint32, error) {
 	url := container.containerizerURL.String() + "/api/containers/" + container.Handle() + "/net/in"
 	response, err := http.Post(url, "application/json", strings.NewReader(fmt.Sprintf(`{"hostPort": %v}`, hostPort)))
-	if err != nil {
-		return 0, 0, err
-	}
-	responseBody, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return 0, 0, err
-	}
-
 	var responseJSON netInResponse
-	err = json.Unmarshal(responseBody, &responseJSON)
+
+	err = container.parseJson(response, err, &responseJSON)
+
 	if err != nil {
 		return 0, 0, err
 	}
-
 	if responseJSON.ErrorString != "" {
 		return 0, 0, errors.New(responseJSON.ErrorString)
 	}
