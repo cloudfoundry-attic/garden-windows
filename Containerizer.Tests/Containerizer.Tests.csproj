@@ -129,7 +129,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Specs\Controllers\ContainerProcessHandlerSpec.cs" />
     <Compile Include="Specs\Controllers\InfoControllerSpec.cs" />
     <Compile Include="Specs\Controllers\PropertiesControllerSpec.cs" />
     <Compile Include="Specs\Controllers\NetControllerSpec.cs" />
