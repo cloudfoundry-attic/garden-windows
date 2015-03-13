@@ -186,6 +186,8 @@
     <Compile Include="Controllers\NetController.cs" />
     <Compile Include="Controllers\FilesController.cs" />
     <Compile Include="Controllers\PingController.cs" />
+    <Compile Include="Facades\IWebSocketHandler.cs" />
+    <Compile Include="Facades\WebSocketHandlerFacade.cs" />
     <Compile Include="Models\ApiProcessSpec.cs" />
     <Compile Include="Controllers\ContainerProcessHandler.cs" />
     <Compile Include="Controllers\ContainersController.cs" />
