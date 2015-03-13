@@ -375,6 +375,26 @@ var _ = Describe("container", func() {
 		})
 	})
 
+	Describe("GetProperties", func() {
+		BeforeEach(func() {
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/containers/containerhandle/properties"),
+					ghttp.RespondWith(200, `{"Keymaster": "Gatekeeper"}`),
+					func(w http.ResponseWriter, req *http.Request) {
+						req.Body.Close()
+					},
+				),
+			)
+		})
+
+		It("returns info about the container", func() {
+			properties, err := container.GetProperties()
+			Ω(err).NotTo(HaveOccurred())
+			Ω(properties).Should(Equal(garden.Properties{"Keymaster": "Gatekeeper"}))
+		})
+	})
+
 	Describe("GetProperty", func() {
 		BeforeEach(func() {
 			server.AppendHandlers(

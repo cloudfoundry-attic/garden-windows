@@ -62,6 +62,36 @@ func (container *container) Stop(kill bool) error {
 	return nil
 }
 
+func (container *container) parseJson(url string, output interface{}) error {
+	response, err := http.Get(url)
+	if err != nil {
+		container.logger.Info("ERROR GETTING PROPERTIES", lager.Data{
+			"error": err,
+		})
+		return err
+	}
+	defer response.Body.Close()
+	rawJSON, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(rawJSON, output)
+	if err != nil {
+		container.logger.Info("ERROR UNMARSHALING PROPERTIES", lager.Data{
+			"error": err,
+		})
+		return err
+	}
+	return nil
+}
+
+func (container *container) GetProperties() (garden.Properties, error) {
+	url := container.containerizerURL.String() + "/api/containers/" + container.Handle() + "/properties"
+	properties := garden.Properties{}
+	err := container.parseJson(url, &properties)
+	return properties, err
+}
+
 func (container *container) Info() (garden.ContainerInfo, error) {
 	url := container.containerizerURL.String() + "/api/containers/" + container.Handle() + "/info"
 	response, err := http.Get(url)
@@ -209,6 +239,10 @@ func (container *container) Run(processSpec garden.ProcessSpec, processIO garden
 
 func (container *container) Attach(uint32, garden.ProcessIO) (garden.Process, error) {
 	return process.NewDotNetProcess(), nil
+}
+
+func (container *container) Metrics() (garden.Metrics, error) {
+	return garden.Metrics{}, nil
 }
 
 func (container *container) GetProperty(name string) (string, error) {
