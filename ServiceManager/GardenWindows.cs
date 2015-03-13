@@ -11,7 +11,7 @@ namespace ServiceManager
     [RunInstaller(false)]
     public partial class GardenWindows : LocalInstaller
     {
-        public GardenWindows() : base("garden-windows", "--listenNetwork=tcp -listenAddr=0.0.0.0:9241 -containerGraceTime=1h -containerizerURL=http://localhost:80")
+        public GardenWindows() : base("garden-windows", "--listenNetwork=tcp -listenAddr=0.0.0.0:9241 -containerGraceTime=1h -containerizerURL=http://localhost:1788")
         {
         }
     }
