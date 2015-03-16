@@ -4,6 +4,7 @@ using IronFoundry.Container;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -16,7 +17,7 @@ namespace Containerizer.Services.Implementations
     {
         public IContainer container { get; set; }
 
-        public Task OnMessageReceived(Controllers.IWebSocketEventSender websocket, Models.ApiProcessSpec apiProcessSpec)
+        public void Run(Controllers.IWebSocketEventSender websocket, Models.ApiProcessSpec apiProcessSpec)
         {
 
             var processSpec = new ProcessSpec
@@ -35,28 +36,18 @@ namespace Containerizer.Services.Implementations
             if (info != null && info.ReservedPorts.Count > 0)
                 processSpec.Environment["PORT"] = info.ReservedPorts[0].ToString();
 
-            return Task.Factory.StartNew(() =>
+
+            try
             {
-                try
-                {
-                    var processIO = new ProcessIO(websocket);
-                    var process = container.Run(processSpec, processIO);
-                    int exitCode = -1;
-                    try
-                    {
-                        exitCode = process.WaitForExit();
-                    }
-                    catch (OperationCanceledException e)
-                    {
-                        // SendEvent("error", e.Message);
-                    }
-                    websocket.SendEvent("close", exitCode.ToString());
-                }
-                catch (Exception e)
-                {
-                    websocket.SendEvent("error", e.Message);
-                }
-            });
+                var processIO = new ProcessIO(websocket);
+                var process = container.Run(processSpec, processIO);
+                var exitCode = process.WaitForExit();
+                websocket.SendEvent("close", exitCode.ToString());
+            }
+            catch (Exception e)
+            {
+                websocket.SendEvent("error", e.Message);
+            }
         }
 
         private class WSWriter : TextWriter

@@ -13,6 +13,6 @@ namespace Containerizer.Services.Interfaces
     {
         IContainer container { get; set; }
 
-        Task OnMessageReceived(IWebSocketEventSender WebSocketSendText, ApiProcessSpec processSpec);
+        void Run(IWebSocketEventSender WebSocketSendText, ApiProcessSpec processSpec);
     }
 }

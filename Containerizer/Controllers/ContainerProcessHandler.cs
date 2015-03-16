@@ -71,7 +71,7 @@ namespace Containerizer.Controllers
 
             if (streamEvent.MessageType == "run" && streamEvent.ApiProcessSpec != null)
             {
-                return runService.OnMessageReceived(this, streamEvent.ApiProcessSpec);
+                runService.Run(this, streamEvent.ApiProcessSpec);
             }
             return null;
         }
