@@ -336,8 +336,22 @@ var _ = Describe("container", func() {
 			Eventually(proc.(process.DotNetProcess).StreamOpen).Should(BeClosed())
 		})
 
+		It("returns the close message as the exit code", func() {
+			proc, err := container.Run(garden.ProcessSpec{}, garden.ProcessIO{})
+			Ω(err).ShouldNot(HaveOccurred())
+
+			websocket.WriteJSON(testServer.handlerWS, netContainer.ProcessStreamEvent{
+				MessageType: "close",
+				Data: "27",
+			})
+
+			exitCode, err := proc.Wait()
+
+			Expect(exitCode).To(Equal(27))
+		})
+
 		Context("when we receive an error on the channel", func() {
-			It("returns the error", func() {
+			It("returns the error", func(done Done) {
 				proc, err := container.Run(garden.ProcessSpec{}, garden.ProcessIO{})
 				Ω(err).ShouldNot(HaveOccurred())
 
@@ -346,8 +360,12 @@ var _ = Describe("container", func() {
 					Data:        "An Error Message",
 				})
 
-				Eventually(<-proc.(process.DotNetProcess).StreamOpen).Should(Equal("An Error Message"))
-			})
+				exitStatus := <-proc.(process.DotNetProcess).StreamOpen
+				Expect(exitStatus.ExitCode).ToNot(Equal(0))
+				Expect(exitStatus.Err.Error()).To(Equal("An Error Message"))
+
+				close(done)
+			}, 0.2)
 
 			It("closes the WebSocketOpen channel on the proc", func() {
 				proc, err := container.Run(garden.ProcessSpec{}, garden.ProcessIO{})

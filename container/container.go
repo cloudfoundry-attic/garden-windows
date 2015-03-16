@@ -9,6 +9,7 @@ import (
 	"net/url"
 
 	"errors"
+	"strconv"
 	"strings"
 
 	"github.com/cloudfoundry-incubator/garden"
@@ -202,10 +203,8 @@ func (container *container) Run(processSpec garden.ProcessSpec, processIO garden
 
 	streamWebsocketIOToContainerizer(ws, processIO)
 	go func() {
-		err := streamWebsocketIOFromContainerizer(ws, processIO)
-		if err != nil {
-			proc.StreamOpen <- err.Error()
-		}
+		exitCode, err := streamWebsocketIOFromContainerizer(ws, processIO)
+		proc.StreamOpen <- process.DotNetProcessExitStatus{exitCode, err}
 		close(proc.StreamOpen)
 	}()
 
@@ -300,12 +299,12 @@ func streamWebsocketIOToContainerizer(ws *websocket.Conn, processIO garden.Proce
 	}
 }
 
-func streamWebsocketIOFromContainerizer(ws *websocket.Conn, processIO garden.ProcessIO) error {
+func streamWebsocketIOFromContainerizer(ws *websocket.Conn, processIO garden.ProcessIO) (int, error) {
 	receiveStream := ProcessStreamEvent{}
 	for {
 		err := websocket.ReadJSON(ws, &receiveStream)
 		if err != nil {
-			return err
+			return -1, err
 		}
 
 		if receiveStream.MessageType == "stdout" && processIO.Stdout != nil {
@@ -316,10 +315,14 @@ func streamWebsocketIOFromContainerizer(ws *websocket.Conn, processIO garden.Pro
 		}
 
 		if receiveStream.MessageType == "error" {
-			return errors.New(receiveStream.Data)
+			return -1, errors.New(receiveStream.Data)
 		}
 		if receiveStream.MessageType == "close" {
-			return nil
+			exitCode, err := strconv.Atoi(receiveStream.Data)
+			if err != nil {
+				return -1, err
+			}
+			return exitCode, nil
 		}
 	}
 }

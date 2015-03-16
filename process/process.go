@@ -1,18 +1,19 @@
 package process
 
-import (
-	"errors"
+import "github.com/cloudfoundry-incubator/garden"
 
-	"github.com/cloudfoundry-incubator/garden"
-)
+type DotNetProcessExitStatus struct {
+	ExitCode int
+	Err      error
+}
 
 type DotNetProcess struct {
-	StreamOpen chan string
+	StreamOpen chan DotNetProcessExitStatus
 }
 
 func NewDotNetProcess() DotNetProcess {
 	return DotNetProcess{
-		StreamOpen: make(chan string),
+		StreamOpen: make(chan DotNetProcessExitStatus),
 	}
 }
 
@@ -21,12 +22,8 @@ func (process DotNetProcess) ID() uint32 {
 }
 
 func (process DotNetProcess) Wait() (int, error) {
-	errMessage := <-process.StreamOpen
-	if errMessage != "" {
-		return 0, errors.New(errMessage)
-	}
-
-	return 0, nil
+	exitStatus := <-process.StreamOpen
+	return exitStatus.ExitCode, exitStatus.Err
 }
 
 func (process DotNetProcess) SetTTY(ttyspec garden.TTYSpec) error {
