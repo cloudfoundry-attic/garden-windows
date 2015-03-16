@@ -36,17 +36,18 @@ namespace Containerizer.Services.Implementations
             if (info != null && info.ReservedPorts.Count > 0)
                 processSpec.Environment["PORT"] = info.ReservedPorts[0].ToString();
 
-
             try
             {
                 var processIO = new ProcessIO(websocket);
                 var process = container.Run(processSpec, processIO);
                 var exitCode = process.WaitForExit();
                 websocket.SendEvent("close", exitCode.ToString());
+                websocket.Close(System.Net.WebSockets.WebSocketCloseStatus.NormalClosure, "process finished");
             }
             catch (Exception e)
             {
                 websocket.SendEvent("error", e.Message);
+                websocket.Close(System.Net.WebSockets.WebSocketCloseStatus.InternalServerError, e.Message);
             }
         }
 

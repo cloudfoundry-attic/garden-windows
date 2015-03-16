@@ -20,6 +20,8 @@ namespace Containerizer.Controllers
     public interface IWebSocketEventSender
     {
         void SendEvent(string messageType, string message);
+
+        Task Close(WebSocketCloseStatus status, string reason);
     }
 
     public class ContainerProcessHandler : WebSocketConnection, IWebSocketEventSender
