@@ -11,6 +11,7 @@ using IronFoundry.Container;
 using Microsoft.Web.WebSockets;
 using Newtonsoft.Json;
 using Owin.WebSocket;
+using Containerizer.Services.Interfaces;
 
 #endregion
 
@@ -24,19 +25,18 @@ namespace Containerizer.Controllers
     public class ContainerProcessHandler : WebSocketConnection, IWebSocketEventSender
     {
         private readonly IContainerService containerService;
-        private string containerRoot;
-        private IContainer container;
-        private int processId;
+        private readonly IRunService runService;
 
-        public ContainerProcessHandler(IContainerService containerService)
+        public ContainerProcessHandler(IContainerService containerService, IRunService runService)
         {
             Console.WriteLine("Container Process Handler Constructor");
             this.containerService = containerService;
+            this.runService = runService;
         }
 
         public void SendEvent(string messageType, string message)
         {
-            Console.WriteLine("SendEvent: {0} :: {1} :: {2}", processId.ToString(), messageType, message);
+            Console.WriteLine("SendEvent: {0} :: {1}", messageType, message);
             var jsonString = JsonConvert.SerializeObject(new ProcessStreamEvent
             {
                 MessageType = messageType,
@@ -51,8 +51,7 @@ namespace Containerizer.Controllers
             var handle = Arguments["handle"];
             Console.WriteLine("onOpen: {0}", handle);
 
-            containerRoot = containerService.GetContainerByHandle(handle).Directory.UserPath;
-            container = containerService.GetContainerByHandle(handle);
+            runService.container = containerService.GetContainerByHandle(handle);
         }
 
         public override void OnClose(WebSocketCloseStatus? closeStatus, string closeStatusDescription)
@@ -69,87 +68,12 @@ namespace Containerizer.Controllers
         {
             var bytes = new UTF8Encoding(true).GetString(message.Array, 0, message.Count);
             var streamEvent = JsonConvert.DeserializeObject<ProcessStreamEvent>(bytes);
-            Console.WriteLine("OnMessageReceived: {0}, {1}", container.Handle, streamEvent.MessageType);
 
             if (streamEvent.MessageType == "run" && streamEvent.ApiProcessSpec != null)
             {
-                Console.WriteLine("OnMessageReceived: {0} => {1} :: {2}", container.Handle, container.Id, streamEvent.ApiProcessSpec.Path);
-
-                var processSpec = new ProcessSpec
-                {
-                    DisablePathMapping = false,
-                    Privileged = false,
-                    WorkingDirectory = containerRoot,
-                    ExecutablePath = streamEvent.ApiProcessSpec.Path,
-                    Environment = new Dictionary<string, string>
-                    {
-                        { "ARGJSON", JsonConvert.SerializeObject(streamEvent.ApiProcessSpec.Args) }
-                    },
-                    Arguments = streamEvent.ApiProcessSpec.Args
-                };
-                var info = container.GetInfo();
-                if (info != null && info.ReservedPorts.Count > 0)
-                    processSpec.Environment["PORT"] = info.ReservedPorts[0].ToString();
-
-                return Task.Factory.StartNew(() =>
-                {
-                    try
-                    {
-                        var processIO = new ProcessIO(this);
-                        var process = container.Run(processSpec, processIO);
-                        processId = process.Id;
-                        try
-                        {
-                            process.WaitForExit();
-                        }
-                        catch (OperationCanceledException e)
-                        {
-                            // SendEvent("error", e.Message);
-                        }
-                        SendEvent("close", null);
-                    }
-                    catch (Exception e)
-                    {
-                        SendEvent("error", e.Message);
-                    }
-                });
+                return runService.OnMessageReceived(this, streamEvent.ApiProcessSpec);
             }
             return null;
-        }
-
-        private class WSWriter : TextWriter
-        {
-            private readonly string streamName;
-            private readonly IWebSocketEventSender ws;
-
-            public WSWriter(string streamName, IWebSocketEventSender ws)
-            {
-                this.streamName = streamName;
-                this.ws = ws;
-            }
-
-            public override Encoding Encoding
-            {
-                get { return Encoding.Default; }
-            }
-
-            public override void Write(string value)
-            {
-                ws.SendEvent(streamName, value + "\r\n");
-            }
-        }
-
-        private class ProcessIO : IProcessIO
-        {
-            public ProcessIO(IWebSocketEventSender ws)
-            {
-                StandardOutput = new WSWriter("stdout", ws);
-                StandardError = new WSWriter("stderr", ws);
-            }
-
-            public TextWriter StandardOutput { get; set; }
-            public TextWriter StandardError { get; set; }
-            public TextReader StandardInput { get; set; }
         }
     }
 }

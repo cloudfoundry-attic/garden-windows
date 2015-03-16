@@ -40,6 +40,7 @@ namespace Containerizer
 
             containerBuilder.Register(context => containerService).As<IContainerService>();
             containerBuilder.Register(context => ExternalIP).As<IExternalIP>();
+            containerBuilder.RegisterType<RunService>().As<IRunService>();
             containerBuilder.RegisterType<StreamInService>().As<IStreamInService>();
             containerBuilder.RegisterType<StreamOutService>().As<IStreamOutService>();
             containerBuilder.RegisterType<TarStreamService>().As<ITarStreamService>();
