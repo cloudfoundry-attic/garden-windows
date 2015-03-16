@@ -33,33 +33,51 @@ namespace Containerizer.Tests.Specs.Services
                 runService.container = containerMock.Object;
 
                 containerMock.Setup(x => x.Directory).Returns(new Mock<IContainerDirectory>().Object);
-                containerMock.Setup(x => x.Run(It.IsAny<ProcessSpec>(), It.IsAny<IProcessIO>())).Returns(processMock.Object);
             };
 
-
-            context["Process exits with 1"] = () =>
+            context["Process exits normally"] = () =>
             {
-                before = () => processMock.Setup(x => x.WaitForExit()).Returns(1);
+                before = () => containerMock.Setup(x => x.Run(It.IsAny<ProcessSpec>(), It.IsAny<IProcessIO>())).Returns(processMock.Object);
 
-                it["sends a close event with data == '1'"] = () =>
+
+
+                context["Process exits with 1"] = () =>
                 {
-                    var apiProcessSpec = new ApiProcessSpec();
-                    runService.Run(websocketMock.Object, apiProcessSpec);
+                    before = () => processMock.Setup(x => x.WaitForExit()).Returns(1);
 
-                    websocketMock.Verify(x => x.SendEvent("close", "1"));
+                    it["sends a close event with data == '1'"] = () =>
+                    {
+                        var apiProcessSpec = new ApiProcessSpec();
+                        runService.Run(websocketMock.Object, apiProcessSpec);
+
+                        websocketMock.Verify(x => x.SendEvent("close", "1"));
+                    };
+                };
+
+                context["Process exits with 0"] = () =>
+                {
+                    before = () => processMock.Setup(x => x.WaitForExit()).Returns(0);
+
+                    it["sends a close event with data == '0'"] = () =>
+                    {
+                        var apiProcessSpec = new ApiProcessSpec();
+                        runService.Run(websocketMock.Object, apiProcessSpec);
+
+                        websocketMock.Verify(x => x.SendEvent("close", "0"));
+                    };
                 };
             };
 
-            context["Process exits with 0"] = () =>
+            context["container#run throws an exception"] = () =>
             {
-                before = () => processMock.Setup(x => x.WaitForExit()).Returns(0);
+                before = () => containerMock.Setup(x => x.Run(It.IsAny<ProcessSpec>(), It.IsAny<IProcessIO>())).Throws(new Exception("filename doesn't exist"));
 
-                it["sends a close event with data == '0'"] = () =>
+                it["sends an error event"] = () =>
                 {
                     var apiProcessSpec = new ApiProcessSpec();
                     runService.Run(websocketMock.Object, apiProcessSpec);
-                    
-                    websocketMock.Verify(x => x.SendEvent("close", "0"));
+
+                    websocketMock.Verify(x => x.SendEvent("error", "filename doesn't exist"));
                 };
             };
         }
