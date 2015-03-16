@@ -111,7 +111,7 @@ namespace Containerizer.Tests.Specs.Features
 
                             messages.should_contain("{\"type\":\"stdout\",\"data\":\"PORT=" + hostPort + "\\r\\n\"}");
 
-                            messages.should_contain("{\"type\":\"close\"}");
+                            messages.should_contain("{\"type\":\"close\",\"data\":\"0\"}");
                         };
                     };
                 };
