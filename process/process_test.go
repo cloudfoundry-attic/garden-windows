@@ -45,10 +45,11 @@ var _ = Describe("process", func() {
 		}, 0.1)
 
 		It("returns an erorr if one is sent over StreamOpen channel to close", func(done Done) {
-			proc.(process.DotNetProcess).StreamOpen <- "An Error Message"
+			proc.(process.DotNetProcess).StreamOpen <- process.DotNetProcessExitStatus{0, errors.New("An Error Message")}
 
 			tuple := <-exitStatusChannel
 			Ω(tuple.err).Should(Equal(errors.New("An Error Message")))
+			Ω(tuple.exitStatus).Should(Equal(0))
 
 			close(done)
 		}, 0.1)
