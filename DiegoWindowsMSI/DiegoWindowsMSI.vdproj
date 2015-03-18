@@ -153,12 +153,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_2D38AA3B09E446D100159FC89FE5DF42"
-        "OwnerKey" = "8:_4314FBAEBE8249B9B3762A23F939FF83"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_2D3A2D3039C00623C3FDB713064421BC"
         "OwnerKey" = "8:_0A1E1037CD6941C18E893A9954430013"
         "MsmSig" = "8:_UNDEFINED"
@@ -299,12 +293,6 @@
         {
         "MsmKey" = "8:_6B32E80CAD0D637E3F5B328A97CCF47E"
         "OwnerKey" = "8:_07B183B907429C13A60587CA4997E4E9"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_6EAAA2EF12334B3AB317236FF9E7733C"
-        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -634,12 +622,6 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_1E9CBEF93D3E4B0BB0158362146458FF"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_E5429DE114144198B0353157A124E74F"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -658,7 +640,7 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_2D38AA3B09E446D100159FC89FE5DF42"
+        "OwnerKey" = "8:_1E9CBEF93D3E4B0BB0158362146458FF"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -983,7 +965,7 @@
             "Sequence" = "3:4"
             "Identifier" = "8:_5A4E8EB3_AE1E_4E40_8336_923B1F22A02C"
             "InstallerClass" = "11:TRUE"
-            "CustomActionData" = "8:"
+            "CustomActionData" = "8:/CONTAINERIZER_USERNAME=[CONTAINERIZER_USERNAME] /CONTAINERIZER_PASSWORD=[CONTAINERIZER_PASSWORD] /EXTERNAL_IP=[EXTERNAL_IP] /CONSUL_IPS=[CONSUL_IPS] /ETCD_CLUSTER=[ETCD_CLUSTER] /MACHINE_NAME=[MACHINE_NAME]"
             }
             "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_43F2B1D3361940209222D3B1BEC79478"
             {
@@ -1053,7 +1035,7 @@
             "Sequence" = "3:3"
             "Identifier" = "8:_4BF9947C_DAF0_499F_9EE0_1B583DC45010"
             "InstallerClass" = "11:TRUE"
-            "CustomActionData" = "8:"
+            "CustomActionData" = "8:/CONTAINERIZER_USERNAME=[CONTAINERIZER_USERNAME] /CONTAINERIZER_PASSWORD=[CONTAINERIZER_PASSWORD] /EXTERNAL_IP=[EXTERNAL_IP] /CONSUL_IPS=[CONSUL_IPS] /ETCD_CLUSTER=[ETCD_CLUSTER] /MACHINE_NAME=[MACHINE_NAME]"
             }
             "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_733A505BD3A746F0AE86C6D14E6CCDDD"
             {
@@ -1095,7 +1077,7 @@
             "Sequence" = "3:2"
             "Identifier" = "8:_BBD182B3_EA0A_4797_9DE4_60FAB6B30AAD"
             "InstallerClass" = "11:TRUE"
-            "CustomActionData" = "8:"
+            "CustomActionData" = "8:/CONTAINERIZER_USERNAME=[CONTAINERIZER_USERNAME] /CONTAINERIZER_PASSWORD=[CONTAINERIZER_PASSWORD] /EXTERNAL_IP=[EXTERNAL_IP] /CONSUL_IPS=[CONSUL_IPS] /ETCD_CLUSTER=[ETCD_CLUSTER] /MACHINE_NAME=[MACHINE_NAME]"
             }
             "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_924F95A339C24F07A4CE03F50E5A51F3"
             {
@@ -1109,7 +1091,7 @@
             "Sequence" = "3:5"
             "Identifier" = "8:_F368C194_E944_4E26_B35C_750C8B159C3E"
             "InstallerClass" = "11:TRUE"
-            "CustomActionData" = "8:"
+            "CustomActionData" = "8:/CONTAINERIZER_USERNAME=[CONTAINERIZER_USERNAME] /CONTAINERIZER_PASSWORD=[CONTAINERIZER_PASSWORD] /EXTERNAL_IP=[EXTERNAL_IP] /CONSUL_IPS=[CONSUL_IPS] /ETCD_CLUSTER=[ETCD_CLUSTER] /MACHINE_NAME=[MACHINE_NAME]"
             }
             "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_9C82EA89742B4E2ABFB8732C44E3F9FA"
             {
@@ -1137,7 +1119,7 @@
             "Sequence" = "3:1"
             "Identifier" = "8:_3063336D_FBFB_4779_9594_83921AFDAE94"
             "InstallerClass" = "11:TRUE"
-            "CustomActionData" = "8:"
+            "CustomActionData" = "8:/CONTAINERIZER_USERNAME=[CONTAINERIZER_USERNAME] /CONTAINERIZER_PASSWORD=[CONTAINERIZER_PASSWORD] /EXTERNAL_IP=[EXTERNAL_IP] /CONSUL_IPS=[CONSUL_IPS] /ETCD_CLUSTER=[ETCD_CLUSTER] /MACHINE_NAME=[MACHINE_NAME] /STACK=[STACK] /ZONE=[ZONE]"
             }
             "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_C59C5A9514614B888678DDE4F1FFADEC"
             {
@@ -1221,7 +1203,7 @@
             "Sequence" = "3:6"
             "Identifier" = "8:_88A8866D_2C3F_42A4_A87C_904F522E8376"
             "InstallerClass" = "11:TRUE"
-            "CustomActionData" = "8:"
+            "CustomActionData" = "8:/CONTAINERIZER_USERNAME=[CONTAINERIZER_USERNAME] /CONTAINERIZER_PASSWORD=[CONTAINERIZER_PASSWORD] /EXTERNAL_IP=[EXTERNAL_IP] /CONSUL_IPS=[CONSUL_IPS] /ETCD_CLUSTER=[ETCD_CLUSTER] /MACHINE_NAME=[MACHINE_NAME]"
             }
             "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_FCCFC32CC47D4E3AB793B4F44DF05257"
             {
@@ -1401,37 +1383,6 @@
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_EAA89D2ADD2B4CEB97A5B420F97C804E"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:TRUE"
-            "IsolateTo" = "8:"
-            }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_2D38AA3B09E446D100159FC89FE5DF42"
-            {
-            "AssemblyRegister" = "3:1"
-            "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:ServiceManager, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
-                "ScatterAssemblies"
-                {
-                    "_2D38AA3B09E446D100159FC89FE5DF42"
-                    {
-                    "Name" = "8:ServiceManager.dll"
-                    "Attributes" = "3:512"
-                    }
-                }
-            "SourcePath" = "8:ServiceManager.dll"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_ACA42DBD8EC64991ABB3254FB6DDBC0A"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -1743,26 +1694,6 @@
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:TRUE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_6EAAA2EF12334B3AB317236FF9E7733C"
-            {
-            "SourcePath" = "8:C:\\consul\\config.json"
-            "TargetName" = "8:config.json"
-            "Tag" = "8:"
-            "Folder" = "8:_6C5EAE013D7C4DAC8C96EAE201CE2975"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_7B041B8F8EB2A4CB98C14D8AA13D23D1"
@@ -2493,7 +2424,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:DiegoWindows"
         "ProductCode" = "8:{07BD6A35-82CC-436F-9BBB-7A8E078D719E}"
-        "PackageCode" = "8:{5233090C-5CA8-4845-A10E-9217EBF9118E}"
+        "PackageCode" = "8:{4AE68287-EAE2-4EF6-A107-A72640330A77}"
         "UpgradeCode" = "8:{C2E7A072-5486-4248-A743-6426722A9D96}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"

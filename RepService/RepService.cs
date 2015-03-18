@@ -27,13 +27,15 @@ namespace RepService
 
         protected override void OnStart(string[] args)
         {
+            var hash = parameters();
+
             process = new Process
             {
                 StartInfo =
                 {
                     FileName = "rep.exe",
-                    Arguments = " -etcdCluster=http://10.10.5.10:4001 -debugAddr=0.0.0.0:17008 -stack=windows2 -executorURL=http://127.0.0.1:1700 "+
-                                " -listenAddr=0.0.0.0:1800 -cellID=0E97B42C3704 -zone=z1 -pollingInterval=30s -evacuationTimeout=180s",
+                    Arguments = " -etcdCluster=" + hash["ETCD_CLUSTER"] + " -debugAddr=0.0.0.0:17008 -stack=" + hash["STACK"] + " -executorURL=http://127.0.0.1:1700 " +
+                                " -listenAddr=0.0.0.0:1800 -cellID=" + hash["MACHINE_NAME"] + " -zone=" + hash["ZONE"] + " -pollingInterval=30s -evacuationTimeout=180s",
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     UseShellExecute = false,
@@ -66,6 +68,13 @@ namespace RepService
             {
                 process.Kill();
             }
+        }
+
+        protected Dictionary<string, string> parameters()
+        {
+            var javaScriptSerializer = new System.Web.Script.Serialization.JavaScriptSerializer();
+            var jsonString = System.IO.File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + "parameters.json");
+            return javaScriptSerializer.Deserialize<Dictionary<string, string>>(jsonString);
         }
     }
 }

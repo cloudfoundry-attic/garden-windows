@@ -27,12 +27,13 @@ namespace ContainerizerService
 
         protected override void OnStart(string[] args)
         {
+            var externalIp = parameters()["EXTERNAL_IP"];
             process = new Process
             {
                 StartInfo =
                 {
                     FileName =  @"bin\Containerizer.exe",
-                    Arguments = @"10.10.5.81 1788",
+                    Arguments =  externalIp + " 1788",
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     UseShellExecute = false,
@@ -64,6 +65,13 @@ namespace ContainerizerService
             {
                 process.Kill();
             }
+        }
+
+        protected Dictionary<string, string> parameters()
+        {
+            var javaScriptSerializer = new System.Web.Script.Serialization.JavaScriptSerializer();
+            var jsonString = System.IO.File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + "parameters.json");
+            return javaScriptSerializer.Deserialize<Dictionary<string, string>>(jsonString);
         }
     }
 }
