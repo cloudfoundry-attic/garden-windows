@@ -76,6 +76,20 @@ func (container *container) parseJson(response *http.Response, err error, output
 	if err != nil {
 		return err
 	}
+
+	if response.StatusCode != http.StatusOK {
+		type exceptionStruct struct {
+			ExceptionMessage string
+		}
+		exceptionData := exceptionStruct{}
+
+		errorJson := json.Unmarshal(rawJSON, &exceptionData)
+		if errorJson != nil || exceptionData.ExceptionMessage == "" {
+			return errors.New(response.Status)
+		}
+		return errors.New(exceptionData.ExceptionMessage)
+	}
+
 	err = json.Unmarshal(rawJSON, output)
 	if err != nil {
 		container.logger.Info("ERROR UNMARSHALING JSON", lager.Data{
@@ -115,8 +129,10 @@ func (container *container) StreamIn(dstPath string, tarStream io.Reader) error 
 	if err != nil {
 		return err
 	}
-
 	resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return errors.New(resp.Status)
+	}
 	return nil
 }
 

@@ -76,24 +76,44 @@ var _ = Describe("container", func() {
 	})
 
 	Describe("StreamIn", func() {
-		BeforeEach(func() {
-			server.AppendHandlers(
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("PUT", "/api/containers/containerhandle/files", "destination=a/path"),
-					func(w http.ResponseWriter, req *http.Request) {
-						body, err := ioutil.ReadAll(req.Body)
-						req.Body.Close()
-						Ω(err).ShouldNot(HaveOccurred())
-						Ω(string(body)).Should(Equal("stuff"))
-					},
-				),
-			)
-		})
+		Context("Http PUT success request", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("PUT", "/api/containers/containerhandle/files", "destination=a/path"),
+						func(w http.ResponseWriter, req *http.Request) {
+							body, err := ioutil.ReadAll(req.Body)
+							req.Body.Close()
+							Ω(err).ShouldNot(HaveOccurred())
+							Ω(string(body)).Should(Equal("stuff"))
+						},
+					),
+				)
+			})
 
-		It("makes a call out to an external service", func() {
-			err := container.StreamIn("a/path", strings.NewReader("stuff"))
-			Ω(err).NotTo(HaveOccurred())
-			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+			It("makes a call out to an external service", func() {
+				err := container.StreamIn("a/path", strings.NewReader("stuff"))
+				Ω(err).NotTo(HaveOccurred())
+				Ω(server.ReceivedRequests()).Should(HaveLen(1))
+			})
+		})
+		Context("Http PUT failure request", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("PUT", "/api/containers/containerhandle/files", "destination=a/path"),
+						ghttp.RespondWith(500, ``),
+						func(w http.ResponseWriter, req *http.Request) {
+							req.Body.Close()
+						},
+					),
+				)
+			})
+
+			It("makes a call out to an external service", func() {
+				err := container.StreamIn("a/path", strings.NewReader("stuff"))
+				Ω(err).To(HaveOccurred())
+			})
 		})
 
 	})
@@ -342,7 +362,7 @@ var _ = Describe("container", func() {
 
 			websocket.WriteJSON(testServer.handlerWS, netContainer.ProcessStreamEvent{
 				MessageType: "close",
-				Data: "27",
+				Data:        "27",
 			})
 
 			exitCode, err := proc.Wait()
@@ -394,22 +414,62 @@ var _ = Describe("container", func() {
 	})
 
 	Describe("GetProperties", func() {
-		BeforeEach(func() {
-			server.AppendHandlers(
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/api/containers/containerhandle/properties"),
-					ghttp.RespondWith(200, `{"Keymaster": "Gatekeeper"}`),
-					func(w http.ResponseWriter, req *http.Request) {
-						req.Body.Close()
-					},
-				),
-			)
+		Context("http success", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/containers/containerhandle/properties"),
+						ghttp.RespondWith(200, `{"Keymaster": "Gatekeeper"}`),
+						func(w http.ResponseWriter, req *http.Request) {
+							req.Body.Close()
+						},
+					),
+				)
+			})
+
+			It("returns info about the container", func() {
+				properties, err := container.GetProperties()
+				Ω(err).NotTo(HaveOccurred())
+				Ω(properties).Should(Equal(garden.Properties{"Keymaster": "Gatekeeper"}))
+			})
 		})
 
-		It("returns info about the container", func() {
-			properties, err := container.GetProperties()
-			Ω(err).NotTo(HaveOccurred())
-			Ω(properties).Should(Equal(garden.Properties{"Keymaster": "Gatekeeper"}))
+		Context("http 500 and returns Exception Json", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/containers/containerhandle/properties"),
+						ghttp.RespondWith(500, `{"Message": "An exception occurred", "ExceptionMessage":"Object reference not set to an instance of an object."}`),
+						func(w http.ResponseWriter, req *http.Request) {
+							req.Body.Close()
+						},
+					),
+				)
+			})
+			It("returns ExceptionMessage as error", func() {
+				_, err := container.GetProperties()
+				Ω(err).To(HaveOccurred())
+				Ω(err.Error()).To(Equal("Object reference not set to an instance of an object."))
+			})
+		})
+
+		Context("http fails and returns non understandable json", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/containers/containerhandle/properties"),
+						ghttp.RespondWith(500, `{"a":"Some Error Text"}`),
+						func(w http.ResponseWriter, req *http.Request) {
+							req.Body.Close()
+						},
+					),
+				)
+			})
+			It("returns http status as error message", func() {
+				_, err := container.GetProperties()
+				Ω(err).To(HaveOccurred())
+				Ω(err.Error()).To(Equal("500 Internal Server Error"))
+			})
 		})
 	})
 
