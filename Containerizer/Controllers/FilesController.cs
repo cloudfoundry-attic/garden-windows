@@ -22,22 +22,22 @@ namespace Containerizer.Controllers
             this.streamInService = streamInService;
         }
 
-        [Route("api/containers/{id}/files")]
+        [Route("api/containers/{handle}/files")]
         [HttpGet]
-        public Task<HttpResponseMessage> Show(string id, string source)
+        public Task<HttpResponseMessage> Show(string handle, string source)
         {
-            Stream outStream = streamOutService.StreamOutFile(id, source);
+            Stream outStream = streamOutService.StreamOutFile(handle, source);
             HttpResponseMessage response = Request.CreateResponse();
             response.Content = new StreamContent(outStream);
             return Task.FromResult(response);
         }
 
-        [Route("api/containers/{id}/files")]
+        [Route("api/containers/{handle}/files")]
         [HttpPut]
-        public async Task<IHttpActionResult> Update(string id, string destination)
+        public async Task<IHttpActionResult> Update(string handle, string destination)
         {
             Stream stream = await Request.Content.ReadAsStreamAsync();
-            streamInService.StreamInFile(stream, id, destination);
+            streamInService.StreamInFile(stream, handle, destination);
             return Ok();
         }
     }

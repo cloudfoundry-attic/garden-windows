@@ -19,9 +19,9 @@ namespace Containerizer.Services.Implementations
             this.containerService = containerService;
         }
 
-        public void StreamInFile(Stream stream, string id, string destination)
+        public void StreamInFile(Stream stream, string handle, string destination)
         {
-            IContainer container = containerService.GetContainerByHandle(id);
+            IContainer container = containerService.GetContainerByHandle(handle);
             var path = container.Directory.MapUserPath(destination);
             tarStreamService.WriteTarStreamToPath(stream, path);
         }

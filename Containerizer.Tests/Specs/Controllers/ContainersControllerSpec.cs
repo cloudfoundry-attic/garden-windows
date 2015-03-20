@@ -114,7 +114,7 @@ namespace Containerizer.Tests.Specs.Controllers
 
                     it["returns the passed in container's id"] = () =>
                     {
-                        result.Id.should_be(containerHandle);
+                        result.Handle.should_be(containerHandle);
                     };
 
                     it["sets properties"] = () =>
@@ -138,7 +138,7 @@ namespace Containerizer.Tests.Specs.Controllers
 
                     it["returns the passed in container's id"] = () =>
                     {
-                        result.Id.should_be(containerHandle);
+                        result.Handle.should_be(containerHandle);
                     };
                 };
             };

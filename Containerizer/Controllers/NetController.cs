@@ -33,11 +33,11 @@ namespace Containerizer.Controllers
             this.containerService = containerService;
         }
 
-        [Route("api/containers/{id}/net/in")]
+        [Route("api/containers/{handle}/net/in")]
         [HttpPost]
-        public IHttpActionResult Create(string id, NetInRequest request)
+        public IHttpActionResult Create(string handle, NetInRequest request)
         {
-            var container = containerService.GetContainerByHandle(id);
+            var container = containerService.GetContainerByHandle(handle);
             if (container == null)
             {
                 return NotFound(); 

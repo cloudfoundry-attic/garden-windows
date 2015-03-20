@@ -20,7 +20,7 @@ namespace Containerizer.Controllers
     public class CreateResponse
     {
         [JsonProperty("id")]
-        public string Id { get; set; }
+        public string Handle { get; set; }
     }
 
     public class ContainersController : ApiController
@@ -65,19 +65,19 @@ namespace Containerizer.Controllers
               
             return new CreateResponse
             {
-                Id = container.Handle
+                Handle = container.Handle
             };
         }
 
-        [Route("api/containers/{id}/stop")]
+        [Route("api/containers/{handle}/stop")]
         [HttpPost]
-        public IHttpActionResult Stop(string id)
+        public IHttpActionResult Stop(string handle)
         {
-            Console.WriteLine("Container#Stop: {0}", id);
-            var container = containerService.GetContainerByHandle(id);
+            Console.WriteLine("Container#Stop: {0}", handle);
+            var container = containerService.GetContainerByHandle(handle);
             if (container != null)
             {
-                Console.WriteLine("Container#Stop: {0} => {1}", id, container.Id);
+                Console.WriteLine("Container#Stop: {0} => {1}", handle, container.Id);
                 container.Stop(true);
                 return Ok();
             }
@@ -85,17 +85,17 @@ namespace Containerizer.Controllers
             return NotFound();
         }
 
-        [Route("api/containers/{id}")]
+        [Route("api/containers/{handle}")]
         [HttpDelete]
-        public IHttpActionResult Destroy(string id)
+        public IHttpActionResult Destroy(string handle)
         {
-            Console.WriteLine("Container#Destroy: {0}", id);
-            var container = containerService.GetContainerByHandle(id);
+            Console.WriteLine("Container#Destroy: {0}", handle);
+            var container = containerService.GetContainerByHandle(handle);
             if (container != null)
             {
-                Console.WriteLine("Container#Destroy: {0} => {1}", id, container.Id);
-                containerService.DestroyContainer(id);
-                Console.WriteLine("Container#Destroy (after): {0} => {1}", id, container.Id);
+                Console.WriteLine("Container#Destroy: {0} => {1}", handle, container.Id);
+                containerService.DestroyContainer(handle);
+                Console.WriteLine("Container#Destroy (after): {0} => {1}", handle, container.Id);
                 return Ok();
             }
 

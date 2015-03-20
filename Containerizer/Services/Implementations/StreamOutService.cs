@@ -19,9 +19,9 @@ namespace Containerizer.Services.Implementations
             this.tarStreamService = tarStreamService;
         }
 
-        public Stream StreamOutFile(string id, string source)
+        public Stream StreamOutFile(string handle, string source)
         {
-            IContainer container = containerService.GetContainerByHandle(id);
+            IContainer container = containerService.GetContainerByHandle(handle);
 
             string path = container.Directory.MapUserPath(source);
             Stream stream = tarStreamService.WriteTarToStream(path);
