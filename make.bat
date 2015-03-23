@@ -10,7 +10,7 @@ SET dism=%WINDIR%\SysNative\dism.exe
 %dism% /online /Enable-Feature /FeatureName:Application-Server-WebServer-Support /FeatureName:AS-NET-Framework /All /NoRestart
 %dism% /online /Enable-Feature /FeatureName:IIS-HostableWebCore /All /NoRestart
 
-del /F /Q packages\*
+rmdir /S /Q packages
 bin\nuget restore || exit /b 1
 devenv Containerizer\Containerizer.csproj /build "Release" || exit /b 1
 devenv Containerizer.Tests\Containerizer.Tests.csproj /build "Release" || exit /b 1
