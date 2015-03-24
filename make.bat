@@ -1,4 +1,7 @@
+:: msbuild must be in path
 SET PATH=%PATH%;%WINDIR%\Microsoft.NET\Framework64\v4.0.30319
+where msbuild
+if errorLevel 1 ( echo "msbuild was not found on PATH" && exit /b 1 )
 
 dism /online /Enable-Feature /FeatureName:IIS-WebServer /All /NoRestart || exit /b 1
 dism /online /Enable-Feature /FeatureName:IIS-WebSockets /All /NoRestart || exit /b 1
