@@ -34,6 +34,13 @@ func (dotNetBackend *dotNetBackend) ContainerizerURL() string {
 	return dotNetBackend.containerizerURL.String()
 }
 
+func (dotNetBackend *dotNetBackend) containerizerUrl(path string, query string) string {
+	url := dotNetBackend.containerizerURL
+	url.Path = "/api" + path
+	url.RawQuery = query
+	return url.String()
+}
+
 func (dotNetBackend *dotNetBackend) Start() error {
 	return nil
 }
@@ -46,7 +53,7 @@ func (dotNetBackend *dotNetBackend) GraceTime(garden.Container) time.Duration {
 }
 
 func (dotNetBackend *dotNetBackend) Ping() error {
-	resp, err := http.Get(dotNetBackend.containerizerURL.String() + "/api/ping")
+	resp, err := http.Get(dotNetBackend.containerizerUrl("/ping", ""))
 	if err != nil {
 		return err
 	}
@@ -64,7 +71,7 @@ func (dotNetBackend *dotNetBackend) Capacity() (garden.Capacity, error) {
 }
 
 func (dotNetBackend *dotNetBackend) Create(containerSpec garden.ContainerSpec) (garden.Container, error) {
-	url := dotNetBackend.containerizerURL.String() + "/api/containers"
+	url := dotNetBackend.containerizerUrl("/containers", "")
 	containerSpecJSON, err := json.Marshal(containerSpec)
 	if err != nil {
 		return nil, err
@@ -80,7 +87,7 @@ func (dotNetBackend *dotNetBackend) Create(containerSpec garden.ContainerSpec) (
 }
 
 func (dotNetBackend *dotNetBackend) Destroy(handle string) error {
-	url := dotNetBackend.containerizerURL.String() + "/api/containers/" + handle
+	url := dotNetBackend.containerizerUrl("/containers/"+handle, "")
 
 	req, err := http.NewRequest("DELETE", url, nil)
 	if err != nil {
@@ -97,7 +104,7 @@ func (dotNetBackend *dotNetBackend) Destroy(handle string) error {
 }
 
 func (dotNetBackend *dotNetBackend) Containers(garden.Properties) ([]garden.Container, error) {
-	url := dotNetBackend.containerizerURL.String() + "/api/containers"
+	url := dotNetBackend.containerizerUrl("/containers", "")
 	response, err := http.Get(url)
 	if err != nil {
 		return nil, err

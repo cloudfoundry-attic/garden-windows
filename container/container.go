@@ -51,9 +51,8 @@ func (container *container) Handle() string {
 }
 
 func (container *container) Stop(kill bool) error {
-	requestUrl := container.containerizerURL
-	requestUrl.Path += "/api/containers/" + container.Handle() + "/stop"
-	response, err := http.Post(requestUrl.String(), "text/plain", nil)
+	url := container.containerizerUrl("/stop", "")
+	response, err := http.Post(url.String(), "text/plain", nil)
 	if err != nil {
 		return err
 	}
@@ -102,25 +101,25 @@ func (container *container) parseJson(response *http.Response, err error, output
 }
 
 func (container *container) GetProperties() (garden.Properties, error) {
-	url := container.containerizerURL.String() + "/api/containers/" + container.Handle() + "/properties"
+	url := container.containerizerUrl("/properties", "")
 	properties := garden.Properties{}
-	response, err := http.Get(url)
+	response, err := http.Get(url.String())
 	err = container.parseJson(response, err, &properties)
 	return properties, err
 }
 
 func (container *container) Info() (garden.ContainerInfo, error) {
-	url := container.containerizerURL.String() + "/api/containers/" + container.Handle() + "/info"
-	response, err := http.Get(url)
+	url := container.containerizerUrl("/info", "")
+	response, err := http.Get(url.String())
 	info := garden.ContainerInfo{}
 	err = container.parseJson(response, err, &info)
 	return info, err
 }
 
 func (container *container) StreamIn(dstPath string, tarStream io.Reader) error {
-	url := container.containerizerURL.String() + "/api/containers/" + container.Handle() + "/files?destination=" + dstPath
+	url := container.containerizerUrl("/files", "destination="+dstPath)
 
-	req, err := http.NewRequest("PUT", url, tarStream)
+	req, err := http.NewRequest("PUT", url.String(), tarStream)
 	if err != nil {
 		return err
 	}
@@ -137,8 +136,8 @@ func (container *container) StreamIn(dstPath string, tarStream io.Reader) error 
 }
 
 func (container *container) StreamOut(srcPath string) (io.ReadCloser, error) {
-	url := container.containerizerURL.String() + "/api/containers/" + container.Handle() + "/files?source=" + srcPath
-	resp, err := http.Get(url)
+	url := container.containerizerUrl("/files", "source="+srcPath)
+	resp, err := http.Get(url.String())
 	if err != nil {
 		return nil, err
 	}
@@ -178,8 +177,8 @@ func (container *container) CurrentMemoryLimits() (garden.MemoryLimits, error) {
 }
 
 func (container *container) NetIn(hostPort, containerPort uint32) (uint32, uint32, error) {
-	url := container.containerizerURL.String() + "/api/containers/" + container.Handle() + "/net/in"
-	response, err := http.Post(url, "application/json", strings.NewReader(fmt.Sprintf(`{"hostPort": %v}`, hostPort)))
+	url := container.containerizerUrl("/net/in", "")
+	response, err := http.Post(url.String(), "application/json", strings.NewReader(fmt.Sprintf(`{"hostPort": %v}`, hostPort)))
 	var responseJSON netInResponse
 
 	err = container.parseJson(response, err, &responseJSON)
@@ -198,15 +197,17 @@ func (container *container) NetOut(rule garden.NetOutRule) error {
 	return nil
 }
 
-func (container *container) containerizerWS() string {
-	u2 := container.containerizerURL
-	u2.Scheme = "ws"
-	return u2.String()
+func (container *container) containerizerUrl(path string, query string) url.URL {
+	url := container.containerizerURL
+	url.Path = "/api/containers/" + container.Handle() + path
+	url.RawQuery = query
+	return url
 }
 
 func (container *container) Run(processSpec garden.ProcessSpec, processIO garden.ProcessIO) (garden.Process, error) {
-	wsUri := container.containerizerWS() + "/api/containers/" + container.handle + "/run"
-	ws, _, err := websocket.DefaultDialer.Dial(wsUri, nil)
+	wsUri := container.containerizerUrl("/run", "")
+	wsUri.Scheme = "ws"
+	ws, _, err := websocket.DefaultDialer.Dial(wsUri.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -238,13 +239,12 @@ func (container *container) Metrics() (garden.Metrics, error) {
 }
 
 func (container *container) GetProperty(name string) (string, error) {
-	requestUrl := container.containerizerURL
-	requestUrl.Path += "/api/containers/" + container.Handle() + "/properties/" + name
+	url := container.containerizerUrl("/properties/"+name, "")
 	container.logger.Info("GET PROPERTY", lager.Data{
 		"property": name,
-		"url":      requestUrl,
+		"url":      url,
 	})
-	response, err := http.Get(requestUrl.String())
+	response, err := http.Get(url.String())
 	defer response.Body.Close()
 
 	if err != nil {
@@ -261,13 +261,12 @@ func (container *container) GetProperty(name string) (string, error) {
 }
 
 func (container *container) SetProperty(name string, value string) error {
-	requestUrl := container.containerizerURL
-	requestUrl.Path += "/api/containers/" + container.Handle() + "/properties/" + name
+	url := container.containerizerUrl("/properties/"+name, "")
 	container.logger.Info("SET PROPERTY", lager.Data{
 		"property": name,
-		"url":      requestUrl,
+		"url":      url,
 	})
-	request, err := http.NewRequest("PUT", requestUrl.String(), strings.NewReader(value))
+	request, err := http.NewRequest("PUT", url.String(), strings.NewReader(value))
 	if err != nil {
 		return err
 	}
@@ -282,13 +281,12 @@ func (container *container) SetProperty(name string, value string) error {
 }
 
 func (container *container) RemoveProperty(name string) error {
-	requestUrl := container.containerizerURL
-	requestUrl.Path += "/api/containers/" + container.Handle() + "/properties/" + name
+	url := container.containerizerUrl("/properties/"+name, "")
 	container.logger.Info("REMOVING PROPERTY", lager.Data{
 		"property": name,
-		"url":      requestUrl,
+		"url":      url,
 	})
-	request, err := http.NewRequest("DELETE", requestUrl.String(), strings.NewReader(""))
+	request, err := http.NewRequest("DELETE", url.String(), strings.NewReader(""))
 	if err != nil {
 		return err
 	}
