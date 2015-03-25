@@ -122,3 +122,12 @@ func (dotNetBackend *dotNetBackend) Lookup(handle string) (garden.Container, err
 	netContainer := container.NewContainer(dotNetBackend.containerizerURL, handle, dotNetBackend.logger)
 	return netContainer, nil
 }
+
+func (dotNetBackend *dotNetBackend) BulkInfo(handles []string) (map[string]garden.ContainerInfoEntry, error) {
+	return nil, nil
+}
+
+func (dotNetBackend *dotNetBackend) BulkMetrics(handles []string) (map[string]garden.ContainerMetricsEntry, error) {
+	return nil, nil
+}
+
