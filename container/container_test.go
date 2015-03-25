@@ -39,9 +39,6 @@ var _ = Describe("container", func() {
 		containerizerURL = *u
 		externalIP = "10.11.12.13"
 		logger = lagertest.NewTestLogger("container")
-	})
-
-	JustBeforeEach(func() {
 		container = netContainer.NewContainer(containerizerURL, "containerhandle", logger)
 	})
 
@@ -75,19 +72,6 @@ var _ = Describe("container", func() {
 			Ω(len(info.MappedPorts)).Should(Equal(1))
 			Ω(info.MappedPorts[0].ContainerPort).Should(Equal(uint32(8080)))
 			Ω(info.MappedPorts[0].HostPort).Should(Equal(uint32(6543)))
-		})
-
-		Context("containerizerURL has an extra slash at the end", func() {
-			BeforeEach(func() {
-				containerizerURL.Path = "//"
-			})
-
-			It("calls the correct url", func() {
-				_, err := container.Info()
-				Ω(err).NotTo(HaveOccurred())
-
-				Ω(server.ReceivedRequests()).Should(HaveLen(1))
-			})
 		})
 	})
 
@@ -248,9 +232,10 @@ var _ = Describe("container", func() {
 		BeforeEach(func() {
 			testServer = &TestWebSocketServer{}
 			testServer.Start("containerhandle")
+		})
 
-			u, _ := url.Parse("http://" + testServer.Url.String())
-			containerizerURL = *u
+		JustBeforeEach(func() {
+			container = netContainer.NewContainer(*testServer.Url, "containerhandle", logger)
 		})
 
 		AfterEach(func() {
@@ -416,7 +401,7 @@ var _ = Describe("container", func() {
 
 		Context("When the containizer server is down", func() {
 			BeforeEach(func() {
-				containerizerURL = url.URL{}
+				testServer.Url = &url.URL{}
 			})
 
 			It("returns the error", func(done Done) {
