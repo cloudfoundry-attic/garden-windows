@@ -41,6 +41,7 @@ namespace Containerizer
             containerBuilder.Register(context => containerService).As<IContainerService>();
             containerBuilder.Register(context => ExternalIP).As<IExternalIP>();
             containerBuilder.RegisterType<RunService>().As<IRunService>();
+            containerBuilder.RegisterType<ContainerInfoService>().As<IContainerInfoService>();
             containerBuilder.RegisterType<StreamInService>().As<IStreamInService>();
             containerBuilder.RegisterType<StreamOutService>().As<IStreamOutService>();
             containerBuilder.RegisterType<TarStreamService>().As<ITarStreamService>();
@@ -50,6 +51,7 @@ namespace Containerizer
             containerBuilder.RegisterType<NetController>();
             containerBuilder.RegisterType<PropertiesController>();
             containerBuilder.RegisterType<InfoController>();
+            containerBuilder.RegisterType<BulkInfoController>();
             containerBuilder.RegisterType<ContainerProcessHandler>();
             container = containerBuilder.Build();
         }

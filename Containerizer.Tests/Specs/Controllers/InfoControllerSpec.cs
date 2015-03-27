@@ -11,6 +11,7 @@ using Containerizer.Models;
 using System.Web.Http.Results;
 using IronFoundry.Container;
 using Containerizer.Services.Interfaces;
+using Containerizer.Services.Implementations;
 
 namespace Containerizer.Tests.Specs.Controllers
 {
@@ -20,73 +21,45 @@ namespace Containerizer.Tests.Specs.Controllers
         {
             describe[Controller.Index] = () =>
             {
-                Mock<IContainerService> mockContainerService = null;
-                Mock<IContainerPropertyService> mockPropertyService = null;
-                Mock<IExternalIP> mockExternalIP = null; 
+
+                Mock<IContainerInfoService> mockContainerService = null;
                 string handle = "container-handle";
                 InfoController controller = null;
                 IHttpActionResult result = null;
-                int expectedHostPort = 1337;
-                string expectedExternalIP = "10.11.12.13";
 
                 before = () =>
                 {
-                    var mockContainer = new Mock<IContainer>();
-                    mockContainer.Setup(x => x.GetInfo()).Returns(
-                        new ContainerInfo
-                        {
-                            ReservedPorts = new List<int> { expectedHostPort },
-                        });
+                    mockContainerService = new Mock<IContainerInfoService>();
+                    controller = new InfoController(mockContainerService.Object);
+                };
 
-                    mockContainerService = new Mock<IContainerService>();
-                    mockContainerService.Setup(x => x.GetContainerByHandle(handle))
-                        .Returns(mockContainer.Object);
+                act = () => result = controller.GetInfo(handle);
 
-                    mockPropertyService = new Mock<IContainerPropertyService>();
-                    mockPropertyService.Setup(x => x.GetProperties(mockContainer.Object)).Returns(new Dictionary<string, string>
+
+                context["when the container exists"] = () =>
+                {
+                    ContainerInfoApiModel info = null;
+
+                    before = () =>
                     {
-                        {"Keymaster", "Gatekeeper"}
-                    });
+                        info = new ContainerInfoApiModel();
+                        mockContainerService.Setup(x => x.GetInfoByHandle(handle))
+                            .Returns(info);
+                    };
 
-                    mockExternalIP = new Mock<IExternalIP>();
-                    mockExternalIP.Setup(x => x.ExternalIP()).Returns(expectedExternalIP);
-
-                    controller = new InfoController(mockContainerService.Object, mockPropertyService.Object, mockExternalIP.Object);
-                };
-
-                act = () =>
-                {
-                    result = controller.GetInfo(handle);
-                };
-
-                it["returns info about the container"] = () =>
-                {
-                    var jsonResult = result.should_cast_to<JsonResult<ContainerInfoApiModel>>();
-                    var portMapping = jsonResult.Content.MappedPorts[0];
-                    portMapping.HostPort.should_be(expectedHostPort);
-                    portMapping.ContainerPort.should_be(8080);
-                };
-
-                it["returns container properties"] = () =>
-                {
-                    var jsonResult = result.should_cast_to<JsonResult<ContainerInfoApiModel>>();
-                    var properties = jsonResult.Content.Properties;
-                    properties["Keymaster"].should_be("Gatekeeper");
-                };
-
-                it["returns the external ip address"] = () =>
-                {
-                    var jsonResult = result.should_cast_to<JsonResult<ContainerInfoApiModel>>();
-                    var extrernalIP = jsonResult.Content.ExternalIP;
-                    extrernalIP.should_be(expectedExternalIP);
+                    it["returns info about the container"] = () =>
+                    {
+                        var jsonResult = result.should_cast_to<JsonResult<ContainerInfoApiModel>>();
+                        jsonResult.Content.should_be(info);
+                    };
                 };
 
                 context["when the container does not exist"] = () =>
                 {
                     before = () =>
                     {
-                        mockContainerService.Setup(x => x.GetContainerByHandle(handle))
-                       .Returns((IContainer)null);
+                        mockContainerService.Setup(x => x.GetInfoByHandle(handle))
+                            .Returns((ContainerInfoApiModel)null);
                     };
 
                     it["returns not found"] = () =>

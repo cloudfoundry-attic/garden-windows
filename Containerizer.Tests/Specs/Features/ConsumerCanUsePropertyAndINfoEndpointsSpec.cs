@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Net.Http;
 using NSpec;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
+using System.Text;
 
 #endregion
 
@@ -47,6 +49,25 @@ namespace Containerizer.Tests.Specs.Features
                         GetsInfo(client, process, handle, properties);
                         GetsEachProperty(client, handle, properties);
                         DeletesProperty(client, handle, properties);
+                    };
+                };
+
+                context["And there exists multiple containers"] = () =>
+                {
+                    string handle1 = null, handle2 = null;
+
+                    before = () => { handle1 = Helpers.CreateContainer(client); handle2 = Helpers.CreateContainer(client); };
+                    after = () => { Helpers.DestroyContainer(client, handle1); Helpers.DestroyContainer(client, handle2); };
+
+                    it["bulkinfo returns info for the given handles"] = () =>
+                    {
+                        var handles = JsonConvert.SerializeObject(new string[] { handle1, handle2 });
+                        var result = client.PostAsync("/api/bulkcontainerinfo", new StringContent(handles, Encoding.UTF8, "application/json")).Result;
+                        result.IsSuccessStatusCode.should_be_true();
+                        var response = result.Content.ReadAsJson();
+
+                        response[handle1]["Info"]["ExternalIP"].ToString().should_be(process.ExternalIP);
+                        response[handle2]["Info"]["ExternalIP"].ToString().should_be(process.ExternalIP);
                     };
                 };
             };

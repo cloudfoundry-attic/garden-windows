@@ -124,6 +124,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Specs\Controllers\BulkInfoControllerSpec.cs" />
     <Compile Include="Specs\Controllers\InfoControllerSpec.cs" />
     <Compile Include="Specs\Controllers\PropertiesControllerSpec.cs" />
     <Compile Include="Specs\Controllers\NetControllerSpec.cs" />
@@ -144,6 +145,7 @@
     <Compile Include="Specs\HelperJobObject.cs" />
     <Compile Include="Specs\Helpers.cs" />
     <Compile Include="Specs\Models\ArgumentEscaperSpec.cs" />
+    <Compile Include="Specs\Services\ContainerInfoServiceSpec.cs" />
     <Compile Include="Specs\Services\NetInServiceSpec.cs" />
     <Compile Include="Specs\Services\RunServiceSpec.cs" />
     <Compile Include="Specs\Services\StreamInServiceSpec.cs" />
