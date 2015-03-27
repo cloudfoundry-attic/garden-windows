@@ -101,6 +101,49 @@ var _ = Describe("backend", func() {
 		})
 	})
 
+	Describe("BulkInfo", func() {
+		handle1HostIp := "10.0.0.20"
+
+		BeforeEach(func() {
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("POST", "/api/bulkcontainerinfo"),
+					ghttp.VerifyJSONRepresenting([]string{"handle1", "handle2"}),
+					ghttp.RespondWith(200, `{
+						"handle1": { "Info": { "HostIP": "`+handle1HostIp+`" } },	
+						"handle2": { "Err": { "Message": "an error" } }
+					}`),
+				),
+			)
+		})
+
+		It("makes a call out to an external service", func() {
+			_, err := dotNetBackend.BulkInfo([]string{"handle1", "handle2"})
+			Ω(err).NotTo(HaveOccurred())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+
+		It("returns the containers info", func() {
+			info, err := dotNetBackend.BulkInfo([]string{"handle1", "handle2"})
+			Ω(err).NotTo(HaveOccurred())
+			Ω(info["handle1"].Info.HostIP).Should(Equal(handle1HostIp))
+		})
+
+		It("returns the container lookup error", func() {
+			info, err := dotNetBackend.BulkInfo([]string{"handle1", "handle2"})
+			Ω(err).NotTo(HaveOccurred())
+			Ω(info["handle2"].Err.Error()).Should(Equal("an error"))
+		})
+
+		Context("when there is an error making the http connection", func() {
+			It("returns an error", func() {
+				server.Close()
+				_, err := dotNetBackend.BulkInfo([]string{"hande1", "handle2"})
+				Ω(err).To(HaveOccurred())
+			})
+		})
+	})
+
 	Describe("Destroy", func() {
 		BeforeEach(func() {
 			server.AppendHandlers(
@@ -111,7 +154,6 @@ var _ = Describe("backend", func() {
 		})
 
 		It("makes a call out to an external service", func() {
-
 			err := dotNetBackend.Destroy("bob")
 			Ω(err).NotTo(HaveOccurred())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))

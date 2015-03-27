@@ -124,10 +124,29 @@ func (dotNetBackend *dotNetBackend) Lookup(handle string) (garden.Container, err
 }
 
 func (dotNetBackend *dotNetBackend) BulkInfo(handles []string) (map[string]garden.ContainerInfoEntry, error) {
-	return nil, nil
+	url := dotNetBackend.containerizerURL.String() + "/api/bulkcontainerinfo"
+	containerSpecJSON, err := json.Marshal(handles)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := http.Post(url, "application/json", strings.NewReader(string(containerSpecJSON)))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	bulkInfoResponse := make(map[string]BulkInfoResponse)
+	err = json.NewDecoder(resp.Body).Decode(&bulkInfoResponse)
+	if err != nil {
+		return nil, err
+	}
+	containersInfo := make(map[string]garden.ContainerInfoEntry)
+	for handle, info := range bulkInfoResponse {
+		containersInfo[handle] = garden.ContainerInfoEntry{info.Info, info.Err}
+	}
+	return containersInfo, err
 }
 
 func (dotNetBackend *dotNetBackend) BulkMetrics(handles []string) (map[string]garden.ContainerMetricsEntry, error) {
 	return nil, nil
 }
-
