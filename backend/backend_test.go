@@ -111,7 +111,7 @@ var _ = Describe("backend", func() {
 					ghttp.VerifyJSONRepresenting([]string{"handle1", "handle2"}),
 					ghttp.RespondWith(200, `{
 						"handle1": { "Info": { "HostIP": "`+handle1HostIp+`" } },	
-						"handle2": { "Err": { "Message": "an error" } }
+						"handle2": { "Err": "an error" }
 					}`),
 				),
 			)
@@ -127,6 +127,7 @@ var _ = Describe("backend", func() {
 			info, err := dotNetBackend.BulkInfo([]string{"handle1", "handle2"})
 			Ω(err).NotTo(HaveOccurred())
 			Ω(info["handle1"].Info.HostIP).Should(Equal(handle1HostIp))
+			Ω(info["handle1"].Err).ShouldNot(HaveOccurred())
 		})
 
 		It("returns the container lookup error", func() {

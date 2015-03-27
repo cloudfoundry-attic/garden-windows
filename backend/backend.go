@@ -2,6 +2,7 @@ package backend
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -142,7 +143,11 @@ func (dotNetBackend *dotNetBackend) BulkInfo(handles []string) (map[string]garde
 	}
 	containersInfo := make(map[string]garden.ContainerInfoEntry)
 	for handle, info := range bulkInfoResponse {
-		containersInfo[handle] = garden.ContainerInfoEntry{info.Info, info.Err}
+		var err error = nil
+		if info.Err != "" {
+			err = errors.New(info.Err)
+		}
+		containersInfo[handle] = garden.ContainerInfoEntry{info.Info, err}
 	}
 	return containersInfo, err
 }
