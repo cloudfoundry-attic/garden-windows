@@ -7,7 +7,7 @@ containerization technology. When it runs with [garden
 windows](https://github.com/cloudfoundry-incubator/garden-windows), it provides
 a [garden](https://github.com/cloudfoundry-incubator/garden) implementation.
 
-## Dependencies
+## dependencies
 - 64 bit version of Windows (tested with Windows Server 2012 R2 Standard)
 - msbuild in PATH
 - Administrator access
@@ -27,9 +27,9 @@ building on the command line
 running
 ============================
 
-1. [in solution root] Containerizer\bin\Containerizer.exe EXTERNAL_IP PORT,
-where EXTERNAL_IP is generally the IPv4 addresss ipconfig reports (e.g.
-10.10.5.4 in a VPC) and PORT is some arbitrary port that is passed
+1. [in solution root] ```Containerizer\bin\Containerizer.exe EXTERNAL_IP PORT```,
+where ```EXTERNAL_IP``` is generally the IPv4 addresss ipconfig reports (e.g.
+10.10.5.4 in a VPC) and ```PORT``` is some arbitrary port that is passed
 to garden-windows as well (e.g. 1788).
 
 building in Visual Studio
@@ -68,7 +68,7 @@ you click "Show processes from all users".
 1. You can now hit debug points in the server!
 ![debugging in process](https://github.com/pivotal-cf-experimental/containerizer/blob/master/README_images/debugging_in_process.png)
 
-1. Also, try out [entrian](http://entrian.com/attach/).
+1. Also, try out [entrian](http://entrian.com/attach/), which automatically attaches the Visual Studio debugger to any process as it starts.
 
 
 quick tips
