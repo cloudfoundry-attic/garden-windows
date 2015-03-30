@@ -102,7 +102,7 @@ var _ = Describe("backend", func() {
 	})
 
 	Describe("BulkInfo", func() {
-		handle1HostIp := "10.0.0.20"
+		handle1HostIp, handle2HostIp := "10.0.0.20", "10.0.0.21"
 
 		BeforeEach(func() {
 			server.AppendHandlers(
@@ -111,7 +111,7 @@ var _ = Describe("backend", func() {
 					ghttp.VerifyJSONRepresenting([]string{"handle1", "handle2"}),
 					ghttp.RespondWith(200, `{
 						"handle1": { "Info": { "HostIP": "`+handle1HostIp+`" } },	
-						"handle2": { "Err": "an error" }
+						"handle2": { "Info": { "HostIP": "`+handle2HostIp+`" } }
 					}`),
 				),
 			)
@@ -128,12 +128,9 @@ var _ = Describe("backend", func() {
 			Ω(err).NotTo(HaveOccurred())
 			Ω(info["handle1"].Info.HostIP).Should(Equal(handle1HostIp))
 			Ω(info["handle1"].Err).ShouldNot(HaveOccurred())
-		})
 
-		It("returns the container lookup error", func() {
-			info, err := dotNetBackend.BulkInfo([]string{"handle1", "handle2"})
-			Ω(err).NotTo(HaveOccurred())
-			Ω(info["handle2"].Err.Error()).Should(Equal("an error"))
+			Ω(info["handle2"].Info.HostIP).Should(Equal(handle2HostIp))
+			Ω(info["handle2"].Err).ShouldNot(HaveOccurred())
 		})
 
 		Context("when there is an error making the http connection", func() {
