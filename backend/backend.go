@@ -4,34 +4,26 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 	"time"
 
 	"strings"
 
 	"github.com/cloudfoundry-incubator/garden"
 	"github.com/cloudfoundry-incubator/garden-windows/container"
+	"github.com/cloudfoundry-incubator/garden-windows/containerizer_url"
 	"github.com/pivotal-golang/lager"
 )
 
 type dotNetBackend struct {
-	containerizerURL url.URL
+	containerizerURL *containerizer_url.ContainerizerURL
 	logger           lager.Logger
 }
 
-func NewDotNetBackend(containerizerURL string, logger lager.Logger) (*dotNetBackend, error) {
-	u, err := url.Parse(containerizerURL)
-	if err != nil {
-		return nil, err
-	}
+func NewDotNetBackend(containerizerURL *containerizer_url.ContainerizerURL, logger lager.Logger) (*dotNetBackend, error) {
 	return &dotNetBackend{
-		containerizerURL: *u,
+		containerizerURL: containerizerURL,
 		logger:           logger,
 	}, nil
-}
-
-func (dotNetBackend *dotNetBackend) ContainerizerURL() string {
-	return dotNetBackend.containerizerURL.String()
 }
 
 func (dotNetBackend *dotNetBackend) Start() error {
@@ -46,7 +38,7 @@ func (dotNetBackend *dotNetBackend) GraceTime(garden.Container) time.Duration {
 }
 
 func (dotNetBackend *dotNetBackend) Ping() error {
-	resp, err := http.Get(dotNetBackend.containerizerURL.String() + "/api/ping")
+	resp, err := http.Get(dotNetBackend.containerizerURL.Ping())
 	if err != nil {
 		return err
 	}
@@ -64,7 +56,7 @@ func (dotNetBackend *dotNetBackend) Capacity() (garden.Capacity, error) {
 }
 
 func (dotNetBackend *dotNetBackend) Create(containerSpec garden.ContainerSpec) (garden.Container, error) {
-	url := dotNetBackend.containerizerURL.String() + "/api/containers"
+	url := dotNetBackend.containerizerURL.Create()
 	containerSpecJSON, err := json.Marshal(containerSpec)
 	if err != nil {
 		return nil, err
@@ -80,7 +72,7 @@ func (dotNetBackend *dotNetBackend) Create(containerSpec garden.ContainerSpec) (
 }
 
 func (dotNetBackend *dotNetBackend) Destroy(handle string) error {
-	url := dotNetBackend.containerizerURL.String() + "/api/containers/" + handle
+	url := dotNetBackend.containerizerURL.Destroy(handle)
 
 	req, err := http.NewRequest("DELETE", url, nil)
 	if err != nil {
@@ -97,7 +89,7 @@ func (dotNetBackend *dotNetBackend) Destroy(handle string) error {
 }
 
 func (dotNetBackend *dotNetBackend) Containers(garden.Properties) ([]garden.Container, error) {
-	url := dotNetBackend.containerizerURL.String() + "/api/containers"
+	url := dotNetBackend.containerizerURL.List()
 	response, err := http.Get(url)
 	if err != nil {
 		return nil, err
@@ -124,7 +116,7 @@ func (dotNetBackend *dotNetBackend) Lookup(handle string) (garden.Container, err
 }
 
 func (dotNetBackend *dotNetBackend) BulkInfo(handles []string) (map[string]garden.ContainerInfoEntry, error) {
-	url := dotNetBackend.containerizerURL.String() + "/api/bulkcontainerinfo"
+	url := dotNetBackend.containerizerURL.BulkInfo()
 	containerSpecJSON, err := json.Marshal(handles)
 	if err != nil {
 		return nil, err

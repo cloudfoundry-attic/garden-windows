@@ -6,6 +6,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/garden"
 	netContainer "github.com/cloudfoundry-incubator/garden-windows/container"
+	"github.com/cloudfoundry-incubator/garden-windows/containerizer_url"
 	"github.com/cloudfoundry-incubator/garden-windows/process"
 
 	"io/ioutil"
@@ -30,13 +31,12 @@ var _ = Describe("container", func() {
 	var server *ghttp.Server
 	var container garden.Container
 	var logger *lagertest.TestLogger
-	var containerizerURL url.URL
+	var containerizerURL *containerizer_url.ContainerizerURL
 	var externalIP string
 
 	BeforeEach(func() {
 		server = ghttp.NewServer()
-		u, _ := url.Parse(server.URL())
-		containerizerURL = *u
+		containerizerURL, _ = containerizer_url.FromString(server.URL())
 		externalIP = "10.11.12.13"
 		logger = lagertest.NewTestLogger("container")
 		container = netContainer.NewContainer(containerizerURL, "containerhandle", logger)
@@ -235,7 +235,8 @@ var _ = Describe("container", func() {
 		})
 
 		JustBeforeEach(func() {
-			container = netContainer.NewContainer(*testServer.Url, "containerhandle", logger)
+			testServerUrl, _ := containerizer_url.FromString(testServer.Url.String())
+			container = netContainer.NewContainer(testServerUrl, "containerhandle", logger)
 		})
 
 		AfterEach(func() {
@@ -401,7 +402,7 @@ var _ = Describe("container", func() {
 
 		Context("When the containizer server is down", func() {
 			BeforeEach(func() {
-				testServer.Url = &url.URL{}
+				testServer.Url, _ = url.Parse("http://61CFD780-3ACB-4224-ACBA-C704D8BDD022")
 			})
 
 			It("returns the error", func(done Done) {

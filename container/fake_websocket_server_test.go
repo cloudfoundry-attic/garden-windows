@@ -39,8 +39,11 @@ func (server *TestWebSocketServer) createListener() {
 	if err != nil {
 		panic(err)
 	}
-	server.Url, err = url.Parse(originalListener.Addr().String())
 	server.listener, err = stoppableListener.New(originalListener)
+	if err != nil {
+		panic(err)
+	}
+	server.Url, err = url.Parse("http://" + originalListener.Addr().String())
 	if err != nil {
 		panic(err)
 	}

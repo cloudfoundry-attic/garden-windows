@@ -8,6 +8,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-lager"
 	"github.com/cloudfoundry-incubator/garden-windows/backend"
+	"github.com/cloudfoundry-incubator/garden-windows/containerizer_url"
 	"github.com/cloudfoundry-incubator/garden/server"
 	"github.com/pivotal-golang/lager"
 )
@@ -45,7 +46,13 @@ func main() {
 
 	logger, _ := cf_lager.New("garden-windows")
 
-	netBackend, err := backend.NewDotNetBackend(*containerizerURL, logger)
+	url, err := containerizer_url.FromString(*containerizerURL)
+	if err != nil {
+		logger.Fatal("Could not parse containerizer url", err, lager.Data{
+			"containerizerURL": containerizerURL,
+		})
+	}
+	netBackend, err := backend.NewDotNetBackend(url, logger)
 	if err != nil {
 		logger.Fatal("Server Failed to Start", err)
 		os.Exit(1)
