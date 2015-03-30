@@ -66,12 +66,9 @@ namespace Containerizer.Tests.Specs.Controllers
                             .Returns((ContainerInfoApiModel)info[1]);
                     };
 
-                    it["returns not found"] = () =>
+                    it["is not returned"] = () =>
                     {
-                        result.Count.should_be(2);
-                        result[handles[0]].Info.should_be_null();
-                        result[handles[0]].Err.should_be("Not Found");
-
+                        result.Count.should_be(1);
                         result[handles[1]].Info.should_be(info[1]);
                         result[handles[1]].Err.should_be_null();
                     };

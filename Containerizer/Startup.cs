@@ -24,7 +24,7 @@ namespace Containerizer
 
             // Remove XML formatter
             var json = config.Formatters.JsonFormatter;
-            json.SerializerSettings.PreserveReferencesHandling = Newtonsoft.Json.PreserveReferencesHandling.Objects;
+            json.SerializerSettings.PreserveReferencesHandling = Newtonsoft.Json.PreserveReferencesHandling.None;
             config.Formatters.Remove(config.Formatters.XmlFormatter);
 
             // Create and assign a dependency resolver for Web API to use.

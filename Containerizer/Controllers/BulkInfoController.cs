@@ -33,10 +33,13 @@ namespace Containerizer.Controllers
             var response = new Dictionary<string, BulkInfoResponse>();
             foreach (var handle in handles) {
                 var info = containerInfoService.GetInfoByHandle(handle);
-                response[handle] = new BulkInfoResponse {
-                    Info = info,
-                    Err = info == null ? "Not Found" : null,
-                };
+                if (info != null)
+                {
+                    response[handle] = new BulkInfoResponse
+                    {
+                        Info = info,
+                    };
+                }
             }
             return response;
         }

@@ -66,6 +66,7 @@ namespace Containerizer.Tests.Specs.Features
                         result.IsSuccessStatusCode.should_be_true();
                         var response = result.Content.ReadAsJson();
 
+                        response.Count.should_be(2);
                         response[handle1]["Info"]["ExternalIP"].ToString().should_be(process.ExternalIP);
                         response[handle2]["Info"]["ExternalIP"].ToString().should_be(process.ExternalIP);
                     };
