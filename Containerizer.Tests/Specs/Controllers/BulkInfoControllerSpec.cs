@@ -49,10 +49,8 @@ namespace Containerizer.Tests.Specs.Controllers
                     {
                         result.Count.should_be(2);
                         result[handles[0]].Info.should_be(info[0]);
-                        result[handles[0]].Err.should_be_null();
 
                         result[handles[1]].Info.should_be(info[1]);
-                        result[handles[1]].Err.should_be_null();
                     };
                 };
 
@@ -70,7 +68,6 @@ namespace Containerizer.Tests.Specs.Controllers
                     {
                         result.Count.should_be(1);
                         result[handles[1]].Info.should_be(info[1]);
-                        result[handles[1]].Err.should_be_null();
                     };
                 };
             };

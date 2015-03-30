@@ -14,7 +14,6 @@ namespace Containerizer.Controllers
     public struct BulkInfoResponse
     {
         public ContainerInfoApiModel Info;
-        public string Err;
     }
 
     public class BulkInfoController : ApiController
