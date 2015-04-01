@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using Newtonsoft.Json.Linq;
 using NSpec;
+using System.Linq;
 
 #endregion
 
@@ -50,7 +51,7 @@ namespace Containerizer.Tests.Specs.Features
                                 "@echo off\r\n@echo Hi Fred\r\n@echo Jane is good\r\n@echo Jill is better\r\nset PORT\r\n"));
 
                         var response =
-                            httpClient.PostAsJsonAsync("/api/containers/" + handle + "/net/in", new {hostPort = 0})
+                            httpClient.PostAsJsonAsync("/api/containers/" + handle + "/net/in", new { hostPort = 0 })
                                 .GetAwaiter()
                                 .GetResult();
                         var json = response.Content.ReadAsJson();
@@ -81,36 +82,40 @@ namespace Containerizer.Tests.Specs.Features
                                 encoder.GetBytes(
                                     "{\"type\":\"run\", \"pspec\":{\"Path\":\"myfile.bat\", Args:[\"/all\"]}}");
                             client.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true,
-                                CancellationToken.None);
+                                CancellationToken.None).GetAwaiter().GetResult();
 
                             messages = new List<string>();
-                            var receiveBuffer = new byte[1024];
-                            var receiveBufferSegment = new ArraySegment<byte>(receiveBuffer);
-                            WebSocketReceiveResult result;
-                            do
+                            while (client.State == WebSocketState.Open)
                             {
-                                result =
-                                    client.ReceiveAsync(receiveBufferSegment, CancellationToken.None)
-                                        .GetAwaiter()
-                                        .GetResult();
-                                if (result.Count > 0)
+                                var receiveBuffer = new byte[1024];
+                                var receiveBufferSegment = new ArraySegment<byte>(receiveBuffer);
+                                try
                                 {
-                                    var message = Encoding.Default.GetString(receiveBuffer);
-                                    if (message.Contains("error"))
+                                    var result = client.ReceiveAsync(receiveBufferSegment, CancellationToken.None).Result;
+                                    if (result.Count > 0)
                                     {
-                                        throw new Exception("websocket returned an error message");
+                                        var message = Encoding.Default.GetString(receiveBuffer.Take(result.Count).ToArray());
+                                        if (message.Contains("error"))
+                                        {
+                                            throw new Exception("websocket returned an error message");
+                                        }
+                                        messages.Add(message);
                                     }
-                                    messages.Add(message.Substring(0, result.Count));
                                 }
-                            } while (messages.Count < 7);
+                                catch (Exception e) { }
+                            };
                         };
 
                         it["should run a process, return stdout and close the socket"] = () =>
                         {
-                            messages.should_contain("{\"type\":\"stdout\",\"data\":\"Hi Fred\\r\\n\"}");
+                            // This mysteriously fixes race conditions on AppVeyor.
+                            messages.should_contain("{\"type\":\"starting\",\"data\":\"starting\"}");
 
+                            // Exptected output
+                            messages.should_contain("{\"type\":\"stdout\",\"data\":\"Hi Fred\\r\\n\"}");
                             messages.should_contain("{\"type\":\"stdout\",\"data\":\"PORT=" + hostPort + "\\r\\n\"}");
 
+                            // Expected process exitCode.
                             messages.should_contain("{\"type\":\"close\",\"data\":\"0\"}");
                         };
                     };
