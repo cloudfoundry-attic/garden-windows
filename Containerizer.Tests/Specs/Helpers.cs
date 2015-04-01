@@ -82,6 +82,8 @@ namespace Containerizer.Tests.Specs
 
             public void Start()
             {
+                AssertAdministratorPrivileges();
+
                 var process = new System.Diagnostics.Process();
                 process.StartInfo.UseShellExecute = false;
                 process.StartInfo.RedirectStandardOutput = true;
@@ -118,6 +120,26 @@ namespace Containerizer.Tests.Specs
         {
             var response = client.DeleteAsync("/api/Containers/" + handle).GetAwaiter().GetResult();
             response.EnsureSuccessStatusCode();
+        }
+
+        public static void AssertAdministratorPrivileges()
+        {
+            //http://stackoverflow.com/questions/1089046/in-net-c-test-if-process-has-administrative-privileges
+
+            //bool value to hold our return value
+            bool isAdmin;
+            try
+            {
+                //get the currently logged in user
+                var user = System.Security.Principal.WindowsIdentity.GetCurrent();
+                var principal = new System.Security.Principal.WindowsPrincipal(user);
+                isAdmin = principal.IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator);
+            }
+            catch (Exception ex)
+            {
+                isAdmin = false;
+            }
+            if (!isAdmin) { throw new Exception("You will need to run the tests with Administrator Privileges"); }
         }
     }
 }

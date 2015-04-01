@@ -34,6 +34,8 @@ namespace Containerizer.Tests.Specs.Services
 
             before = () =>
             {
+                Helpers.AssertAdministratorPrivileges();
+
                 destinationArchiveFileName = Path.GetRandomFileName();
                 Directory.CreateDirectory(tmpDir);
                 Directory.CreateDirectory(Path.Combine(tmpDir, "fooDir"));
