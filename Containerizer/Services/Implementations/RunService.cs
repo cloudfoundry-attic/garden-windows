@@ -19,6 +19,7 @@ namespace Containerizer.Services.Implementations
 
         public void Run(Controllers.IWebSocketEventSender websocket, Models.ApiProcessSpec apiProcessSpec)
         {
+            websocket.SendEvent("starting", "starting");
 
             var processSpec = new ProcessSpec
             {

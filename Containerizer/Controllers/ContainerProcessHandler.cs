@@ -73,7 +73,6 @@ namespace Containerizer.Controllers
 
             if (streamEvent.MessageType == "run" && streamEvent.ApiProcessSpec != null)
             {
-                SendEvent("starting", "starting"); // This mysteriously fixes race conditions on AppVeyor.
                 runService.Run(this, streamEvent.ApiProcessSpec);
             }
             return null;
