@@ -12,7 +12,7 @@ namespace Containerizer.Tests.Specs.Features
     {
         private void describe_ping()
         {
-            Helpers.ContainarizerProcess process = null;
+            Helpers.ContainerizerProcess process = null;
 
             before = () => process = Helpers.CreateContainerizerProcess();
             after = () => process.Dispose();

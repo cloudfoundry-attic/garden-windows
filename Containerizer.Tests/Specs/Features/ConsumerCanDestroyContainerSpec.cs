@@ -13,7 +13,7 @@ namespace Containerizer.Tests.Specs.Features
     {
         private void describe_consumer_can_destroy_a_container()
         {
-            Helpers.ContainarizerProcess process = null;
+            Helpers.ContainerizerProcess process = null;
             HttpClient client = null;
             string handle = null;
 

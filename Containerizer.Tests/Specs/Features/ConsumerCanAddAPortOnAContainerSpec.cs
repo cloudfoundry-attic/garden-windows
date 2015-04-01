@@ -25,7 +25,7 @@ namespace Containerizer.Tests.Specs.Features
             context["Given that I'm a consumer of the containerizer API"] = () =>
             {
                 HttpClient client = null;
-                Helpers.ContainarizerProcess process = null;
+                Helpers.ContainerizerProcess process = null;
 
                 before = () =>
                 {

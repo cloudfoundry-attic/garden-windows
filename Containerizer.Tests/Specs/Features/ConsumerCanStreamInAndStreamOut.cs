@@ -17,7 +17,7 @@ namespace Containerizer.Tests.Specs.Features
         private string directoryPath;
         private string handle;
         private string tgzName;
-        private Helpers.ContainarizerProcess process;
+        private Helpers.ContainerizerProcess process;
 
 
         private void before_each()

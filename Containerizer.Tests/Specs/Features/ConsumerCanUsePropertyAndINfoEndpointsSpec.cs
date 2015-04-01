@@ -19,7 +19,7 @@ namespace Containerizer.Tests.Specs.Features
             context["Given that I'm a consumer of the containerizer API"] = () =>
             {
                 HttpClient client = null;
-                Helpers.ContainarizerProcess process = null;
+                Helpers.ContainerizerProcess process = null;
 
                 before = () =>
                 {
@@ -95,7 +95,7 @@ namespace Containerizer.Tests.Specs.Features
             }
         }
 
-        private static void GetsInfo(HttpClient client, Helpers.ContainarizerProcess process, string handle, Dictionary<string, string> properties)
+        private static void GetsInfo(HttpClient client, Helpers.ContainerizerProcess process, string handle, Dictionary<string, string> properties)
         {
             var infoPath = "/api/containers/" + handle + "/info";
             var infoResponse = client.GetAsync(infoPath).Result.Content.ReadAsJson() as JObject;

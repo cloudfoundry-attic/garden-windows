@@ -23,7 +23,7 @@ namespace Containerizer.Tests.Specs.Features
     {
         // Containerizer.Controllers.ContainersController containersController;
         private string id;
-        private Helpers.ContainarizerProcess process;
+        private Helpers.ContainerizerProcess process;
 
         private void before_each()
         {

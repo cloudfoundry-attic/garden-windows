@@ -67,13 +67,13 @@ namespace Containerizer.Tests.Specs
             return Path.Combine(ContainerServiceFactory.GetContainerRoot(), new ContainerHandleHelper().GenerateId(handle), "user");
         }
 
-        public class ContainarizerProcess : IDisposable
+        public class ContainerizerProcess : IDisposable
         {
             private Job job;
             public readonly string ExternalIP;
             public readonly int Port;
 
-            public ContainarizerProcess(int port)
+            public ContainerizerProcess(int port)
             {
                 this.job = new Job();
                 this.ExternalIP = "10.1.2." + new Random().Next(2, 253).ToString();
@@ -106,10 +106,10 @@ namespace Containerizer.Tests.Specs
             }
         }
 
-        public static ContainarizerProcess CreateContainerizerProcess()
+        public static ContainerizerProcess CreateContainerizerProcess()
         {
             var port = new Random().Next(10000, 50000);
-            var process = new ContainarizerProcess(port);
+            var process = new ContainerizerProcess(port);
             process.Start();
             return process;
         }

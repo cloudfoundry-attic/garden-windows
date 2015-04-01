@@ -21,7 +21,7 @@ namespace Containerizer.Tests.Specs.Features
             ClientWebSocket client = null;
             HttpClient httpClient = null;
             string handle = null;
-            Helpers.ContainarizerProcess process = null;
+            Helpers.ContainerizerProcess process = null;
 
             before = () =>
             {
