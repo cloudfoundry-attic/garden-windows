@@ -70,7 +70,7 @@ namespace Containerizer.Services.Implementations
             foreach (var kv in envStrings)
             {
                 string[] arr = kv.Split(new Char[] { '=' }, 2);
-                processSpec.Environment.Add(arr[0], arr[1]);
+                processSpec.Environment[arr[0]] = arr[1];
             }
         }
 
@@ -82,7 +82,7 @@ namespace Containerizer.Services.Implementations
                 var environmentVariables = JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(varsJson);
                 foreach (var dict in environmentVariables)
                 {
-                    processSpec.Environment.Add(dict["name"], dict["value"]);
+                    processSpec.Environment[dict["name"]] = dict["value"];
                 }
             }
         }
