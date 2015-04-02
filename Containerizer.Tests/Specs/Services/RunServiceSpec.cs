@@ -1,9 +1,7 @@
 ﻿#region
 
 using System;
-using System.Linq;
 using Containerizer.Services.Implementations;
-using Microsoft.Web.Administration;
 using NSpec;
 using IronFoundry.Container;
 using Moq;
@@ -16,7 +14,7 @@ namespace Containerizer.Tests.Specs.Services
 {
     internal class RunServiceSpec : nspec
     {
-        private void describe_OnMessageReceived()
+        private void describe_Run()
         {
             Mock<IWebSocketEventSender> websocketMock = null;
             Mock<IContainer> containerMock = null;
@@ -48,8 +46,6 @@ namespace Containerizer.Tests.Specs.Services
             context["Process exits normally"] = () =>
             {
                 before = () => containerMock.Setup(x => x.Run(It.IsAny<ProcessSpec>(), It.IsAny<IProcessIO>())).Returns(processMock.Object);
-
-
 
                 context["Process exits with 1"] = () =>
                 {
@@ -92,6 +88,43 @@ namespace Containerizer.Tests.Specs.Services
                     websocketMock.Verify(x => x.SendEvent("error", "filename doesn't exist"));
                     websocketMock.Verify(x => x.Close(System.Net.WebSockets.WebSocketCloseStatus.InternalServerError, "filename doesn't exist"));
                 };
+            };
+
+            it["passes executor:env environment variables to the process"] = () =>
+            {
+                containerMock.Setup(x => x.GetInfo()).Returns(new ContainerInfo
+                {
+                    Properties = new System.Collections.Generic.Dictionary<string, string> {
+                        {"executor:env", "[{\"name\":\"INSTANCE_GUID\",\"value\":\"ExcitingGuid\"},{\"name\":\"INSTANCE_INDEX\",\"value\":\"12\"}]"}
+                    }
+                });
+                runService.Run(websocketMock.Object, new ApiProcessSpec());
+                containerMock.Verify(x => x.Run(It.Is((ProcessSpec p) => p.Environment["INSTANCE_GUID"] == "ExcitingGuid"), It.IsAny<IProcessIO>()));
+            };
+
+            it["passes processSpec.Env environment variables to the process"] = () =>
+            {
+                containerMock.Setup(x => x.GetInfo()).Returns(new ContainerInfo());
+                runService.Run(websocketMock.Object, new ApiProcessSpec
+                {
+                    Env = new string[] { "foo=bar", "jane=jill=jim" },
+                });
+                containerMock.Verify(x => x.Run(It.Is((ProcessSpec p) => p.Environment["foo"] == "bar" && p.Environment["jane"] == "jill=jim"), It.IsAny<IProcessIO>()));
+            };
+
+            it["overrides ENV[PORT] with reserved port"] = () =>
+            {
+                containerMock.Setup(x => x.GetInfo()).Returns(new ContainerInfo
+                {
+                    Properties = new System.Collections.Generic.Dictionary<string, string> {
+                        {"executor:env", "[{\"name\":\"PORT\",\"value\":\"8080\"}]"}
+                    },
+                    ReservedPorts = new System.Collections.Generic.List<int> { 1234 },
+                });
+
+                runService.Run(websocketMock.Object, new ApiProcessSpec());
+
+                containerMock.Verify(x => x.Run(It.Is((ProcessSpec p) => p.Environment["PORT"] == "1234"), It.IsAny<IProcessIO>()));
             };
         }
 

@@ -4,12 +4,8 @@ using IronFoundry.Container;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using System.Web;
 
 namespace Containerizer.Services.Implementations
 {
@@ -21,21 +17,14 @@ namespace Containerizer.Services.Implementations
         {
             websocket.SendEvent("starting", "starting");
 
-            var processSpec = new ProcessSpec
-            {
-                DisablePathMapping = false,
-                Privileged = false,
-                WorkingDirectory = container.Directory.UserPath,
-                ExecutablePath = apiProcessSpec.Path,
-                Environment = new Dictionary<string, string>
-                    {
-                        { "ARGJSON", JsonConvert.SerializeObject(apiProcessSpec.Args) }
-                    },
-                Arguments = apiProcessSpec.Args
-            };
+            var processSpec = NewProcessSpec(apiProcessSpec);
             var info = container.GetInfo();
-            if (info != null && info.ReservedPorts.Count > 0)
-                processSpec.Environment["PORT"] = info.ReservedPorts[0].ToString();
+            if (info != null)
+            {
+                CopyExecutorEnvVariables(processSpec, info);
+                CopyProcessSpecEnvVariables(processSpec, apiProcessSpec.Env);
+                OverrideEnvPort(processSpec, info);
+            }
 
             try
             {
@@ -49,6 +38,52 @@ namespace Containerizer.Services.Implementations
             {
                 websocket.SendEvent("error", e.Message);
                 websocket.Close(System.Net.WebSockets.WebSocketCloseStatus.InternalServerError, e.Message);
+            }
+        }
+
+        private static void OverrideEnvPort(ProcessSpec processSpec, ContainerInfo info)
+        {
+            if (info.ReservedPorts.Count > 0)
+                processSpec.Environment["PORT"] = info.ReservedPorts[0].ToString();
+        }
+
+        private ProcessSpec NewProcessSpec(Models.ApiProcessSpec apiProcessSpec)
+        {
+            var processSpec = new ProcessSpec
+            {
+                DisablePathMapping = false,
+                Privileged = false,
+                WorkingDirectory = container.Directory.UserPath,
+                ExecutablePath = apiProcessSpec.Path,
+                Environment = new Dictionary<string, string>
+                    {
+                        { "ARGJSON", JsonConvert.SerializeObject(apiProcessSpec.Args) }
+                    },
+                Arguments = apiProcessSpec.Args
+            };
+            return processSpec;
+        }
+
+        private static void CopyProcessSpecEnvVariables(ProcessSpec processSpec, string[] envStrings)
+        {
+            if (envStrings == null) { return; }
+            foreach (var kv in envStrings)
+            {
+                string[] arr = kv.Split(new Char[] { '=' }, 2);
+                processSpec.Environment.Add(arr[0], arr[1]);
+            }
+        }
+
+        private static void CopyExecutorEnvVariables(ProcessSpec processSpec, ContainerInfo info)
+        {
+            string varsJson = "";
+            if (info.Properties.TryGetValue("executor:env", out varsJson))
+            {
+                var environmentVariables = JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(varsJson);
+                foreach (var dict in environmentVariables)
+                {
+                    processSpec.Environment.Add(dict["name"], dict["value"]);
+                }
             }
         }
 

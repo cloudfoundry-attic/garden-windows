@@ -11,6 +11,7 @@ namespace Containerizer.Models
     {
         public string Path { get; set; }
         public string[] Args { get; set; }
+        public string[] Env { get; set; }
 
         public string Arguments()
         {
@@ -21,5 +22,10 @@ namespace Containerizer.Models
 
             return ArgumentEscaper.Escape(Args);
         }
+    }
+
+    public class EnvironmentVariable {
+        public string Name { get; set; }
+        public string Value { get; set; }
     }
 }

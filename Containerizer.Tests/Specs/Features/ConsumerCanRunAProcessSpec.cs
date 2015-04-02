@@ -45,12 +45,15 @@ namespace Containerizer.Tests.Specs.Features
                 {
                     before = () =>
                     {
+                        var response = httpClient.PutAsync("/api/containers/" + handle + "/properties/executor:env", new StringContent("[{\"name\":\"INSTANCE_GUID\",\"value\":\"ExcitingGuid\"}]")).Result;
+                        response.IsSuccessStatusCode.should_be_true();
+
                         containerPath = Helpers.GetContainerPath(handle);
                         File.WriteAllBytes(containerPath + "/myfile.bat",
                             new UTF8Encoding(true).GetBytes(
-                                "@echo off\r\n@echo Hi Fred\r\n@echo Jane is good\r\n@echo Jill is better\r\nset PORT\r\n"));
+                                "@echo off\r\n@echo Hi Fred\r\n@echo Jane is good\r\n@echo Jill is better\r\nset PORT\r\nset INSTANCE_GUID\r\n"));
 
-                        var response =
+                        response =
                             httpClient.PostAsJsonAsync("/api/containers/" + handle + "/net/in", new { hostPort = 0 })
                                 .GetAwaiter()
                                 .GetResult();
@@ -114,6 +117,8 @@ namespace Containerizer.Tests.Specs.Features
                             // Exptected output
                             messages.should_contain("{\"type\":\"stdout\",\"data\":\"Hi Fred\\r\\n\"}");
                             messages.should_contain("{\"type\":\"stdout\",\"data\":\"PORT=" + hostPort + "\\r\\n\"}");
+                            messages.should_contain("{\"type\":\"stdout\",\"data\":\"INSTANCE_GUID=ExcitingGuid\\r\\n\"}");
+
 
                             // Expected process exitCode.
                             messages.should_contain("{\"type\":\"close\",\"data\":\"0\"}");
