@@ -101,7 +101,6 @@ namespace Containerizer
 
         TService IServiceLocator.GetInstance<TService>()
         {
-            Console.WriteLine("TService IServiceLocator.GetInstance<TService>()");
             Type type = typeof (TService);
             return (TService)container.ResolveOptional(type);
         }

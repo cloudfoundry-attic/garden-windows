@@ -31,7 +31,6 @@ namespace Containerizer.Controllers
 
         public ContainerProcessHandler(IContainerService containerService, IRunService runService)
         {
-            Console.WriteLine("Container Process Handler Constructor");
             this.containerService = containerService;
             this.runService = runService;
         }
