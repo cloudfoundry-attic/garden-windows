@@ -111,16 +111,9 @@ namespace Containerizer.Tests.Specs.Features
 
                         it["should run a process, return stdout and close the socket"] = () =>
                         {
-                            // This mysteriously fixes race conditions on AppVeyor.
-                            messages.should_contain("{\"type\":\"starting\",\"data\":\"starting\"}");
-
-                            // Exptected output
                             messages.should_contain("{\"type\":\"stdout\",\"data\":\"Hi Fred\\r\\n\"}");
                             messages.should_contain("{\"type\":\"stdout\",\"data\":\"PORT=" + hostPort + "\\r\\n\"}");
                             messages.should_contain("{\"type\":\"stdout\",\"data\":\"INSTANCE_GUID=ExcitingGuid\\r\\n\"}");
-
-
-                            // Expected process exitCode.
                             messages.should_contain("{\"type\":\"close\",\"data\":\"0\"}");
                         };
                     };

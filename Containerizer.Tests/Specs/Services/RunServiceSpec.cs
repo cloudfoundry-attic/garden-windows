@@ -33,16 +33,6 @@ namespace Containerizer.Tests.Specs.Services
                 containerMock.Setup(x => x.Directory).Returns(new Mock<IContainerDirectory>().Object);
             };
 
-            it["sends a starting event (mysteriously fixes a race condition)"] = () =>
-            {
-                containerMock.Setup(x => x.Run(It.IsAny<ProcessSpec>(), It.IsAny<IProcessIO>())).Returns(processMock.Object);
-
-                var apiProcessSpec = new ApiProcessSpec();
-                runService.Run(websocketMock.Object, apiProcessSpec);
-
-                websocketMock.Verify(x => x.SendEvent("starting", "starting"));
-            };
-
             context["Process exits normally"] = () =>
             {
                 before = () => containerMock.Setup(x => x.Run(It.IsAny<ProcessSpec>(), It.IsAny<IProcessIO>())).Returns(processMock.Object);
