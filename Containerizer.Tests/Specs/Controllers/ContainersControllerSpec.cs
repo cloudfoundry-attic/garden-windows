@@ -15,6 +15,7 @@ using NSpec;
 using IronFoundry.Container;
 using Containerizer.Models;
 using System.IO;
+using Logger;
 
 #endregion
 
@@ -35,12 +36,15 @@ namespace Containerizer.Tests.Specs.Controllers
             ContainersController containersController = null;
             Mock<IContainerService> mockContainerService = null;
             Mock<IContainerPropertyService> mockPropertyService = null;
+            Mock<ILogger> mockLogger = null;
+
 
             before = () =>
             {
                 mockContainerService = new Mock<IContainerService>();
                 mockPropertyService = new Mock<IContainerPropertyService>();
-                containersController = new ContainersController(mockContainerService.Object, mockPropertyService.Object)
+                mockLogger = new Mock<ILogger>();
+                containersController = new ContainersController(mockContainerService.Object, mockPropertyService.Object, mockLogger.Object)
                 {
                     Configuration = new HttpConfiguration(),
                     Request = new HttpRequestMessage()

@@ -15,6 +15,7 @@ using System.Runtime.InteropServices;
 using Containerizer.Factories;
 using Microsoft.Owin.Hosting.Services;
 using Microsoft.Practices.ServiceLocation;
+using Logger;
 
 #endregion
 
@@ -26,12 +27,14 @@ namespace Containerizer
         private static IContainerService containerService;
         private static IContainerPropertyService containerPropertyService;
         public static IExternalIP ExternalIP;
+        public static ILogger logger;
 
         static DependencyResolver()
         {
             containerService = new ContainerServiceFactory().New();
             var fileSystemManager = new FileSystemManager();
             containerPropertyService = new LocalFilePropertyService(fileSystemManager, "properties.json");
+            logger = new Logger.Logger("containerizer");
         }
 
         public DependencyResolver()
@@ -46,6 +49,7 @@ namespace Containerizer
             containerBuilder.RegisterType<StreamOutService>().As<IStreamOutService>();
             containerBuilder.RegisterType<TarStreamService>().As<ITarStreamService>();
             containerBuilder.Register(context => containerPropertyService).As<IContainerPropertyService>();
+            containerBuilder.Register(context => logger).As<ILogger>();
             containerBuilder.RegisterType<ContainersController>();
             containerBuilder.RegisterType<FilesController>();
             containerBuilder.RegisterType<NetController>();

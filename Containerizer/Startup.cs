@@ -31,6 +31,10 @@ namespace Containerizer
             var dependencyResolver = new DependencyResolver();
             config.DependencyResolver = dependencyResolver;
 
+            // Filter for loggering
+            var logActionFilter = new Containerizer.Filters.LogActionFilter(DependencyResolver.logger);
+            config.Filters.Add(logActionFilter);
+
             // Make sure the Autofac lifetime scope is passed to Web API.
             app.UseAutofacWebApi(config);
 

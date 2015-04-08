@@ -12,6 +12,7 @@ using Microsoft.Web.WebSockets;
 using Newtonsoft.Json;
 using Owin.WebSocket;
 using Containerizer.Services.Interfaces;
+using Logger;
 
 #endregion
 
@@ -28,16 +29,18 @@ namespace Containerizer.Controllers
     {
         private readonly IContainerService containerService;
         private readonly IRunService runService;
+        private readonly ILogger logger;
 
-        public ContainerProcessHandler(IContainerService containerService, IRunService runService)
+        public ContainerProcessHandler(IContainerService containerService, IRunService runService, ILogger logger)
         {
             this.containerService = containerService;
             this.runService = runService;
+            this.logger = logger;
         }
 
         public void SendEvent(string messageType, string message)
         {
-            Console.WriteLine("SendEvent: {0} :: {1}", messageType, message);
+            logger.Info("SendEvent: {0} :: {1}", messageType, message);
             var jsonString = JsonConvert.SerializeObject(new ProcessStreamEvent
             {
                 MessageType = messageType,
@@ -50,19 +53,19 @@ namespace Containerizer.Controllers
         public override void OnOpen()
         {
             var handle = Arguments["handle"];
-            Console.WriteLine("onOpen: {0}", handle);
+            logger.Info("onOpen: {0}", handle);
 
             runService.container = containerService.GetContainerByHandle(handle);
         }
 
         public override void OnClose(WebSocketCloseStatus? closeStatus, string closeStatusDescription)
         {
-            Console.WriteLine("OnClose: {0} :: {1}", closeStatus.ToString(), closeStatusDescription);
+            logger.Info("OnClose: {0} :: {1}", closeStatus.ToString(), closeStatusDescription);
         }
 
         public override void OnReceiveError(Exception error)
         {
-            Console.WriteLine("OnReceiveError: {0}", error.Message);
+            logger.Error("OnReceiveError: {0}", error.Message);
         }
 
         public override Task OnMessageReceived(ArraySegment<byte> message, WebSocketMessageType type)

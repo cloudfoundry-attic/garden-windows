@@ -183,6 +183,10 @@
       <Project>{b512432c-bde1-4108-8dcf-5edb78fac454}</Project>
       <Name>Containerizer</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Logger\Logger.csproj">
+      <Project>{642c3c03-e002-4a16-8117-5ebae8acb9a4}</Project>
+      <Name>Logger</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
