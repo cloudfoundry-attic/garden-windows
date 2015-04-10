@@ -5,3 +5,5 @@
 backend/junit.xml
 container/junit.xml
 process/junit.xml
+
+*~

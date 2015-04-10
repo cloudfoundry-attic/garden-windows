@@ -117,3 +117,9 @@ func (self ContainerizerURL) RemoveProperty(handle string, property string) stri
 	base.Path = "/api/containers/" + handle + "/properties/" + property
 	return base.String()
 }
+
+func (self ContainerizerURL) MemoryLimit(handle string) string {
+	base := *self.base
+	base.Path = "/api/containers/" + handle + "/memory_limit"
+	return base.String()
+}

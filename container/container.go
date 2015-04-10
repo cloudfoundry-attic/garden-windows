@@ -168,10 +168,29 @@ func (container *container) CurrentDiskLimits() (garden.DiskLimits, error) {
 }
 
 func (container *container) LimitMemory(limits garden.MemoryLimits) error {
+	url := container.containerizerURL.MemoryLimit(container.Handle())
+	jsonLimits, err := json.Marshal(limits)
+	if err != nil {
+		return err
+	}
+	response, err := http.Post(url, "application/json", strings.NewReader(string(jsonLimits)))
+	if err != nil {
+		return err
+	}
+	response.Body.Close()
+
+	if response.StatusCode != 200 {
+		return errors.New(response.Status)
+	}
 	return nil
 }
+
 func (container *container) CurrentMemoryLimits() (garden.MemoryLimits, error) {
-	return garden.MemoryLimits{}, nil
+	url := container.containerizerURL.MemoryLimit(container.Handle())
+	limits := garden.MemoryLimits{}
+	response, err := http.Get(url)
+	err = container.parseJson(response, err, &limits)
+	return limits, err
 }
 
 func (container *container) NetIn(hostPort, containerPort uint32) (uint32, uint32, error) {

@@ -118,6 +118,69 @@ var _ = Describe("container", func() {
 
 	})
 
+	Describe("LimitMemory", func() {
+		Context("Containerizer returns 200", func() {
+			var requestBody string
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/containers/containerhandle/limit_memory"),
+						ghttp.RespondWith(200, `{}`),
+						func(w http.ResponseWriter, req *http.Request) {
+							body, err := ioutil.ReadAll(req.Body)
+							req.Body.Close()
+							Expect(err).ShouldNot(HaveOccurred())
+							requestBody = string(body)
+						},
+					),
+				)
+			})
+
+			It("sets limits on the container", func() {
+				limit := garden.MemoryLimits{LimitInBytes: 555}
+				err := container.LimitMemory(limit)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(server.ReceivedRequests()).Should(HaveLen(1))
+				Expect(requestBody).Should(Equal(`{"limit_in_bytes":555}`))
+			})
+		})
+
+		Context("Containerizer returns non 200", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/containers/containerhandle/limit_memory"),
+						ghttp.RespondWith(500, "{}"),
+					),
+				)
+			})
+
+			It("returns an error", func() {
+				limit := garden.MemoryLimits{LimitInBytes: 555}
+				err := container.LimitMemory(limit)
+				Expect(err).To(HaveOccurred())
+			})
+		})
+	})
+
+	Describe("CurrentMemoryLimits", func() {
+		BeforeEach(func() {
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/containers/containerhandle/limit_memory"),
+					ghttp.RespondWith(200, `{"limit_in_bytes": 456}`),
+				),
+			)
+		})
+
+		It("returns the limit", func() {
+			limit, err := container.CurrentMemoryLimits()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(limit.LimitInBytes).To(Equal(uint64(456)))
+		})
+	})
+
 	Describe("StreamOut", func() {
 		Context("Containerizer returns 200", func() {
 			BeforeEach(func() {
