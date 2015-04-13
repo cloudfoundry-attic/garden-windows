@@ -126,6 +126,7 @@
   <ItemGroup>
     <Compile Include="Specs\Controllers\BulkInfoControllerSpec.cs" />
     <Compile Include="Specs\Controllers\InfoControllerSpec.cs" />
+    <Compile Include="Specs\Controllers\LimitsControllerSpec.cs" />
     <Compile Include="Specs\Controllers\PropertiesControllerSpec.cs" />
     <Compile Include="Specs\Controllers\NetControllerSpec.cs" />
     <Compile Include="Specs\Controllers\FilesControllerSpec.cs" />
@@ -136,6 +137,7 @@
     <Compile Include="Specs\ExtensionMethods.cs" />
     <Compile Include="Specs\Facades\FakeAspNetWebSocketContext.cs" />
     <Compile Include="Specs\Features\ConsumerCanDestroyContainerSpec.cs" />
+    <Compile Include="Specs\Features\ConsumerCanSetLimitsSpec.cs" />
     <Compile Include="Specs\Features\ConsumerCanUsePropertyAndInfoEndpointsSpec.cs" />
     <Compile Include="Specs\Features\ConsumerCanStreamInAndStreamOut.cs" />
     <Compile Include="Specs\Features\PingSpec.cs" />
