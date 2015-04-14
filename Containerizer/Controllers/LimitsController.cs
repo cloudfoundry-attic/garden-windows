@@ -29,7 +29,7 @@ namespace Containerizer.Controllers
             this.containerService = containerService;
         }
 
-        [Route("api/containers/{handle}/limit_memory")]
+        [Route("api/containers/{handle}/memory_limit")]
         [HttpPost]
         public IHttpActionResult LimitMemory(string handle, MemoryLimits limits)
         {
@@ -38,16 +38,22 @@ namespace Containerizer.Controllers
             {
                 return NotFound();
             }
-            try
-            {
-                container.LimitMemory(limits.LimitInBytes);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return InternalServerError(ex);
-            }
 
+            container.LimitMemory(limits.LimitInBytes);
+            return Ok();
+        }
+
+        [Route("api/containers/{handle}/memory_limit")]
+        [HttpGet]
+        public IHttpActionResult CurrentMemoryLimit(string handle)
+        {
+            var container = containerService.GetContainerByHandle(handle);
+            if (container == null)
+            {
+                return NotFound();
+            }
+            var limit = container.CurrentMemoryLimit();
+            return Json(new MemoryLimits { LimitInBytes = limit });
         }
     }
 }

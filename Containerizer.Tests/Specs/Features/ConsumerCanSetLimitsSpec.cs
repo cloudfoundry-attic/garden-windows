@@ -7,6 +7,7 @@ using NSpec;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using System.Text;
+using Containerizer.Controllers;
 
 #endregion
 
@@ -38,9 +39,14 @@ namespace Containerizer.Tests.Specs.Features
 
                     it["allows the consumer to get and set limits"] = () =>
                     {
-                        var result = client.PostAsJsonAsync("/api/containers/" + handle + "/limit_memory", new { limit_in_bytes = 456456456 }).Result;
-
+                        var limit_in_bytes = 32UL * 1024 * 1024;
+                        var url = "/api/containers/" + handle + "/memory_limit";
+                        var result = client.PostAsJsonAsync(url, new { limit_in_bytes = limit_in_bytes }).Result;
                         result.IsSuccessStatusCode.should_be_true();
+                        result = client.GetAsync(url).Result;
+                        result.IsSuccessStatusCode.should_be_true();
+                        var limits = JsonConvert.DeserializeObject<MemoryLimits>(result.Content.ReadAsString());
+                        limits.LimitInBytes.should_be(limit_in_bytes);
                     };
                 };
             };
