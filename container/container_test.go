@@ -124,7 +124,7 @@ var _ = Describe("container", func() {
 			BeforeEach(func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("POST", "/api/containers/containerhandle/limit_memory"),
+						ghttp.VerifyRequest("POST", "/api/containers/containerhandle/memory_limit"),
 						ghttp.RespondWith(200, `{}`),
 						func(w http.ResponseWriter, req *http.Request) {
 							body, err := ioutil.ReadAll(req.Body)
@@ -150,7 +150,7 @@ var _ = Describe("container", func() {
 			BeforeEach(func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("POST", "/api/containers/containerhandle/limit_memory"),
+						ghttp.VerifyRequest("POST", "/api/containers/containerhandle/memory_limit"),
 						ghttp.RespondWith(500, "{}"),
 					),
 				)
@@ -168,7 +168,7 @@ var _ = Describe("container", func() {
 		BeforeEach(func() {
 			server.AppendHandlers(
 				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/api/containers/containerhandle/limit_memory"),
+					ghttp.VerifyRequest("GET", "/api/containers/containerhandle/memory_limit"),
 					ghttp.RespondWith(200, `{"limit_in_bytes": 456}`),
 				),
 			)
