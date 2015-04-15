@@ -542,7 +542,7 @@ var _ = Describe("container", func() {
 			server.AppendHandlers(
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("GET", "/api/containers/containerhandle/properties/key:val"),
-					ghttp.RespondWith(200, "a value"),
+					ghttp.RespondWith(200, `"a value"`),
 				),
 			)
 		})

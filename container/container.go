@@ -254,19 +254,21 @@ func (container *container) GetProperty(name string) (string, error) {
 		"url":      requestUrl,
 	})
 	response, err := http.Get(requestUrl)
-	defer response.Body.Close()
-
 	if err != nil {
 		container.logger.Info("NO GET FOR YOU!", lager.Data{
 			"error": err,
 		})
 		return "", err
 	}
-	property, err := ioutil.ReadAll(response.Body)
+	defer response.Body.Close()
+
+	var property string
+	err = json.NewDecoder(response.Body).Decode(&property)
 	if err != nil {
 		return "", err
 	}
-	return string(property), nil
+
+	return property, nil
 }
 
 func (container *container) SetProperty(name string, value string) error {
