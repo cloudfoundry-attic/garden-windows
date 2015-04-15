@@ -11,6 +11,7 @@ using Containerizer.Services.Interfaces;
 using Moq;
 using NSpec;
 using IronFoundry.Container;
+using System.Web.Http.Results;
 
 #endregion
 
@@ -88,7 +89,7 @@ namespace Containerizer.Tests.Specs.Controllers
                             return propertyValue;
                         });
 
-                    result = propertiesController.Show(containerHandle, key).GetAwaiter().GetResult();
+                    result = propertiesController.Show(containerHandle, key);
                 };
 
                 it["returns a successful status code"] = () =>
@@ -98,13 +99,8 @@ namespace Containerizer.Tests.Specs.Controllers
 
                 it["returns the correct property value"] = () =>
                 {
-                    result
-                        .ExecuteAsync(new CancellationToken())
-                        .Result
-                        .Content
-                        .ReadAsJson()["value"]
-                        .ToString()
-                        .should_be(propertyValue);
+                    var actualValue = result.should_cast_to<JsonResult<string>>();
+                    actualValue.Content.should_be(propertyValue);
                 };
             };
 

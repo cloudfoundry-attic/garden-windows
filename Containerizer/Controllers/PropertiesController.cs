@@ -43,10 +43,11 @@ namespace Containerizer.Controllers
 
         [Route("api/containers/{handle}/properties/{propertyKey}")]
         [HttpGet]
-        public Task<IHttpActionResult> Show(string handle, string propertyKey)
+        public IHttpActionResult Show(string handle, string propertyKey)
         {
             var container = containerService.GetContainerByHandle(handle);
-            return Task.FromResult((IHttpActionResult)Json(new GetPropertyResponse {Value = propertyService.GetProperty(container, propertyKey)}));
+            var value = propertyService.GetProperty(container, propertyKey);
+            return Json(value);
         }
 
         [Route("api/containers/{handle}/properties/{propertyKey}")]
