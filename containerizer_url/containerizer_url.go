@@ -45,7 +45,7 @@ func (self ContainerizerURL) Destroy(handle string) string {
 func (self ContainerizerURL) List(props garden.Properties) (string, error) {
 	base := *self.base
 	base.Path = "/api/containers"
-	if props != nil {
+	if len(props) > 0 {
 		jsonString, err := json.Marshal(props)
 		if err != nil {
 			return "", err
