@@ -65,9 +65,16 @@ func (dotNetBackend *dotNetBackend) Create(containerSpec garden.ContainerSpec) (
 	if err != nil {
 		return nil, err
 	}
-	resp.Body.Close()
+	defer resp.Body.Close()
 
-	netContainer := container.NewContainer(dotNetBackend.containerizerURL, containerSpec.Handle, dotNetBackend.logger)
+	var returnedContainer createContainerResponse
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(body, &returnedContainer)
+
+	netContainer := container.NewContainer(dotNetBackend.containerizerURL, returnedContainer.Handle, dotNetBackend.logger)
 	return netContainer, nil
 }
 

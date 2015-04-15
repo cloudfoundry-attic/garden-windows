@@ -97,6 +97,7 @@ var _ = Describe("backend", func() {
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("POST", "/api/containers"),
 					ghttp.VerifyJSONRepresenting(testContainer),
+					ghttp.RespondWith(200, `{"handle":"ServerChangedHandle"}`),
 				),
 			)
 		})
@@ -105,6 +106,12 @@ var _ = Describe("backend", func() {
 			_, err := dotNetBackend.Create(testContainer)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+
+		It("sets the container's handle from the response", func() {
+			container, err := dotNetBackend.Create(testContainer)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(container.Handle()).To(Equal("ServerChangedHandle"))
 		})
 
 		Context("when there is an error making the http connection", func() {
