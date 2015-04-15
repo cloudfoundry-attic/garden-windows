@@ -1,8 +1,11 @@
 package containerizer_url
 
 import (
+	"encoding/json"
 	"errors"
 	url "net/url"
+
+	"github.com/cloudfoundry-incubator/garden"
 )
 
 type ContainerizerURL struct {
@@ -39,10 +42,18 @@ func (self ContainerizerURL) Destroy(handle string) string {
 	return base.String()
 }
 
-func (self ContainerizerURL) List() string {
+func (self ContainerizerURL) List(props garden.Properties) (string, error) {
 	base := *self.base
 	base.Path = "/api/containers"
-	return base.String()
+	if props != nil {
+		jsonString, err := json.Marshal(props)
+		if err != nil {
+			return "", err
+		}
+		values := url.Values{"q": []string{string(jsonString)}}
+		base.RawQuery = values.Encode()
+	}
+	return base.String(), nil
 }
 
 func (self ContainerizerURL) BulkInfo() string {

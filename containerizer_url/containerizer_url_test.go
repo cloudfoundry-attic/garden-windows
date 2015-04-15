@@ -1,6 +1,7 @@
 package containerizer_url_test
 
 import (
+	"github.com/cloudfoundry-incubator/garden"
 	"github.com/cloudfoundry-incubator/garden-windows/containerizer_url"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -14,12 +15,14 @@ var _ = Describe("ContainerizerURL", func() {
 			expectedCreate := "http://127.0.0.1:1788/api/containers"
 			expectedDestroy := "http://127.0.0.1:1788/api/containers/handle"
 			expectedList := "http://127.0.0.1:1788/api/containers"
+			expectedListWithProps := "http://127.0.0.1:1788/api/containers?q=%7B%22a%22%3A%22c%22%7D"
 			expectedBulkInfo := "http://127.0.0.1:1788/api/bulkcontainerinfo"
 
 			Ω(containerizerURL.Ping()).Should(Equal(expectedPing))
 			Ω(containerizerURL.Create()).Should(Equal(expectedCreate))
 			Ω(containerizerURL.Destroy("handle")).Should(Equal(expectedDestroy))
-			Ω(containerizerURL.List()).Should(Equal(expectedList))
+			Ω(containerizerURL.List(nil)).Should(Equal(expectedList))
+			Ω(containerizerURL.List(garden.Properties{"a": "c"})).Should(Equal(expectedListWithProps))
 			Ω(containerizerURL.BulkInfo()).Should(Equal(expectedBulkInfo))
 
 			expectedStop := "http://127.0.0.1:1788/api/containers/handle/stop"

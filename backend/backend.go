@@ -88,8 +88,11 @@ func (dotNetBackend *dotNetBackend) Destroy(handle string) error {
 	return nil
 }
 
-func (dotNetBackend *dotNetBackend) Containers(garden.Properties) ([]garden.Container, error) {
-	url := dotNetBackend.containerizerURL.List()
+func (dotNetBackend *dotNetBackend) Containers(props garden.Properties) ([]garden.Container, error) {
+	url, err := dotNetBackend.containerizerURL.List(props)
+	if err != nil {
+		return nil, err
+	}
 	response, err := http.Get(url)
 	if err != nil {
 		return nil, err

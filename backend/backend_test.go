@@ -40,21 +40,43 @@ var _ = Describe("backend", func() {
 	})
 
 	Describe("Containers", func() {
-		BeforeEach(func() {
-			server.AppendHandlers(
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/api/containers"),
-					ghttp.RespondWith(200, `["MyFirstContainer","MySecondContainer"]`),
-				),
-			)
+		Context("when no properties are specified", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/containers"),
+						ghttp.RespondWith(200, `["MyFirstContainer","MySecondContainer"]`),
+					),
+				)
+			})
+			It("returns a list of containers", func() {
+				containers, err := dotNetBackend.Containers(nil)
+				Ω(err).NotTo(HaveOccurred())
+				Ω(containers).Should(Equal([]garden.Container{
+					container.NewContainer(containerizerURL, "MyFirstContainer", logger),
+					container.NewContainer(containerizerURL, "MySecondContainer", logger),
+				}))
+			})
 		})
-		It("returns a list of containers", func() {
-			containers, err := dotNetBackend.Containers(nil)
-			Ω(err).NotTo(HaveOccurred())
-			Ω(containers).Should(Equal([]garden.Container{
-				container.NewContainer(containerizerURL, "MyFirstContainer", logger),
-				container.NewContainer(containerizerURL, "MySecondContainer", logger),
-			}))
+
+		Context("when given properties to filter by", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/containers", "q=%7B%22a%22%3A%22c%22%7D"),
+						ghttp.RespondWith(200, `["MatchingContainer"]`),
+					),
+				)
+			})
+			It("passes them to containerizer and returns only containers with matching properties", func() {
+				containers, err := dotNetBackend.Containers(
+					garden.Properties{"a": "c"},
+				)
+				Ω(err).NotTo(HaveOccurred())
+				Ω(containers).Should(Equal([]garden.Container{
+					container.NewContainer(containerizerURL, "MatchingContainer", logger),
+				}))
+			})
 		})
 	})
 
