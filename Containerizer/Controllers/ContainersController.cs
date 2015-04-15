@@ -20,7 +20,7 @@ namespace Containerizer.Controllers
 {
     public class CreateResponse
     {
-        [JsonProperty("id")]
+        [JsonProperty("handle")]
         public string Handle { get; set; }
     }
 

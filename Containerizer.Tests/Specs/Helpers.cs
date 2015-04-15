@@ -59,7 +59,7 @@ namespace Containerizer.Tests.Specs
             readTask.Wait();
             var response = readTask.Result;
             var json = JObject.Parse(response);
-            return json["id"].ToString();
+            return json["handle"].ToString();
         }
 
         public static string GetContainerPath(string handle)

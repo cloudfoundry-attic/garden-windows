@@ -66,7 +66,7 @@ namespace Containerizer.Tests.Specs.Features
                         readTask.Wait();
                         string response = readTask.Result;
                         JObject json = JObject.Parse(response);
-                        id = json["id"].ToString();
+                        id = json["handle"].ToString();
                     };
 
                     it["creates the container"] = () =>
