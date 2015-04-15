@@ -42,6 +42,11 @@ namespace Containerizer.Tests.Specs
             return JObject.Parse(content.ReadAsString());
         }
 
+        public static string ReadAsJsonString(this HttpContent content)
+        {
+            return JValue.Parse(content.ReadAsString()).ToString();
+        }
+
         public static JArray ReadAsJsonArray(this HttpContent content)
         {
             return JArray.Parse(content.ReadAsString());

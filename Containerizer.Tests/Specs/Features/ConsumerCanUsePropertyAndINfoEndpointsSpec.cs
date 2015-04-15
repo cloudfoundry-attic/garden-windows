@@ -82,16 +82,16 @@ namespace Containerizer.Tests.Specs.Features
             var infoResponse = client.GetAsync(infoPath).Result.Content.ReadAsJson()["Properties"] as JObject;
             infoResponse.Count.should_be(1);
 
-            var showResponse = client.GetAsync("/api/containers/" + handle + "/properties/mysecret").Result.Content.ReadAsJson();
-            showResponse["value"].ToString().should_be(properties["mysecret"]);
+            var showResponse = client.GetAsync("/api/containers/" + handle + "/properties/mysecret").Result.Content.ReadAsJsonString();
+            showResponse.should_be(properties["mysecret"]);
         }
 
         private static void GetsEachProperty(HttpClient client, string handle, Dictionary<string, string> properties)
         {
             foreach (var p in properties)
             {
-                var result = client.GetAsync("/api/containers/" + handle + "/properties/" + p.Key).Result.Content.ReadAsJson();
-                result["value"].ToString().should_be(p.Value);
+                var result = client.GetAsync("/api/containers/" + handle + "/properties/" + p.Key).Result.Content.ReadAsJsonString();
+                result.should_be(p.Value);
             }
         }
 

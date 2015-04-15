@@ -78,8 +78,8 @@ namespace Containerizer.Tests.Specs.Features
 
                         var propertyResponse =
                             client.GetAsync("/api/containers/" + handle + "/properties/" + propertyKey)
-                                .Result.Content.ReadAsJson();
-                        propertyResponse["value"].ToString().should_be(propertyValue);
+                                .Result.Content.ReadAsJsonString();
+                        propertyResponse.should_be(propertyValue);
                     };
                 };
             };

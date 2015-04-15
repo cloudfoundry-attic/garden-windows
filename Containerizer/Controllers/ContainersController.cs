@@ -40,9 +40,23 @@ namespace Containerizer.Controllers
 
         [Route("api/containers")]
         [HttpGet]
-        public IReadOnlyList<string> Index()
+        public IReadOnlyList<string> Index(string q = null)
         {
-            return containerService.GetContainers().Select(x => x.Handle).ToList();
+            IEnumerable<IContainer> containers = containerService.GetContainers();
+            if (q != null) {
+                var desiredProps = JsonConvert.DeserializeObject<Dictionary<string, string>>(q);
+
+                containers = containers.Where((x) => {
+                    var properties = propertyService.GetProperties(x);
+                    return desiredProps.All(p =>
+                    {
+                        string propValue;
+                        var exists = properties.TryGetValue(p.Key, out propValue);
+                        return exists && propValue == p.Value;
+                    });
+                });
+            }
+             return containers.Select(x => x.Handle).ToList();
         }
 
         [Route("api/containers")]

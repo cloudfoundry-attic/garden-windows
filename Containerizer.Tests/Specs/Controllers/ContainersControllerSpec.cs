@@ -23,7 +23,7 @@ namespace Containerizer.Tests.Specs.Controllers
 {
     internal class ContainersControllerSpec : nspec
     {
-        
+
         IContainer mockContainerWithHandle(string handle)
         {
             var container = new Mock<IContainer>();
@@ -58,19 +58,39 @@ namespace Containerizer.Tests.Specs.Controllers
 
                 before = () =>
                 {
+                    var container1 = mockContainerWithHandle("handle1");
+                    var container2 = mockContainerWithHandle("handle2");
+                    var container3 = mockContainerWithHandle("handle3");
+
                     mockContainerService.Setup(x => x.GetContainers())
                         .Returns(new List<IContainer>
                         {
-                            mockContainerWithHandle("MyFirstContainer"),
-                            mockContainerWithHandle("MySecondContainer")
+                            container1, container2, container3
                         });
-                    result = containersController.Index();
+
+                    mockPropertyService.Setup(x => x.GetProperties(container1)).Returns(new Dictionary<string, string> { { "a", "b" } });
+                    mockPropertyService.Setup(x => x.GetProperties(container2)).Returns(new Dictionary<string, string> { { "a", "b" }, { "c", "d" }, { "e", "f" } });
+                    mockPropertyService.Setup(x => x.GetProperties(container3)).Returns(new Dictionary<string, string> { { "e", "f" } });
                 };
 
-                it["returns a list of container ids as strings"] = () =>
+                it["when filter is provided returns a filtered list of container id's as strings"] = () =>
                 {
-                    result.should_contain("MyFirstContainer");
-                    result.should_contain("MySecondContainer");
+                    result = containersController.Index("{\"a\":\"b\", \"e\":\"f\"}");
+
+                    result.should_not_be_null();
+                    result.Count.should_be(1);
+                    result.should_contain("handle2");
+                };
+
+                it["without filter returns a list of all containers id's as strings"] = () =>
+                {
+                    result = containersController.Index();
+
+                    result.should_not_be_null();
+                    result.Count.should_be(3);
+                    result.should_contain("handle1");
+                    result.should_contain("handle2");
+                    result.should_contain("handle3");
                 };
             };
 
