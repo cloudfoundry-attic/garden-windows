@@ -38,8 +38,8 @@ var _ = Describe("process", func() {
 			close(proc.(process.DotNetProcess).StreamOpen)
 
 			tuple := <-exitStatusChannel
-			Ω(tuple.exitStatus).Should(Equal(0))
-			Ω(tuple.err).ShouldNot(HaveOccurred())
+			Expect(tuple.exitStatus).Should(Equal(0))
+			Expect(tuple.err).ShouldNot(HaveOccurred())
 
 			close(done)
 		}, 0.1)
@@ -48,8 +48,8 @@ var _ = Describe("process", func() {
 			proc.(process.DotNetProcess).StreamOpen <- process.DotNetProcessExitStatus{0, errors.New("An Error Message")}
 
 			tuple := <-exitStatusChannel
-			Ω(tuple.err).Should(Equal(errors.New("An Error Message")))
-			Ω(tuple.exitStatus).Should(Equal(0))
+			Expect(tuple.err).Should(Equal(errors.New("An Error Message")))
+			Expect(tuple.exitStatus).Should(Equal(0))
 
 			close(done)
 		}, 0.1)

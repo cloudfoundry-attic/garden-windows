@@ -18,12 +18,12 @@ var _ = Describe("ContainerizerURL", func() {
 			expectedListWithProps := "http://127.0.0.1:1788/api/containers?q=%7B%22a%22%3A%22c%22%7D"
 			expectedBulkInfo := "http://127.0.0.1:1788/api/bulkcontainerinfo"
 
-			Ω(containerizerURL.Ping()).Should(Equal(expectedPing))
-			Ω(containerizerURL.Create()).Should(Equal(expectedCreate))
-			Ω(containerizerURL.Destroy("handle")).Should(Equal(expectedDestroy))
-			Ω(containerizerURL.List(nil)).Should(Equal(expectedList))
-			Ω(containerizerURL.List(garden.Properties{"a": "c"})).Should(Equal(expectedListWithProps))
-			Ω(containerizerURL.BulkInfo()).Should(Equal(expectedBulkInfo))
+			Expect(containerizerURL.Ping()).Should(Equal(expectedPing))
+			Expect(containerizerURL.Create()).Should(Equal(expectedCreate))
+			Expect(containerizerURL.Destroy("handle")).Should(Equal(expectedDestroy))
+			Expect(containerizerURL.List(nil)).Should(Equal(expectedList))
+			Expect(containerizerURL.List(garden.Properties{"a": "c"})).Should(Equal(expectedListWithProps))
+			Expect(containerizerURL.BulkInfo()).Should(Equal(expectedBulkInfo))
 
 			expectedStop := "http://127.0.0.1:1788/api/containers/handle/stop"
 			expectedGetProperties := "http://127.0.0.1:1788/api/containers/handle/properties"
@@ -37,16 +37,16 @@ var _ = Describe("ContainerizerURL", func() {
 			expectedSetProperty := "http://127.0.0.1:1788/api/containers/handle/properties/prop"
 			expectedRemoveProperty := "http://127.0.0.1:1788/api/containers/handle/properties/prop"
 
-			Ω(containerizerURL.Stop("handle")).Should(Equal(expectedStop))
-			Ω(containerizerURL.GetProperties("handle")).Should(Equal(expectedGetProperties))
-			Ω(containerizerURL.Info("handle")).Should(Equal(expectedInfo))
-			Ω(containerizerURL.StreamIn("handle", "/")).Should(Equal(expectedStreamIn))
-			Ω(containerizerURL.StreamOut("handle", "/")).Should(Equal(expectedStreamOut))
-			Ω(containerizerURL.NetIn("handle")).Should(Equal(expectedNetIn))
-			Ω(containerizerURL.Run("handle")).Should(Equal(expectedRun))
-			Ω(containerizerURL.GetProperty("handle", "prop")).Should(Equal(expectedGetProperty))
-			Ω(containerizerURL.SetProperty("handle", "prop")).Should(Equal(expectedSetProperty))
-			Ω(containerizerURL.RemoveProperty("handle", "prop")).Should(Equal(expectedRemoveProperty))
+			Expect(containerizerURL.Stop("handle")).Should(Equal(expectedStop))
+			Expect(containerizerURL.GetProperties("handle")).Should(Equal(expectedGetProperties))
+			Expect(containerizerURL.Info("handle")).Should(Equal(expectedInfo))
+			Expect(containerizerURL.StreamIn("handle", "/")).Should(Equal(expectedStreamIn))
+			Expect(containerizerURL.StreamOut("handle", "/")).Should(Equal(expectedStreamOut))
+			Expect(containerizerURL.NetIn("handle")).Should(Equal(expectedNetIn))
+			Expect(containerizerURL.Run("handle")).Should(Equal(expectedRun))
+			Expect(containerizerURL.GetProperty("handle", "prop")).Should(Equal(expectedGetProperty))
+			Expect(containerizerURL.SetProperty("handle", "prop")).Should(Equal(expectedSetProperty))
+			Expect(containerizerURL.RemoveProperty("handle", "prop")).Should(Equal(expectedRemoveProperty))
 		}
 
 		It("works when the base URL does not have a trailing slash", func() {
@@ -61,19 +61,19 @@ var _ = Describe("ContainerizerURL", func() {
 	Context("when the base URL is not absolute (i.e. relative)", func() {
 		It("returns an error", func() {
 			_, err := containerizer_url.FromString("127.0.0.1:8080")
-			Ω(err).To(HaveOccurred())
+			Expect(err).To(HaveOccurred())
 		})
 
 		It("returns an error with leading slashes", func() {
 			_, err := containerizer_url.FromString("//127.0.0.1:8080")
-			Ω(err).To(HaveOccurred())
+			Expect(err).To(HaveOccurred())
 		})
 	})
 
 	Context("when the base URL is non readable", func() {
 		It("returns an error", func() {
 			_, err := containerizer_url.FromString("sxf$5%")
-			Ω(err).To(HaveOccurred())
+			Expect(err).To(HaveOccurred())
 		})
 	})
 })

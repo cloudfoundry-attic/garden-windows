@@ -64,14 +64,14 @@ var _ = Describe("container", func() {
 
 		It("returns info about the container", func() {
 			info, err := container.Info()
-			Ω(err).NotTo(HaveOccurred())
-			Ω(info.Properties).Should(Equal(garden.Properties{"Keymaster": "Gatekeeper"}))
+			Expect(err).NotTo(HaveOccurred())
+			Expect(info.Properties).Should(Equal(garden.Properties{"Keymaster": "Gatekeeper"}))
 
-			Ω(info.ExternalIP).Should(Equal(externalIP))
+			Expect(info.ExternalIP).Should(Equal(externalIP))
 
-			Ω(len(info.MappedPorts)).Should(Equal(1))
-			Ω(info.MappedPorts[0].ContainerPort).Should(Equal(uint32(8080)))
-			Ω(info.MappedPorts[0].HostPort).Should(Equal(uint32(6543)))
+			Expect(len(info.MappedPorts)).Should(Equal(1))
+			Expect(info.MappedPorts[0].ContainerPort).Should(Equal(uint32(8080)))
+			Expect(info.MappedPorts[0].HostPort).Should(Equal(uint32(6543)))
 		})
 	})
 
@@ -84,8 +84,8 @@ var _ = Describe("container", func() {
 						func(w http.ResponseWriter, req *http.Request) {
 							body, err := ioutil.ReadAll(req.Body)
 							req.Body.Close()
-							Ω(err).ShouldNot(HaveOccurred())
-							Ω(string(body)).Should(Equal("stuff"))
+							Expect(err).ShouldNot(HaveOccurred())
+							Expect(string(body)).Should(Equal("stuff"))
 						},
 					),
 				)
@@ -93,8 +93,8 @@ var _ = Describe("container", func() {
 
 			It("makes a call out to an external service", func() {
 				err := container.StreamIn("a/path", strings.NewReader("stuff"))
-				Ω(err).NotTo(HaveOccurred())
-				Ω(server.ReceivedRequests()).Should(HaveLen(1))
+				Expect(err).NotTo(HaveOccurred())
+				Expect(server.ReceivedRequests()).Should(HaveLen(1))
 			})
 		})
 		Context("Http PUT failure request", func() {
@@ -112,7 +112,7 @@ var _ = Describe("container", func() {
 
 			It("makes a call out to an external service", func() {
 				err := container.StreamIn("a/path", strings.NewReader("stuff"))
-				Ω(err).To(HaveOccurred())
+				Expect(err).To(HaveOccurred())
 			})
 		})
 
@@ -195,12 +195,12 @@ var _ = Describe("container", func() {
 			It("makes a call out to an external service", func() {
 				stream, err := container.StreamOut("a/path")
 				defer stream.Close()
-				Ω(err).NotTo(HaveOccurred())
-				Ω(server.ReceivedRequests()).Should(HaveLen(1))
+				Expect(err).NotTo(HaveOccurred())
+				Expect(server.ReceivedRequests()).Should(HaveLen(1))
 
 				body, err := ioutil.ReadAll(stream)
-				Ω(err).NotTo(HaveOccurred())
-				Ω(string(body)).Should(Equal("a tarball"))
+				Expect(err).NotTo(HaveOccurred())
+				Expect(string(body)).Should(Equal("a tarball"))
 			})
 		})
 
@@ -216,7 +216,7 @@ var _ = Describe("container", func() {
 
 			It("returns an error", func() {
 				_, err := container.StreamOut("a/path")
-				Ω(err).To(HaveOccurred())
+				Expect(err).To(HaveOccurred())
 			})
 		})
 	})
@@ -230,16 +230,16 @@ var _ = Describe("container", func() {
 					func(w http.ResponseWriter, req *http.Request) {
 						body, err := ioutil.ReadAll(req.Body)
 						req.Body.Close()
-						Ω(err).ShouldNot(HaveOccurred())
-						Ω(string(body)).Should(Equal(`{"hostPort": 1234}`))
+						Expect(err).ShouldNot(HaveOccurred())
+						Expect(string(body)).Should(Equal(`{"hostPort": 1234}`))
 					},
 				),
 			)
 			var hostPort uint32 = 1234
 			var containerPort uint32 = 3456
 			_, _, err := container.NetIn(hostPort, containerPort)
-			Ω(err).NotTo(HaveOccurred())
-			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+			Expect(err).NotTo(HaveOccurred())
+			Expect(server.ReceivedRequests()).Should(HaveLen(1))
 		})
 
 		Context("Containerizer succeeds", func() {
@@ -252,9 +252,9 @@ var _ = Describe("container", func() {
 				)
 				var containerPort uint32 = 3456
 				returnedHostPort, returnedContainerPort, err := container.NetIn(1234, containerPort)
-				Ω(err).NotTo(HaveOccurred())
-				Ω(returnedHostPort).Should(Equal(uint32(9876)))
-				Ω(returnedContainerPort).Should(Equal(containerPort))
+				Expect(err).NotTo(HaveOccurred())
+				Expect(returnedHostPort).Should(Equal(uint32(9876)))
+				Expect(returnedContainerPort).Should(Equal(containerPort))
 			})
 		})
 
@@ -267,9 +267,9 @@ var _ = Describe("container", func() {
 					),
 				)
 				returnedHostPort, returnedContainerPort, err := container.NetIn(1234, 3456)
-				Ω(err).Should(MatchError(errors.New("Port in use")))
-				Ω(returnedHostPort).Should(Equal(uint32(0)))
-				Ω(returnedContainerPort).Should(Equal(uint32(0)))
+				Expect(err).Should(MatchError(errors.New("Port in use")))
+				Expect(returnedHostPort).Should(Equal(uint32(0)))
+				Expect(returnedContainerPort).Should(Equal(uint32(0)))
 			})
 		})
 
@@ -282,9 +282,9 @@ var _ = Describe("container", func() {
 					),
 				)
 				returnedHostPort, returnedContainerPort, err := container.NetIn(1234, 3456)
-				Ω(err).To(HaveOccurred())
-				Ω(returnedHostPort).Should(Equal(uint32(0)))
-				Ω(returnedContainerPort).Should(Equal(uint32(0)))
+				Expect(err).To(HaveOccurred())
+				Expect(returnedHostPort).Should(Equal(uint32(0)))
+				Expect(returnedContainerPort).Should(Equal(uint32(0)))
 			})
 		})
 	})
@@ -330,7 +330,7 @@ var _ = Describe("container", func() {
 			}
 			_, err := container.Run(processSpec, garden.ProcessIO{})
 
-			Ω(err).ShouldNot(HaveOccurred())
+			Expect(err).ShouldNot(HaveOccurred())
 			Eventually(func() []netContainer.ProcessStreamEvent {
 				return testServer.events
 			}).Should(ContainElement(netContainer.ProcessStreamEvent{
@@ -344,7 +344,7 @@ var _ = Describe("container", func() {
 			_, err := container.Run(garden.ProcessSpec{}, garden.ProcessIO{
 				Stdout: stdout,
 			})
-			Ω(err).ShouldNot(HaveOccurred())
+			Expect(err).ShouldNot(HaveOccurred())
 
 			websocket.WriteJSON(testServer.handlerWS, netContainer.ProcessStreamEvent{
 				MessageType: "stdout",
@@ -358,7 +358,7 @@ var _ = Describe("container", func() {
 			_, err := container.Run(garden.ProcessSpec{}, garden.ProcessIO{
 				Stderr: stderr,
 			})
-			Ω(err).ShouldNot(HaveOccurred())
+			Expect(err).ShouldNot(HaveOccurred())
 
 			websocket.WriteJSON(testServer.handlerWS, netContainer.ProcessStreamEvent{
 				MessageType: "stderr",
@@ -374,7 +374,7 @@ var _ = Describe("container", func() {
 				Stdout: stdout,
 				Stderr: stderr,
 			})
-			Ω(err).ShouldNot(HaveOccurred())
+			Expect(err).ShouldNot(HaveOccurred())
 
 			websocket.WriteJSON(testServer.handlerWS, netContainer.ProcessStreamEvent{
 				MessageType: "stdout",
@@ -395,7 +395,7 @@ var _ = Describe("container", func() {
 			_, err := container.Run(garden.ProcessSpec{}, garden.ProcessIO{
 				Stdin: stdin,
 			})
-			Ω(err).ShouldNot(HaveOccurred())
+			Expect(err).ShouldNot(HaveOccurred())
 
 			stdin.Write([]byte("a message"))
 
@@ -411,7 +411,7 @@ var _ = Describe("container", func() {
 
 		It("closes the WebSocketOpen channel on the proc when a close event is received", func() {
 			proc, err := container.Run(garden.ProcessSpec{}, garden.ProcessIO{})
-			Ω(err).ShouldNot(HaveOccurred())
+			Expect(err).ShouldNot(HaveOccurred())
 
 			websocket.WriteJSON(testServer.handlerWS, netContainer.ProcessStreamEvent{
 				MessageType: "close",
@@ -422,7 +422,7 @@ var _ = Describe("container", func() {
 
 		It("returns the close message as the exit code", func() {
 			proc, err := container.Run(garden.ProcessSpec{}, garden.ProcessIO{})
-			Ω(err).ShouldNot(HaveOccurred())
+			Expect(err).ShouldNot(HaveOccurred())
 
 			websocket.WriteJSON(testServer.handlerWS, netContainer.ProcessStreamEvent{
 				MessageType: "close",
@@ -437,7 +437,7 @@ var _ = Describe("container", func() {
 		Context("when we receive an error on the channel", func() {
 			It("returns the error", func(done Done) {
 				proc, err := container.Run(garden.ProcessSpec{}, garden.ProcessIO{})
-				Ω(err).ShouldNot(HaveOccurred())
+				Expect(err).ShouldNot(HaveOccurred())
 
 				websocket.WriteJSON(testServer.handlerWS, netContainer.ProcessStreamEvent{
 					MessageType: "error",
@@ -453,7 +453,7 @@ var _ = Describe("container", func() {
 
 			It("closes the WebSocketOpen channel on the proc", func() {
 				proc, err := container.Run(garden.ProcessSpec{}, garden.ProcessIO{})
-				Ω(err).ShouldNot(HaveOccurred())
+				Expect(err).ShouldNot(HaveOccurred())
 
 				websocket.WriteJSON(testServer.handlerWS, netContainer.ProcessStreamEvent{
 					MessageType: "error",
@@ -470,7 +470,7 @@ var _ = Describe("container", func() {
 
 			It("returns the error", func(done Done) {
 				_, err := container.Run(garden.ProcessSpec{}, garden.ProcessIO{})
-				Ω(err).Should(HaveOccurred())
+				Expect(err).Should(HaveOccurred())
 
 				close(done)
 			}, 1)
@@ -493,8 +493,8 @@ var _ = Describe("container", func() {
 
 			It("returns info about the container", func() {
 				properties, err := container.GetProperties()
-				Ω(err).NotTo(HaveOccurred())
-				Ω(properties).Should(Equal(garden.Properties{"Keymaster": "Gatekeeper"}))
+				Expect(err).NotTo(HaveOccurred())
+				Expect(properties).Should(Equal(garden.Properties{"Keymaster": "Gatekeeper"}))
 			})
 		})
 
@@ -512,8 +512,8 @@ var _ = Describe("container", func() {
 			})
 			It("returns ExceptionMessage as error", func() {
 				_, err := container.GetProperties()
-				Ω(err).To(HaveOccurred())
-				Ω(err.Error()).To(Equal("Object reference not set to an instance of an object."))
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("Object reference not set to an instance of an object."))
 			})
 		})
 
@@ -531,8 +531,8 @@ var _ = Describe("container", func() {
 			})
 			It("returns http status as error message", func() {
 				_, err := container.GetProperties()
-				Ω(err).To(HaveOccurred())
-				Ω(err.Error()).To(Equal("500 Internal Server Error"))
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("500 Internal Server Error"))
 			})
 		})
 	})
@@ -549,10 +549,10 @@ var _ = Describe("container", func() {
 
 		It("makes a call out to an external service", func() {
 			property, err := container.GetProperty("key:val")
-			Ω(err).NotTo(HaveOccurred())
-			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+			Expect(err).NotTo(HaveOccurred())
+			Expect(server.ReceivedRequests()).Should(HaveLen(1))
 
-			Ω(property).Should(Equal("a value"))
+			Expect(property).Should(Equal("a value"))
 		})
 	})
 
@@ -569,8 +569,8 @@ var _ = Describe("container", func() {
 
 			It("should stop the container", func() {
 				err := container.Stop(true)
-				Ω(err).NotTo(HaveOccurred())
-				Ω(server.ReceivedRequests()).Should(HaveLen(1))
+				Expect(err).NotTo(HaveOccurred())
+				Expect(server.ReceivedRequests()).Should(HaveLen(1))
 			})
 		})
 
@@ -586,8 +586,8 @@ var _ = Describe("container", func() {
 
 			It("should stop the container", func() {
 				err := container.Stop(true)
-				Ω(err).To(HaveOccurred())
-				Ω(err.Error()).To(Equal("404 Not Found"))
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("404 Not Found"))
 			})
 		})
 
@@ -598,7 +598,7 @@ var _ = Describe("container", func() {
 
 			It("should stop the container", func() {
 				err := container.Stop(true)
-				Ω(err).To(HaveOccurred())
+				Expect(err).To(HaveOccurred())
 			})
 		})
 	})
@@ -613,8 +613,8 @@ var _ = Describe("container", func() {
 					func() http.HandlerFunc {
 						return func(w http.ResponseWriter, req *http.Request) {
 							body, err := ioutil.ReadAll(req.Body)
-							Ω(err).NotTo(HaveOccurred())
-							Ω(string(body)).Should(Equal(payloadText))
+							Expect(err).NotTo(HaveOccurred())
+							Expect(string(body)).Should(Equal(payloadText))
 						}
 					}(),
 					ghttp.RespondWith(200, "a body that doesn't matter"),
@@ -624,8 +624,8 @@ var _ = Describe("container", func() {
 
 		It("makes a call out to an external service", func() {
 			err := container.SetProperty("key", payloadText)
-			Ω(err).NotTo(HaveOccurred())
-			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+			Expect(err).NotTo(HaveOccurred())
+			Expect(server.ReceivedRequests()).Should(HaveLen(1))
 		})
 	})
 
@@ -641,8 +641,8 @@ var _ = Describe("container", func() {
 
 		It("makes a call out to an external service", func() {
 			err := container.RemoveProperty("key")
-			Ω(err).NotTo(HaveOccurred())
-			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+			Expect(err).NotTo(HaveOccurred())
+			Expect(server.ReceivedRequests()).Should(HaveLen(1))
 		})
 	})
 })

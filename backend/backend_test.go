@@ -51,8 +51,8 @@ var _ = Describe("backend", func() {
 			})
 			It("returns a list of containers", func() {
 				containers, err := dotNetBackend.Containers(nil)
-				Ω(err).NotTo(HaveOccurred())
-				Ω(containers).Should(Equal([]garden.Container{
+				Expect(err).NotTo(HaveOccurred())
+				Expect(containers).Should(Equal([]garden.Container{
 					container.NewContainer(containerizerURL, "MyFirstContainer", logger),
 					container.NewContainer(containerizerURL, "MySecondContainer", logger),
 				}))
@@ -72,8 +72,8 @@ var _ = Describe("backend", func() {
 				containers, err := dotNetBackend.Containers(
 					garden.Properties{"a": "c"},
 				)
-				Ω(err).NotTo(HaveOccurred())
-				Ω(containers).Should(Equal([]garden.Container{
+				Expect(err).NotTo(HaveOccurred())
+				Expect(containers).Should(Equal([]garden.Container{
 					container.NewContainer(containerizerURL, "MatchingContainer", logger),
 				}))
 			})
@@ -103,15 +103,15 @@ var _ = Describe("backend", func() {
 
 		It("makes a call out to an external service", func() {
 			_, err := dotNetBackend.Create(testContainer)
-			Ω(err).NotTo(HaveOccurred())
-			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+			Expect(err).NotTo(HaveOccurred())
+			Expect(server.ReceivedRequests()).Should(HaveLen(1))
 		})
 
 		Context("when there is an error making the http connection", func() {
 			It("returns an error", func() {
 				server.Close()
 				_, err := dotNetBackend.Create(testContainer)
-				Ω(err).To(HaveOccurred())
+				Expect(err).To(HaveOccurred())
 			})
 		})
 	})
@@ -120,8 +120,8 @@ var _ = Describe("backend", func() {
 		Context("when the handle exists", func() {
 			It("returns a container with the correct handle", func() {
 				container, err := dotNetBackend.Lookup("someHandle")
-				Ω(err).NotTo(HaveOccurred())
-				Ω(container.Handle()).To(Equal("someHandle"))
+				Expect(err).NotTo(HaveOccurred())
+				Expect(container.Handle()).To(Equal("someHandle"))
 			})
 		})
 	})
@@ -144,25 +144,25 @@ var _ = Describe("backend", func() {
 
 		It("makes a call out to an external service", func() {
 			_, err := dotNetBackend.BulkInfo([]string{"handle1", "handle2"})
-			Ω(err).NotTo(HaveOccurred())
-			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+			Expect(err).NotTo(HaveOccurred())
+			Expect(server.ReceivedRequests()).Should(HaveLen(1))
 		})
 
 		It("returns the containers info", func() {
 			info, err := dotNetBackend.BulkInfo([]string{"handle1", "handle2"})
-			Ω(err).NotTo(HaveOccurred())
-			Ω(info["handle1"].Info.HostIP).Should(Equal(handle1HostIp))
-			Ω(info["handle1"].Err).ShouldNot(HaveOccurred())
+			Expect(err).NotTo(HaveOccurred())
+			Expect(info["handle1"].Info.HostIP).Should(Equal(handle1HostIp))
+			Expect(info["handle1"].Err).ShouldNot(HaveOccurred())
 
-			Ω(info["handle2"].Info.HostIP).Should(Equal(handle2HostIp))
-			Ω(info["handle2"].Err).ShouldNot(HaveOccurred())
+			Expect(info["handle2"].Info.HostIP).Should(Equal(handle2HostIp))
+			Expect(info["handle2"].Err).ShouldNot(HaveOccurred())
 		})
 
 		Context("when there is an error making the http connection", func() {
 			It("returns an error", func() {
 				server.Close()
 				_, err := dotNetBackend.BulkInfo([]string{"hande1", "handle2"})
-				Ω(err).To(HaveOccurred())
+				Expect(err).To(HaveOccurred())
 			})
 		})
 	})
@@ -178,15 +178,15 @@ var _ = Describe("backend", func() {
 
 		It("makes a call out to an external service", func() {
 			err := dotNetBackend.Destroy("bob")
-			Ω(err).NotTo(HaveOccurred())
-			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+			Expect(err).NotTo(HaveOccurred())
+			Expect(server.ReceivedRequests()).Should(HaveLen(1))
 		})
 
 		Context("when there is an error making the http connection", func() {
 			It("returns an error", func() {
 				server.Close()
 				err := dotNetBackend.Destroy("the world")
-				Ω(err).To(HaveOccurred())
+				Expect(err).To(HaveOccurred())
 			})
 		})
 
@@ -204,8 +204,8 @@ var _ = Describe("backend", func() {
 		Context("windows containerizer server is up", func() {
 			It("makes a call out to an external service", func() {
 				err := dotNetBackend.Ping()
-				Ω(err).NotTo(HaveOccurred())
-				Ω(server.ReceivedRequests()).Should(HaveLen(1))
+				Expect(err).NotTo(HaveOccurred())
+				Expect(server.ReceivedRequests()).Should(HaveLen(1))
 			})
 		})
 
@@ -216,7 +216,7 @@ var _ = Describe("backend", func() {
 
 			It("returns an error", func() {
 				err := dotNetBackend.Ping()
-				Ω(err).To(HaveOccurred())
+				Expect(err).To(HaveOccurred())
 			})
 		})
 	})
