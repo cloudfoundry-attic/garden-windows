@@ -22,7 +22,6 @@ namespace Containerizer.Tests.Specs.Services
             describe[Controller.Index] = () =>
             {
                 Mock<IContainerService> mockContainerService = null;
-                Mock<IContainerPropertyService> mockPropertyService = null;
                 Mock<IExternalIP> mockExternalIP = null;
                 string handle = "container-handle";
                 ContainerInfoService service = null;
@@ -37,22 +36,20 @@ namespace Containerizer.Tests.Specs.Services
                         new ContainerInfo
                         {
                             ReservedPorts = new List<int> { expectedHostPort },
+                            Properties = new Dictionary<string, string>
+                            {
+                                {"Keymaster", "Gatekeeper"}
+                            }
                         });
 
                     mockContainerService = new Mock<IContainerService>();
                     mockContainerService.Setup(x => x.GetContainerByHandle(handle))
                         .Returns(mockContainer.Object);
 
-                    mockPropertyService = new Mock<IContainerPropertyService>();
-                    mockPropertyService.Setup(x => x.GetProperties(mockContainer.Object)).Returns(new Dictionary<string, string>
-                    {
-                        {"Keymaster", "Gatekeeper"}
-                    });
-
                     mockExternalIP = new Mock<IExternalIP>();
                     mockExternalIP.Setup(x => x.ExternalIP()).Returns(expectedExternalIP);
 
-                    service = new ContainerInfoService(mockContainerService.Object, mockPropertyService.Object, mockExternalIP.Object);
+                    service = new ContainerInfoService(mockContainerService.Object, mockExternalIP.Object);
                 };
 
                 act = () =>

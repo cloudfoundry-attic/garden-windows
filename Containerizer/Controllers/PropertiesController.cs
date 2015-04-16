@@ -23,12 +23,10 @@ namespace Containerizer.Controllers
 
     public class PropertiesController : ApiController
     {
-        private readonly IContainerPropertyService propertyService;
         private readonly IContainerService containerService;
 
-        public PropertiesController(IContainerPropertyService propertyService, IContainerService containerService)
+        public PropertiesController(IContainerService containerService)
         {
-            this.propertyService = propertyService;
             this.containerService = containerService;
         }
 
@@ -37,7 +35,7 @@ namespace Containerizer.Controllers
         public IHttpActionResult Index(string handle)
         {
             var container = containerService.GetContainerByHandle(handle);
-            var properties = propertyService.GetProperties(container);
+            var properties = container.GetProperties();
             return Json(properties);
         }
 
@@ -46,7 +44,7 @@ namespace Containerizer.Controllers
         public IHttpActionResult Show(string handle, string propertyKey)
         {
             var container = containerService.GetContainerByHandle(handle);
-            var value = propertyService.GetProperty(container, propertyKey);
+            var value = container.GetProperty(propertyKey);
             return Json(value);
         }
 
@@ -56,7 +54,7 @@ namespace Containerizer.Controllers
         {
             string requestBody = await Request.Content.ReadAsStringAsync();
             var container = containerService.GetContainerByHandle(handle);
-            propertyService.SetProperty(container, propertyKey, requestBody);
+            container.SetProperty(propertyKey, requestBody);
             return Json(new GetPropertyResponse {Value = "I did a thing"});
         }
 
@@ -65,7 +63,7 @@ namespace Containerizer.Controllers
         public Task<IHttpActionResult> Destroy(string handle, string key)
         {
             var container = containerService.GetContainerByHandle(handle);
-            propertyService.RemoveProperty(container, key);
+            container.RemoveProperty(key);
             return Task.FromResult((IHttpActionResult)Ok());
         }
     }

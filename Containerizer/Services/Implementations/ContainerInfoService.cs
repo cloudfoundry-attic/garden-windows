@@ -12,13 +12,11 @@ namespace Containerizer.Services.Implementations
     public class ContainerInfoService : IContainerInfoService
     {
         private readonly IContainerService containerService;
-        private readonly IContainerPropertyService containerPropertyService;
         private readonly IExternalIP externalIP;
 
-        public ContainerInfoService(IContainerService containerService, IContainerPropertyService containerPropertyService, IExternalIP externalIP)
+        public ContainerInfoService(IContainerService containerService, IExternalIP externalIP)
         {
             this.containerService = containerService;
-            this.containerPropertyService = containerPropertyService;
             this.externalIP = externalIP;
         }
 
@@ -30,8 +28,6 @@ namespace Containerizer.Services.Implementations
                 return null;
             }
 
-            var properties = containerPropertyService.GetProperties(container);
-
             var rawInfo = container.GetInfo();
             var portMappings = new List<PortMappingApiModel>();
             foreach (int reservedPort in rawInfo.ReservedPorts)
@@ -42,7 +38,7 @@ namespace Containerizer.Services.Implementations
             return new ContainerInfoApiModel
             {
                 MappedPorts = portMappings,
-                Properties = properties,
+                Properties = rawInfo.Properties,
                 ExternalIP = externalIP.ExternalIP(),
             };
         }

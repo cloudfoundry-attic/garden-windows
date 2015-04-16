@@ -21,6 +21,7 @@ using System.Net.Http.Headers;
 using Containerizer.Factories;
 using Containerizer.Tests.Spec;
 using NSpec;
+using System.Security.Cryptography;
 
 #endregion
 
@@ -62,9 +63,17 @@ namespace Containerizer.Tests.Specs
             return json["handle"].ToString();
         }
 
+        static string GenerateContainerId(string handle)
+        {
+            var sha = new SHA1Managed();
+            var handleBytes = Encoding.UTF8.GetBytes(handle);
+            var hashBytes = sha.ComputeHash(handleBytes);
+            return BitConverter.ToString(hashBytes, 0, 9).Replace("-", "");
+        }
+
         public static string GetContainerPath(string handle)
         {
-            return Path.Combine(ContainerServiceFactory.GetContainerRoot(), new ContainerHandleHelper().GenerateId(handle), "user");
+            return Path.Combine(ContainerServiceFactory.GetContainerRoot(), GenerateContainerId(handle), "user");
         }
 
         public class ContainerizerProcess : IDisposable
@@ -135,7 +144,7 @@ namespace Containerizer.Tests.Specs
                 var principal = new System.Security.Principal.WindowsPrincipal(user);
                 isAdmin = principal.IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 isAdmin = false;
             }

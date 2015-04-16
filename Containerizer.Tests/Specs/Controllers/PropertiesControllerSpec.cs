@@ -21,7 +21,6 @@ namespace Containerizer.Tests.Specs.Controllers
     {
         private void describe_()
         {
-            Mock<IContainerPropertyService> mockPropertyService = null;
             Mock<IContainerService> mockContainerService = null;
             Mock<IContainer> mockContainer = null;
             PropertiesController propertiesController = null;
@@ -31,10 +30,9 @@ namespace Containerizer.Tests.Specs.Controllers
 
             before = () =>
             {
-                mockPropertyService = new Mock<IContainerPropertyService>();
                 mockContainerService = new Mock<IContainerService>();
                 mockContainer = new Mock<IContainer>();
-                propertiesController = new PropertiesController(mockPropertyService.Object, mockContainerService.Object)
+                propertiesController = new PropertiesController(mockContainerService.Object)
                 {
                     Configuration = new HttpConfiguration(),
                     Request = new HttpRequestMessage()
@@ -83,12 +81,7 @@ namespace Containerizer.Tests.Specs.Controllers
                 before = () =>
                 {
                     propertyValue = "a lion, a hippo, the number 25";
-                    mockPropertyService.Setup(x => x.GetProperty(mockContainer.Object, key))
-                        .Returns(() =>
-                        {
-                            return propertyValue;
-                        });
-
+                    mockContainer.Setup(x => x.GetProperty(key)).Returns(propertyValue);
                     result = propertiesController.Show(containerHandle, key);
                 };
 
@@ -115,7 +108,7 @@ namespace Containerizer.Tests.Specs.Controllers
 
                 it["calls the propertyService set method"] = () =>
                 {
-                    mockPropertyService.Verify(x => x.SetProperty(mockContainer.Object, key, value));
+                    mockContainer.Verify(x => x.SetProperty(key, value));
                 };
 
                 it["returns a successful status code"] = () =>
@@ -134,7 +127,7 @@ namespace Containerizer.Tests.Specs.Controllers
 
                 it["calls the propertyService destroy method"] = () =>
                 {
-                    mockPropertyService.Verify(x => x.RemoveProperty(mockContainer.Object, key));
+                    mockContainer.Verify(x => x.RemoveProperty(key));
                 };
 
                 it["returns a successful status code"] = () =>
