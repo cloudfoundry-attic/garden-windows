@@ -2,6 +2,7 @@ package backend
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -66,6 +67,13 @@ func (dotNetBackend *dotNetBackend) Create(containerSpec garden.ContainerSpec) (
 		return nil, err
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		msg, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+		return nil, errors.New(string(msg))
+	}
 
 	var returnedContainer createContainerResponse
 	body, err := ioutil.ReadAll(resp.Body)
