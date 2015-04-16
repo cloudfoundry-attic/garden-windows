@@ -12,6 +12,7 @@ using Newtonsoft.Json.Linq;
 using IronFoundry.Container;
 using Containerizer.Models;
 using System;
+using System.DirectoryServices.AccountManagement;
 using Logger;
 
 #endregion
@@ -41,10 +42,12 @@ namespace Containerizer.Controllers
         public IReadOnlyList<string> Index(string q = null)
         {
             IEnumerable<IContainer> containers = containerService.GetContainers();
-            if (q != null) {
+            if (q != null)
+            {
                 var desiredProps = JsonConvert.DeserializeObject<Dictionary<string, string>>(q);
 
-                containers = containers.Where((x) => {
+                containers = containers.Where((x) =>
+                {
                     var properties = x.GetProperties();
                     return desiredProps.All(p =>
                     {
@@ -67,16 +70,23 @@ namespace Containerizer.Controllers
                 Properties = spec.Properties,
             };
 
-            var container = containerService.CreateContainer(containerSpec);
-            if (container == null)
+            try
             {
-                throw new HttpResponseException(HttpStatusCode.InternalServerError);
-            }
+                var container = containerService.CreateContainer(containerSpec);
 
-            return new CreateResponse
+                return new CreateResponse
+                {
+                    Handle = container.Handle
+                };
+            }
+            catch (PrincipalExistsException ex)
             {
-                Handle = container.Handle
-            };
+                var response = new HttpResponseMessage(HttpStatusCode.Conflict)
+                {
+                    Content = new StringContent("handle already exists: foo")
+                };
+                throw new HttpResponseException(response);
+            }
         }
 
         [Route("api/containers/{handle}/stop")]
