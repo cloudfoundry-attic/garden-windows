@@ -35,15 +35,15 @@
   <ItemGroup>
     <Reference Include="IronFoundry.Container, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\IronFoundry.Container.0.20150414.123400-DevLocal\lib\net45\IronFoundry.Container.dll</HintPath>
+      <HintPath>..\packages\IronFoundry.Container.0.20150416.045636-DevLocal\lib\net45\IronFoundry.Container.dll</HintPath>
     </Reference>
-    <Reference Include="IronFoundry.Container.Host, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="IronFoundry.Container.Host, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\IronFoundry.Container.0.20150414.123400-DevLocal\lib\net45\IronFoundry.Container.Host.exe</HintPath>
+      <HintPath>..\packages\IronFoundry.Container.0.20150416.045636-DevLocal\lib\net45\IronFoundry.Container.Host.exe</HintPath>
     </Reference>
     <Reference Include="IronFoundry.Container.Shared, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\IronFoundry.Container.0.20150414.123400-DevLocal\lib\net45\IronFoundry.Container.Shared.dll</HintPath>
+      <HintPath>..\packages\IronFoundry.Container.0.20150416.045636-DevLocal\lib\net45\IronFoundry.Container.Shared.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Owin, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

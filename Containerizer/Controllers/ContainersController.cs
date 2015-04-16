@@ -27,14 +27,12 @@ namespace Containerizer.Controllers
     public class ContainersController : ApiController
     {
         private readonly IContainerService containerService;
-        private readonly IContainerPropertyService propertyService;
         private readonly ILogger logger;
 
 
-        public ContainersController(IContainerService containerService, IContainerPropertyService propertyService, ILogger logger)
+        public ContainersController(IContainerService containerService, ILogger logger)
         {
             this.containerService = containerService;
-            this.propertyService = propertyService;
             this.logger = logger;
         }
 
@@ -47,7 +45,7 @@ namespace Containerizer.Controllers
                 var desiredProps = JsonConvert.DeserializeObject<Dictionary<string, string>>(q);
 
                 containers = containers.Where((x) => {
-                    var properties = propertyService.GetProperties(x);
+                    var properties = x.GetProperties();
                     return desiredProps.All(p =>
                     {
                         string propValue;
@@ -56,7 +54,7 @@ namespace Containerizer.Controllers
                     });
                 });
             }
-             return containers.Select(x => x.Handle).ToList();
+            return containers.Select(x => x.Handle).ToList();
         }
 
         [Route("api/containers")]
@@ -66,6 +64,7 @@ namespace Containerizer.Controllers
             var containerSpec = new ContainerSpec
             {
                 Handle = spec.Handle,
+                Properties = spec.Properties,
             };
 
             var container = containerService.CreateContainer(containerSpec);
@@ -73,8 +72,6 @@ namespace Containerizer.Controllers
             {
                 throw new HttpResponseException(HttpStatusCode.InternalServerError);
             }
-
-            propertyService.SetProperties(container, spec.Properties);
 
             return new CreateResponse
             {

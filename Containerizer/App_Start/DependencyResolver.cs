@@ -8,7 +8,6 @@ using Containerizer.Controllers;
 using Containerizer.Services.Implementations;
 using Containerizer.Services.Interfaces;
 using IronFoundry.Container;
-using IronFoundry.Container.Internal;
 using IronFoundry.Container.Utilities;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -25,15 +24,12 @@ namespace Containerizer
     {
         private readonly Autofac.IContainer container;
         private static IContainerService containerService;
-        private static IContainerPropertyService containerPropertyService;
         public static IExternalIP ExternalIP;
         public static ILogger logger;
 
         static DependencyResolver()
         {
             containerService = new ContainerServiceFactory().New();
-            var fileSystemManager = new FileSystemManager();
-            containerPropertyService = new LocalFilePropertyService(fileSystemManager, "properties.json");
             logger = new Logger.Logger("containerizer");
         }
 
@@ -48,7 +44,6 @@ namespace Containerizer
             containerBuilder.RegisterType<StreamInService>().As<IStreamInService>();
             containerBuilder.RegisterType<StreamOutService>().As<IStreamOutService>();
             containerBuilder.RegisterType<TarStreamService>().As<ITarStreamService>();
-            containerBuilder.Register(context => containerPropertyService).As<IContainerPropertyService>();
             containerBuilder.Register(context => logger).As<ILogger>();
             containerBuilder.RegisterType<ContainersController>();
             containerBuilder.RegisterType<FilesController>();

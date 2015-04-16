@@ -24,27 +24,25 @@ namespace Containerizer.Tests.Specs.Controllers
     internal class ContainersControllerSpec : nspec
     {
 
-        IContainer mockContainerWithHandle(string handle)
+        Mock<IContainer> mockContainerWithHandle(string handle)
         {
             var container = new Mock<IContainer>();
             container.Setup(x => x.Handle).Returns(handle);
-            return container.Object;
+            return container;
         }
 
         private void describe_()
         {
             ContainersController containersController = null;
             Mock<IContainerService> mockContainerService = null;
-            Mock<IContainerPropertyService> mockPropertyService = null;
             Mock<ILogger> mockLogger = null;
 
 
             before = () =>
             {
                 mockContainerService = new Mock<IContainerService>();
-                mockPropertyService = new Mock<IContainerPropertyService>();
                 mockLogger = new Mock<ILogger>();
-                containersController = new ContainersController(mockContainerService.Object, mockPropertyService.Object, mockLogger.Object)
+                containersController = new ContainersController(mockContainerService.Object, mockLogger.Object)
                 {
                     Configuration = new HttpConfiguration(),
                     Request = new HttpRequestMessage()
@@ -58,19 +56,21 @@ namespace Containerizer.Tests.Specs.Controllers
 
                 before = () =>
                 {
-                    var container1 = mockContainerWithHandle("handle1");
-                    var container2 = mockContainerWithHandle("handle2");
-                    var container3 = mockContainerWithHandle("handle3");
+                    var mockContainer1 = mockContainerWithHandle("handle1");
+                    var mockContainer2 = mockContainerWithHandle("handle2");
+                    var mockContainer3 = mockContainerWithHandle("handle3");
 
                     mockContainerService.Setup(x => x.GetContainers())
                         .Returns(new List<IContainer>
                         {
-                            container1, container2, container3
+                            mockContainer1.Object, 
+                            mockContainer2.Object, 
+                            mockContainer3.Object
                         });
 
-                    mockPropertyService.Setup(x => x.GetProperties(container1)).Returns(new Dictionary<string, string> { { "a", "b" } });
-                    mockPropertyService.Setup(x => x.GetProperties(container2)).Returns(new Dictionary<string, string> { { "a", "b" }, { "c", "d" }, { "e", "f" } });
-                    mockPropertyService.Setup(x => x.GetProperties(container3)).Returns(new Dictionary<string, string> { { "e", "f" } });
+                    mockContainer1.Setup(x => x.GetProperties()).Returns(new Dictionary<string, string> { { "a", "b" } });
+                    mockContainer2.Setup(x => x.GetProperties()).Returns(new Dictionary<string, string> { { "a", "b" }, { "c", "d" }, { "e", "f" } });
+                    mockContainer3.Setup(x => x.GetProperties()).Returns(new Dictionary<string, string> { { "e", "f" } });
                 };
 
                 it["when filter is provided returns a filtered list of container id's as strings"] = () =>
@@ -143,9 +143,9 @@ namespace Containerizer.Tests.Specs.Controllers
 
                     it["sets properties"] = () =>
                     {
-                        mockPropertyService.Verify(
-                            x =>
-                                x.SetProperties(mockContainer.Object, It.Is((Dictionary<string, string> y) => y[key] == value)));
+                        mockContainerService.Verify(
+                            x => x.CreateContainer(
+                                It.Is<ContainerSpec>(createSpec => createSpec.Properties[key] == value)));
                     };
                 };
 
