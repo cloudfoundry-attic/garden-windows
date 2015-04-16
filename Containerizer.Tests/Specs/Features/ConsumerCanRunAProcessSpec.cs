@@ -52,6 +52,9 @@ namespace Containerizer.Tests.Specs.Features
                         File.WriteAllBytes(containerPath + "/myfile.bat",
                             new UTF8Encoding(true).GetBytes(
                                 "@echo off\r\n@echo Hi Fred\r\n@echo Jane is good\r\n@echo Jill is better\r\nset PORT\r\nset INSTANCE_GUID\r\n"));
+                        File.WriteAllBytes(containerPath + "/loop.bat",
+    new UTF8Encoding(true).GetBytes(
+        "@echo off\r\n:loop\r\ndate /t\r\ngoto loop\r\n"));
 
                         response =
                             httpClient.PostAsJsonAsync("/api/containers/" + handle + "/net/in", new { hostPort = 0 })
@@ -60,18 +63,7 @@ namespace Containerizer.Tests.Specs.Features
                         var json = response.Content.ReadAsJson();
                         hostPort = json["hostPort"].Value<int>();
 
-                        client = new ClientWebSocket();
-                        try
-                        {
-                            client.ConnectAsync(
-                                new Uri("ws://localhost:" + process.Port + "/api/containers/" + handle + "/run"),
-                                CancellationToken.None).GetAwaiter().GetResult();
-                        }
-                        catch (WebSocketException ex)
-                        {
-                            throw new Exception("Make sure to enable websockets following instructions in the README.",
-                                ex);
-                        }
+                        client = ConnectToWebsocket(client, handle, process);
                     };
 
                     describe["when I send a start request"] = () =>
@@ -90,22 +82,7 @@ namespace Containerizer.Tests.Specs.Features
                             messages = new List<string>();
                             while (client.State == WebSocketState.Open)
                             {
-                                var receiveBuffer = new byte[1024];
-                                var receiveBufferSegment = new ArraySegment<byte>(receiveBuffer);
-                                try
-                                {
-                                    var result = client.ReceiveAsync(receiveBufferSegment, CancellationToken.None).Result;
-                                    if (result.Count > 0)
-                                    {
-                                        var message = Encoding.Default.GetString(receiveBuffer.Take(result.Count).ToArray());
-                                        if (message.Contains("error"))
-                                        {
-                                            throw new Exception("websocket returned an error message");
-                                        }
-                                        messages.Add(message);
-                                    }
-                                }
-                                catch (Exception) { }
+                                ReceiveWebsocketMessageAndAppend(client, messages);
                             };
                         };
 
@@ -119,6 +96,43 @@ namespace Containerizer.Tests.Specs.Features
                     };
                 };
             };
+        }
+
+        private static ClientWebSocket ConnectToWebsocket(ClientWebSocket client, string handle, Helpers.ContainerizerProcess process)
+        {
+            client = new ClientWebSocket();
+            try
+            {
+                client.ConnectAsync(
+                    new Uri("ws://localhost:" + process.Port + "/api/containers/" + handle + "/run"),
+                    CancellationToken.None).GetAwaiter().GetResult();
+            }
+            catch (WebSocketException ex)
+            {
+                throw new Exception("Make sure to enable websockets following instructions in the README.",
+                    ex);
+            }
+            return client;
+        }
+
+        private static void ReceiveWebsocketMessageAndAppend(ClientWebSocket client, List<String> messages)
+        {
+            var receiveBuffer = new byte[1024];
+            var receiveBufferSegment = new ArraySegment<byte>(receiveBuffer);
+            try
+            {
+                var result = client.ReceiveAsync(receiveBufferSegment, CancellationToken.None).Result;
+                if (result.Count > 0)
+                {
+                    var message = Encoding.Default.GetString(receiveBuffer.Take(result.Count).ToArray());
+                    if (message.Contains("error"))
+                    {
+                        throw new Exception("websocket returned an error message");
+                    }
+                    messages.Add(message);
+                }
+            }
+            catch (Exception e) { }
         }
     }
 }

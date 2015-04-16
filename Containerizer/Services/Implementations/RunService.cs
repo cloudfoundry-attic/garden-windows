@@ -51,6 +51,7 @@ namespace Containerizer.Services.Implementations
             {
                 var processIO = new ProcessIO(websocket);
                 var process = container.Run(processSpec, processIO);
+                websocket.SendEvent("pid", process.Id.ToString());
                 return process;
             }
             catch (Exception e)

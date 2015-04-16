@@ -33,6 +33,21 @@ namespace Containerizer.Tests.Specs.Services
                 containerMock.Setup(x => x.Directory).Returns(new Mock<IContainerDirectory>().Object);
             };
 
+            context["#Run"] = () =>
+            {
+                before = () => {
+                    processMock.Setup(x => x.Id).Returns(5432);
+                    containerMock.Setup(x => x.Run(It.IsAny<ProcessSpec>(), It.IsAny<IProcessIO>())).Returns(processMock.Object);
+                };
+
+                act = () => runService.Run(websocketMock.Object, new ApiProcessSpec());
+
+                it["sends the process pid on the websocket"] = () =>
+                {
+                    websocketMock.Verify(x => x.SendEvent("pid", "5432"));
+                };
+            };
+
             context["Process exits normally"] = () =>
             {
                 before = () => containerMock.Setup(x => x.Run(It.IsAny<ProcessSpec>(), It.IsAny<IProcessIO>())).Returns(processMock.Object);
