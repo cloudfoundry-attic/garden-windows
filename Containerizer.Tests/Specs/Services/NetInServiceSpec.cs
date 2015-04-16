@@ -5,7 +5,7 @@ using System.Linq;
 using Containerizer.Services.Implementations;
 using Microsoft.Web.Administration;
 using NSpec;
-using IronFoundry.Container;
+using IronFrame;
 
 #endregion
 

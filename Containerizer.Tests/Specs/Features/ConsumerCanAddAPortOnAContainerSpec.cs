@@ -12,7 +12,7 @@ using System.Management;
 using System.DirectoryServices.AccountManagement;
 using System.DirectoryServices;
 using System.Diagnostics;
-using IronFoundry.Container.Utilities;
+using IronFrame.Utilities;
 
 #endregion
 

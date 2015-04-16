@@ -8,7 +8,7 @@ using Containerizer.Controllers;
 using Containerizer.Services.Interfaces;
 using Moq;
 using NSpec;
-using IronFoundry.Container;
+using IronFrame;
 using System.Web.Http.Results;
 
 #endregion

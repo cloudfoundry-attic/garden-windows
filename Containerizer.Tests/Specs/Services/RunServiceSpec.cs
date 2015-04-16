@@ -3,7 +3,7 @@
 using System;
 using Containerizer.Services.Implementations;
 using NSpec;
-using IronFoundry.Container;
+using IronFrame;
 using Moq;
 using Containerizer.Controllers;
 using Containerizer.Models;

@@ -2,7 +2,7 @@
 
 using System.IO;
 using Containerizer.Services.Interfaces;
-using IronFoundry.Container;
+using IronFrame;
 
 #endregion
 

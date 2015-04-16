@@ -6,7 +6,7 @@ using System.Net.Http;
 using Containerizer.Services.Implementations;
 using NSpec;
 using SharpCompress.Reader;
-using IronFoundry.Container;
+using IronFrame;
 
 #endregion
 

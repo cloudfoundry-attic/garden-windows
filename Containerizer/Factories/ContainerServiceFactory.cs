@@ -2,7 +2,7 @@
 
 using System.IO;
 using System.Reflection;
-using IronFoundry.Container;
+using IronFrame;
 
 #endregion
 

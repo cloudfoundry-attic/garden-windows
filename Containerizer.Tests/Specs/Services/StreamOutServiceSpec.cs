@@ -4,7 +4,7 @@ using System;
 using System.IO;
 using Containerizer.Services.Implementations;
 using Containerizer.Services.Interfaces;
-using IronFoundry.Container;
+using IronFrame;
 using Moq;
 using NSpec;
 

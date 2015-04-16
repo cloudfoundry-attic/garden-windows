@@ -12,7 +12,7 @@ using Containerizer.Services.Interfaces;
 using Moq;
 using Newtonsoft.Json;
 using NSpec;
-using IronFoundry.Container;
+using IronFrame;
 using Containerizer.Models;
 using System.IO;
 using Logger;

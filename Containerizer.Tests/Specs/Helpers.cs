@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using Microsoft.Web.Administration;
 using Newtonsoft.Json.Linq;
-using IronFoundry.Container;
+using IronFrame;
 using Containerizer.Services.Implementations;
 using System.Text;
 using System.Net.Sockets;
