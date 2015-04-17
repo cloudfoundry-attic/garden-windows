@@ -46,7 +46,7 @@ func (w *faninWriter) Close() error {
 
 	w.closed = true
 
-	return w.ws.Close()
+	return nil
 }
 
 func (w *faninWriter) AddSink(sink *websocket.Conn) {

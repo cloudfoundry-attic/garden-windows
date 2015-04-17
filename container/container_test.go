@@ -349,6 +349,15 @@ var _ = Describe("container", func() {
 			Expect(p.ID()).To(Equal(uint32(5432)))
 		})
 
+		It("returns the pid of the process if stdin was closed", func() {
+			stdin := gbytes.NewBuffer()
+			p, err := container.Run(garden.ProcessSpec{}, garden.ProcessIO{
+				Stdin: stdin,
+			})
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(p.ID()).To(Equal(uint32(5432)))
+		})
+
 		It("streams stdout from the websocket back through garden", func() {
 			stdout := gbytes.NewBuffer()
 			_, err := container.Run(garden.ProcessSpec{}, garden.ProcessIO{
