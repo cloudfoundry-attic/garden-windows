@@ -62,7 +62,7 @@ var _ = Describe("Memory limits", func() {
 				exitCode, err := process.Wait()
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(exitCode).ToNot(Equal(42), "process did not get OOM killed")
-				Expect(stdout).To(ContainSubstring("Consumed:  3 mb"))
+				Expect(stdout.String()).To(ContainSubstring("Consumed:  3 mb"))
 			})
 		})
 	})
