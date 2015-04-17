@@ -6,11 +6,13 @@ import (
 	"os"
 	"runtime"
 	"strconv"
+	"time"
 )
 
 type ArrayBytes []byte
 
 func bigBytes() ArrayBytes {
+	time.Sleep(50 * time.Millisecond)
 	s := make([]byte, 1024*1024)
 	return s
 }
