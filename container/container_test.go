@@ -1,6 +1,8 @@
 package container_test
 
 import (
+	"io"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -338,6 +340,14 @@ var _ = Describe("container", func() {
 				ApiProcessSpec: processSpec,
 			}))
 		})
+		It("returns the pid of the process", func() {
+			stdout := gbytes.NewBuffer()
+			p, err := container.Run(garden.ProcessSpec{}, garden.ProcessIO{
+				Stdout: stdout,
+			})
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(p.ID()).To(Equal(uint32(5432)))
+		})
 
 		It("streams stdout from the websocket back through garden", func() {
 			stdout := gbytes.NewBuffer()
@@ -390,15 +400,12 @@ var _ = Describe("container", func() {
 		})
 
 		It("streams stdin over the websocket", func() {
-			stdin := gbytes.NewBuffer()
-
+			stdinR, stdinW := io.Pipe()
 			_, err := container.Run(garden.ProcessSpec{}, garden.ProcessIO{
-				Stdin: stdin,
+				Stdin: stdinR,
 			})
 			Expect(err).ShouldNot(HaveOccurred())
-
-			stdin.Write([]byte("a message"))
-
+			stdinW.Write([]byte("a message"))
 			Eventually(func() []netContainer.ProcessStreamEvent {
 				return testServer.events
 			}).Should(ContainElement(netContainer.ProcessStreamEvent{
@@ -406,7 +413,8 @@ var _ = Describe("container", func() {
 				Data:        "a message",
 			}))
 
-			stdin.Close()
+			stdinR.Close()
+			stdinW.Close()
 		})
 
 		It("closes the WebSocketOpen channel on the proc when a close event is received", func() {

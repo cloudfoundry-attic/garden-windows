@@ -24,6 +24,13 @@ var _ = Describe("process", func() {
 		err        error
 	}
 
+	Describe("Id", func() {
+		It("returns the pid", func() {
+			proc = process.DotNetProcess{Id: 9876}
+			Expect(proc.ID()).To(Equal(uint32(9876)))
+		})
+	})
+
 	Describe("Wait", func() {
 		var exitStatusChannel chan IntErrorTuple
 		BeforeEach(func() {

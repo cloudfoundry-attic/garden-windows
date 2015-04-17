@@ -64,8 +64,18 @@ func (server *TestWebSocketServer) createWebSocketHandler(containerId string) {
 		for {
 			var streamEvent container.ProcessStreamEvent
 			err := websocket.ReadJSON(ws, &streamEvent)
-			if err == nil {
-				server.events = append(server.events, streamEvent)
+			if err != nil {
+				continue
+			}
+			server.events = append(server.events, streamEvent)
+			if streamEvent.MessageType == "run" {
+				err = websocket.WriteJSON(ws, container.ProcessStreamEvent{
+					MessageType: "pid",
+					Data:        "5432",
+				})
+				if err != nil {
+					panic(err)
+				}
 			}
 		}
 	}

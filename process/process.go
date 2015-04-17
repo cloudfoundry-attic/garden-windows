@@ -8,6 +8,7 @@ type DotNetProcessExitStatus struct {
 }
 
 type DotNetProcess struct {
+	Pid        uint32
 	StreamOpen chan DotNetProcessExitStatus
 }
 
@@ -18,7 +19,7 @@ func NewDotNetProcess() DotNetProcess {
 }
 
 func (process DotNetProcess) ID() uint32 {
-	return 0
+	return process.Pid
 }
 
 func (process DotNetProcess) Wait() (int, error) {
