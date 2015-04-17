@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"os"
 
-	"github.com/nu7hatch/gouuid"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
 	"github.com/cloudfoundry-incubator/garden"
+	uuid "github.com/nu7hatch/gouuid"
 )
 
 var _ = Describe("Memory limits", func() {
@@ -47,7 +47,7 @@ var _ = Describe("Memory limits", func() {
 				err = container.StreamIn("bin", tarFile)
 				Expect(err).ShouldNot(HaveOccurred())
 
-				err = container.LimitMemory(garden.MemoryLimits{32 * 1024 * 1024})
+				err = container.LimitMemory(garden.MemoryLimits{64 * 1024 * 1024})
 				Expect(err).ShouldNot(HaveOccurred())
 
 				buf := make([]byte, 0, 1024*1024)
@@ -55,7 +55,7 @@ var _ = Describe("Memory limits", func() {
 
 				process, err := container.Run(garden.ProcessSpec{
 					Path: "bin/consume.exe",
-					Args: []string{"64"},
+					Args: []string{"128"},
 				}, garden.ProcessIO{Stdout: stdout})
 				Expect(err).ShouldNot(HaveOccurred())
 
