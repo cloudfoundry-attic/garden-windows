@@ -35,7 +35,14 @@ namespace Containerizer.Services.Implementations
             }
             catch (Exception e)
             {
-                websocket.SendEvent("error", e.Message);
+                if (e.Message.Contains("System.OutOfMemoryException"))
+                {
+                    websocket.SendEvent("close", "-1");
+                }
+                else
+                {
+                    websocket.SendEvent("error", e.Message);
+                }
                 websocket.Close(System.Net.WebSockets.WebSocketCloseStatus.InternalServerError, e.Message);
             }
         }
