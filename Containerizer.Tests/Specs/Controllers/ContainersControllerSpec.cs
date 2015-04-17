@@ -16,6 +16,7 @@ using IronFrame;
 using Containerizer.Models;
 using System.IO;
 using Logger;
+using System.DirectoryServices.AccountManagement;
 
 #endregion
 
@@ -96,33 +97,28 @@ namespace Containerizer.Tests.Specs.Controllers
 
             describe["#Create"] = () =>
             {
-
                 string containerHandle = null;
                 string containerPath = null;
                 ContainerSpecApiModel specModel = null;
                 CreateResponse result = null;
                 Mock<IContainer> mockContainer = null;
-
-                before = () =>
-                {
-                    containerHandle = Guid.NewGuid().ToString();
-                    containerPath = Path.Combine(@"C:\containerizer", containerHandle);
-
-                    mockContainer = new Mock<IContainer>();
-                    mockContainer.Setup(x => x.Handle).Returns(containerHandle);
-                    
-                    mockContainerService.Setup(x => x.CreateContainer(It.IsAny<ContainerSpec>()))
-                        .Returns(mockContainer.Object);
-                };
-
-                act = () => result = containersController.Create(specModel);
+                string key = null;
+                string value = null;
 
                 context["when the container is created successfully"] = () =>
                 {
-                    string key = null;
-                    string value = null;
+
                     before = () =>
                     {
+                        containerHandle = Guid.NewGuid().ToString();
+                        containerPath = Path.Combine(@"C:\containerizer", containerHandle);
+
+                        mockContainer = new Mock<IContainer>();
+                        mockContainer.Setup(x => x.Handle).Returns(containerHandle);
+
+                        mockContainerService.Setup(x => x.CreateContainer(It.IsAny<ContainerSpec>()))
+                            .Returns(mockContainer.Object);
+
                         key = "hiwillyou";
                         value = "bemyfriend";
 
@@ -136,6 +132,8 @@ namespace Containerizer.Tests.Specs.Controllers
                         };
                     };
 
+                    act = () => result = containersController.Create(specModel);
+
                     it["returns the passed in container's id"] = () =>
                     {
                         result.Handle.should_be(containerHandle);
@@ -147,22 +145,74 @@ namespace Containerizer.Tests.Specs.Controllers
                             x => x.CreateContainer(
                                 It.Is<ContainerSpec>(createSpec => createSpec.Properties[key] == value)));
                     };
+
+                    context["when properties are not passed to the endpoint"] = () =>
+                    {
+                        before = () =>
+                        {
+                            specModel = new ContainerSpecApiModel
+                            {
+                                Handle = containerHandle,
+                                Properties = null,
+                            };
+                        };
+
+                        it["returns the passed in container's id"] = () =>
+                        {
+                            result.Handle.should_be(containerHandle);
+                        };
+                    };
                 };
 
-                context["when properties are not passed to the endpoint"] = () =>
+                context["when creating a container fails"] = () =>
                 {
-                    before = () =>
+                    Exception ex = null;
+
+                    act = () =>
                     {
-                        specModel = new ContainerSpecApiModel
+                        try
                         {
-                            Handle = containerHandle,
-                            Properties = null,
+                            containersController.Create(new ContainerSpecApiModel()
+                            {
+                                Handle = "foo"
+                            });
+                        }
+                        catch (Exception e)
+                        {
+                            ex = e;
+                        }
+                    };
+
+                    context["because the user already exists"] = () =>
+                    {
+
+                        before = () =>
+                        {
+                            mockContainerService.Setup(x => x.CreateContainer(It.IsAny<ContainerSpec>()))
+                                .Throws(new PrincipalExistsException());
+                        };
+
+                        it["throw HttpResponseException with handle already exists message"] = () =>
+                        {
+                            var httpResponse = ex.should_cast_to<HttpResponseException>();
+                            httpResponse.Response.StatusCode.should_be(HttpStatusCode.Conflict);
+                            httpResponse.Response.Content.ReadAsString().should_be("handle already exists: foo");
                         };
                     };
 
-                    it["returns the passed in container's id"] = () =>
+                    context["because other random exception"] = () =>
                     {
-                        result.Handle.should_be(containerHandle);
+                        before = () =>
+                        {
+                            mockContainerService.Setup(x => x.CreateContainer(It.IsAny<ContainerSpec>())).Throws(new Exception("BOOM"));
+                        };
+
+                        it["throw HttpResponseException with the original exception's message"] = () =>
+                        {
+                            var httpResponse = ex.should_cast_to<HttpResponseException>();
+                            httpResponse.Response.StatusCode.should_be(HttpStatusCode.InternalServerError);
+                            httpResponse.Response.Content.ReadAsString().should_be("BOOM");
+                        };
                     };
                 };
             };

@@ -87,6 +87,14 @@ namespace Containerizer.Controllers
                 };
                 throw new HttpResponseException(response);
             }
+            catch (Exception ex)
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.InternalServerError)
+                {
+                    Content = new StringContent(ex.Message)
+                };
+                throw new HttpResponseException(response);
+            }
         }
 
         [Route("api/containers/{handle}/stop")]
