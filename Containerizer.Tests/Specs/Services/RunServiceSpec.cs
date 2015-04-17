@@ -66,17 +66,22 @@ namespace Containerizer.Tests.Specs.Services
                 };
             };
 
-            context["container#run throws a 'System.OutOfMemoryException' exception"] = () =>
+            context["Process throws an exception while running"] = () =>
             {
-                before = () => containerMock.Setup(x => x.Run(It.IsAny<ProcessSpec>(), It.IsAny<IProcessIO>())).Throws(new Exception("String containing System.OutOfMemoryException in it"));
+                before = () =>
+                {
+                    containerMock.Setup(x => x.Run(It.IsAny<ProcessSpec>(), It.IsAny<IProcessIO>()))
+                        .Returns(processMock.Object);
+                    processMock.Setup(x => x.WaitForExit()).Throws(new Exception("Running is hard"));
+                };
 
-                it["sends a close event with exit status -1"] = () =>
+                it["sends a close event with data == '-1'"] = () =>
                 {
                     var apiProcessSpec = new ApiProcessSpec();
                     runService.Run(websocketMock.Object, apiProcessSpec);
 
                     websocketMock.Verify(x => x.SendEvent("close", "-1"));
-                    websocketMock.Verify(x => x.Close(System.Net.WebSockets.WebSocketCloseStatus.InternalServerError, "String containing System.OutOfMemoryException in it"));
+                    websocketMock.Verify(x => x.Close(System.Net.WebSockets.WebSocketCloseStatus.InternalServerError, "Running is hard"));
                 };
             };
 

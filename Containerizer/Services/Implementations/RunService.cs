@@ -25,25 +25,39 @@ namespace Containerizer.Services.Implementations
                 OverrideEnvPort(processSpec, info);
             }
 
+            var process = Run(websocket, processSpec);
+            if (process != null)
+                WaitForExit(websocket, process);
+        }
+
+        private static void WaitForExit(IWebSocketEventSender websocket, IContainerProcess process)
+        {
             try
             {
-                var processIO = new ProcessIO(websocket);
-                var process = container.Run(processSpec, processIO);
                 var exitCode = process.WaitForExit();
                 websocket.SendEvent("close", exitCode.ToString());
                 websocket.Close(System.Net.WebSockets.WebSocketCloseStatus.NormalClosure, "process finished");
             }
             catch (Exception e)
             {
-                if (e.Message.Contains("System.OutOfMemoryException"))
-                {
-                    websocket.SendEvent("close", "-1");
-                }
-                else
-                {
-                    websocket.SendEvent("error", e.Message);
-                }
+                websocket.SendEvent("close", "-1");
                 websocket.Close(System.Net.WebSockets.WebSocketCloseStatus.InternalServerError, e.Message);
+            }
+        }
+
+        private IContainerProcess Run(IWebSocketEventSender websocket, ProcessSpec processSpec)
+        {
+            try
+            {
+                var processIO = new ProcessIO(websocket);
+                var process = container.Run(processSpec, processIO);
+                return process;
+            }
+            catch (Exception e)
+            {
+                websocket.SendEvent("error", e.Message);
+                websocket.Close(System.Net.WebSockets.WebSocketCloseStatus.InternalServerError, e.Message);
+                return null;
             }
         }
 
