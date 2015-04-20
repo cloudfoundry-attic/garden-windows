@@ -90,7 +90,7 @@ var _ = Describe("container", func() {
 				)
 			})
 
-			FIt("returns an error", func() {
+			It("returns an error", func() {
 				_, err := container.Info()
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(ContainSubstring("Not Found"))
