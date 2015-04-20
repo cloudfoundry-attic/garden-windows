@@ -26,7 +26,7 @@ var _ = Describe("process", func() {
 
 	Describe("Id", func() {
 		It("returns the pid", func() {
-			proc = process.DotNetProcess{Id: 9876}
+			proc = process.DotNetProcess{Pid: 9876}
 			Expect(proc.ID()).To(Equal(uint32(9876)))
 		})
 	})
