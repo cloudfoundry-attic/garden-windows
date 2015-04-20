@@ -32,13 +32,14 @@ namespace Containerizer.Tests.Specs.Features
 
             Directory.CreateDirectory(directoryPath);
             File.WriteAllText(Path.Combine(directoryPath, "file.txt"), "stuff!!!!");
-            tgzName = Guid.NewGuid().ToString();
+            tgzName = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + "tgz");
             new TarStreamService().CreateTarFromDirectory(directoryPath, tgzName);
         }
 
         private void after_each()
         {
             Directory.Delete(directoryPath, true);
+            File.Delete(tgzName);
             process.Dispose();
         }
 
