@@ -153,4 +153,15 @@ var _ = Describe("Container information", func() {
 			})
 		})
 	})
+
+	Describe("for a non-existent container", func() {
+		// NOTE: garden calls List(nil) and find the container with the
+		// given handle, (it doesn't call dotNetBackend#Lookup). The only
+		// way to call dotNetBackend#Lookup is using a valid handle,
+		// e.g. when you call client.Lookup("valid-handle").Info()
+		It("returns an error when Lookup is called", func() {
+			_, err := client.Lookup("non-existent-handle")
+			Expect(err).To(HaveOccurred())
+		})
+	})
 })

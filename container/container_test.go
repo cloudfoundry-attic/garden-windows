@@ -52,28 +52,49 @@ var _ = Describe("container", func() {
 	})
 
 	Describe("Info", func() {
-		BeforeEach(func() {
-			server.AppendHandlers(
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/api/containers/containerhandle/info"),
-					ghttp.RespondWith(200, `{"Properties":{"Keymaster": "Gatekeeper"},"MappedPorts":[{"ContainerPort":8080,"HostPort":6543}], "ExternalIP":"`+externalIP+`"}`),
-					func(w http.ResponseWriter, req *http.Request) {
-						req.Body.Close()
-					},
-				),
-			)
+		Describe("for a valid handle", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/containers/containerhandle/info"),
+						ghttp.RespondWith(200, `{"Properties":{"Keymaster": "Gatekeeper"},"MappedPorts":[{"ContainerPort":8080,"HostPort":6543}], "ExternalIP":"`+externalIP+`"}`),
+						func(w http.ResponseWriter, req *http.Request) {
+							req.Body.Close()
+						},
+					),
+				)
+			})
+			It("returns info about the container", func() {
+				info, err := container.Info()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(info.Properties).Should(Equal(garden.Properties{"Keymaster": "Gatekeeper"}))
+
+				Expect(info.ExternalIP).Should(Equal(externalIP))
+
+				Expect(len(info.MappedPorts)).Should(Equal(1))
+				Expect(info.MappedPorts[0].ContainerPort).Should(Equal(uint32(8080)))
+				Expect(info.MappedPorts[0].HostPort).Should(Equal(uint32(6543)))
+			})
 		})
 
-		It("returns info about the container", func() {
-			info, err := container.Info()
-			Expect(err).NotTo(HaveOccurred())
-			Expect(info.Properties).Should(Equal(garden.Properties{"Keymaster": "Gatekeeper"}))
+		Describe("for an invalid handle", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/containers/containerhandle/info"),
+						ghttp.RespondWith(404, nil),
+						func(w http.ResponseWriter, req *http.Request) {
+							req.Body.Close()
+						},
+					),
+				)
+			})
 
-			Expect(info.ExternalIP).Should(Equal(externalIP))
-
-			Expect(len(info.MappedPorts)).Should(Equal(1))
-			Expect(info.MappedPorts[0].ContainerPort).Should(Equal(uint32(8080)))
-			Expect(info.MappedPorts[0].HostPort).Should(Equal(uint32(6543)))
+			FIt("returns an error", func() {
+				_, err := container.Info()
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("Not Found"))
+			})
 		})
 	})
 
