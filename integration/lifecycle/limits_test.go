@@ -80,7 +80,7 @@ var _ = Describe("Process limits", func() {
 				}
 			})
 
-			FIt("is enforced", func() {
+			It("is enforced", func() {
 				setCPU := func(container garden.Container, limit uint64) error {
 					return container.LimitCPU(garden.CPULimits{LimitInShares: limit})
 				}
