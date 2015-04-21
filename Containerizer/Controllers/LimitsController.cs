@@ -20,6 +20,12 @@ namespace Containerizer.Controllers
         public ulong LimitInBytes { get; set; }
     }
 
+    public class CpuLimits
+    {
+        [JsonProperty("limit_in_shares")]
+        public int Weight { get; set; }
+    }
+
     public class LimitsController : ApiController
     {
         private readonly IContainerService containerService;
@@ -54,6 +60,34 @@ namespace Containerizer.Controllers
             }
             var limit = container.CurrentMemoryLimit();
             return Json(new MemoryLimits { LimitInBytes = limit });
+        }
+
+        [Route("api/containers/{handle}/cpu_limit")]
+        [HttpPost]
+        public IHttpActionResult LimitCpu(string handle, CpuLimits limits)
+        {
+            var container = containerService.GetContainerByHandle(handle);
+            if (container == null)
+            {
+                return NotFound();
+            }
+
+            container.LimitCpu(limits.Weight);
+            return Ok();
+        }
+
+
+        [Route("api/containers/{handle}/cpu_limit")]
+        [HttpGet]
+        public IHttpActionResult CurrentCpuLimit(string handle)
+        {
+            var container = containerService.GetContainerByHandle(handle);
+            if (container == null)
+            {
+                return NotFound();
+            }
+
+            return Json(container.CurrentCpuLimit());
         }
     }
 }

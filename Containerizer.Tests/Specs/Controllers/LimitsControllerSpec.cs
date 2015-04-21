@@ -21,8 +21,7 @@ namespace Containerizer.Tests.Specs.Controllers
             Mock<IContainerService> mockContainerService = null;
             LimitsController LimitsController = null;
             string handle = null;
-            ulong limitInBytes = 876;
-            MemoryLimits limits = null;
+
             Mock<IContainer> mockContainer = null;
 
             before = () =>
@@ -31,14 +30,21 @@ namespace Containerizer.Tests.Specs.Controllers
                 LimitsController = new LimitsController(mockContainerService.Object);
 
                 handle = Guid.NewGuid().ToString();
-                limits = new MemoryLimits { LimitInBytes = limitInBytes };
+
                 mockContainer = new Mock<IContainer>();
                 mockContainerService.Setup(x => x.GetContainerByHandle(handle)).Returns(mockContainer.Object);
             };
 
             describe["#LimitMemory"] = () =>
             {
+                const ulong limitInBytes = 876;
+                MemoryLimits limits = null;
                 IHttpActionResult result = null;
+
+                before = () =>
+                {
+                    limits = new MemoryLimits { LimitInBytes = limitInBytes };
+                };
                 act = () =>
                 {
                     result = LimitsController.LimitMemory(handle, limits);
@@ -87,6 +93,61 @@ namespace Containerizer.Tests.Specs.Controllers
                     };
                 };
             };
+
+            describe["#LimitCpu"] = () =>
+            {
+                IHttpActionResult result = null;
+                const int weight = 5;
+                act = () =>
+                {
+                    var limits = new CpuLimits {Weight = weight};
+                    result = LimitsController.LimitCpu(handle, limits);
+                };
+
+                it["sets limits on the container"] = () =>
+                {
+                    mockContainer.Verify(x => x.LimitCpu(weight));
+                };
+
+                context["when the container does not exist"] = () =>
+                {
+                    before = () =>
+                    {
+                        mockContainerService.Setup(x => x.GetContainerByHandle(It.IsAny<string>())).Returns(null as IContainer);
+                    };
+
+                    it["Returns not found"] = () =>
+                    {
+                        result.should_cast_to<NotFoundResult>();
+                    };
+                };
+            };
+
+            describe["#CurrentCpuLimit"] = () =>
+            {
+                it["returns the current limit on the container"] = () =>
+                {
+                    mockContainer.Setup(x => x.CurrentCpuLimit()).Returns(6);
+                    var result = LimitsController.CurrentCpuLimit(handle);
+                    var jsonResult = result.should_cast_to<JsonResult<int>>();
+                    jsonResult.Content.should_be(6);
+                };
+
+                context["when the container does not exist"] = () =>
+                {
+                    before = () =>
+                    {
+                        mockContainerService.Setup(x => x.GetContainerByHandle(It.IsAny<string>())).Returns(null as IContainer);
+                    };
+
+                    it["Returns not found"] = () =>
+                    {
+                        var result = LimitsController.CurrentCpuLimit(handle);
+                        result.should_cast_to<NotFoundResult>();
+                    };
+                };
+            };
+
         }
     }
 }
