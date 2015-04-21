@@ -134,3 +134,9 @@ func (self ContainerizerURL) MemoryLimit(handle string) string {
 	base.Path = "/api/containers/" + handle + "/memory_limit"
 	return base.String()
 }
+
+func (self ContainerizerURL) CPULimit(handle string) string {
+	base := *self.base
+	base.Path = "/api/containers/" + handle + "/cpu_limit"
+	return base.String()
+}

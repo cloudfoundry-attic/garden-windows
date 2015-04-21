@@ -1,6 +1,7 @@
 package container
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -153,6 +154,21 @@ func (container *container) CurrentBandwidthLimits() (garden.BandwidthLimits, er
 }
 
 func (container *container) LimitCPU(limits garden.CPULimits) error {
+	url := container.containerizerURL.CPULimit(container.Handle())
+
+	jsonLimits, err := json.Marshal(limits)
+	if err != nil {
+		return err
+	}
+	response, err := http.Post(url, "application/json", bytes.NewBuffer(jsonLimits))
+	if err != nil {
+		return err
+	}
+	response.Body.Close()
+
+	if response.StatusCode != 200 {
+		return errors.New(response.Status)
+	}
 	return nil
 }
 
@@ -173,7 +189,7 @@ func (container *container) LimitMemory(limits garden.MemoryLimits) error {
 	if err != nil {
 		return err
 	}
-	response, err := http.Post(url, "application/json", strings.NewReader(string(jsonLimits)))
+	response, err := http.Post(url, "application/json", bytes.NewBuffer(jsonLimits))
 	if err != nil {
 		return err
 	}
