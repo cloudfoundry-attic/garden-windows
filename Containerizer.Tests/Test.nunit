@@ -1,6 +1,0 @@
-<NUnitProject>
-    <Settings activeconfig="Default" />
-    <Config name="Default" configfile="Containerizer.Tests.dll.config" binpathtype="Auto">
-        <assembly path="Containerizer.Tests.dll" />
-    </Config>
-</NUnitProject>
