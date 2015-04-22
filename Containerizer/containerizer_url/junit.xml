@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+  <testsuite tests="5" failures="0" time="0.0020106">
+      <testcase name="ContainerizerURL when the base URL is able to be parsed works when the base URL does not have a trailing slash" classname="Containerizer URL Suite" time="0"></testcase>
+      <testcase name="ContainerizerURL when the base URL is able to be parsed works when the base URL does have a trailing slash" classname="Containerizer URL Suite" time="0"></testcase>
+      <testcase name="ContainerizerURL when the base URL is not absolute (i.e. relative) returns an error" classname="Containerizer URL Suite" time="0"></testcase>
+      <testcase name="ContainerizerURL when the base URL is not absolute (i.e. relative) returns an error with leading slashes" classname="Containerizer URL Suite" time="0"></testcase>
+      <testcase name="ContainerizerURL when the base URL is non readable returns an error" classname="Containerizer URL Suite" time="0"></testcase>
+  </testsuite>

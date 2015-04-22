@@ -1,0 +1,3 @@
+[submodule "IronFrame"]
+	path = IronFrame
+	url = https://github.com/cloudfoundry-incubator/ironframe

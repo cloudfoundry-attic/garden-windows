@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+  <testsuite tests="36" failures="0" time="13.051507">
+      <testcase name="container Info for a valid handle returns info about the container" classname="Container Suite" time="0.0010324000000000002"></testcase>
+      <testcase name="container Info for an invalid handle returns an error" classname="Container Suite" time="0"></testcase>
+      <testcase name="container StreamIn Http PUT success request makes a call out to an external service" classname="Container Suite" time="0.0010001"></testcase>
+      <testcase name="container StreamIn Http PUT failure request makes a call out to an external service" classname="Container Suite" time="0.0010240000000000002"></testcase>
+      <testcase name="container LimitMemory Containerizer returns 200 sets limits on the container" classname="Container Suite" time="0.0009766"></testcase>
+      <testcase name="container LimitMemory Containerizer returns non 200 returns an error" classname="Container Suite" time="0.0009993"></testcase>
+      <testcase name="container LimitCPU success sets limits on the container" classname="Container Suite" time="0.0010107"></testcase>
+      <testcase name="container LimitCPU Containerizer returns non 200 returns an error" classname="Container Suite" time="0.0010239000000000001"></testcase>
+      <testcase name="container CurrentMemoryLimits returns the limit" classname="Container Suite" time="0.0009682"></testcase>
+      <testcase name="container StreamOut Containerizer returns 200 makes a call out to an external service" classname="Container Suite" time="0.0009975000000000001"></testcase>
+      <testcase name="container StreamOut Containerizer returns non 200 returns an error" classname="Container Suite" time="0.0010239000000000001"></testcase>
+      <testcase name="container NetIn makes a call out to an external service" classname="Container Suite" time="0"></testcase>
+      <testcase name="container NetIn Containerizer succeeds returns containerizers host port" classname="Container Suite" time="0"></testcase>
+      <testcase name="container NetIn Containerizer has an error returns the error" classname="Container Suite" time="0.00102"></testcase>
+      <testcase name="container NetIn Containerizer returns malformed JSON returns the error" classname="Container Suite" time="0.0009851"></testcase>
+      <testcase name="container #Run (and input / output / error streams) runs a script via a websocket and also passes rlimits" classname="Container Suite" time="1.0029728"></testcase>
+      <testcase name="container #Run (and input / output / error streams) returns the pid of the process" classname="Container Suite" time="1.0010185"></testcase>
+      <testcase name="container #Run (and input / output / error streams) returns the pid of the process if stdin was closed" classname="Container Suite" time="1.0009752"></testcase>
+      <testcase name="container #Run (and input / output / error streams) streams stdout from the websocket back through garden" classname="Container Suite" time="1.0029673"></testcase>
+      <testcase name="container #Run (and input / output / error streams) streams stderr from the websocket back through garden" classname="Container Suite" time="1.0010363"></testcase>
+      <testcase name="container #Run (and input / output / error streams) seperates stdout and stderr streams from the websocket" classname="Container Suite" time="1.0018856"></testcase>
+      <testcase name="container #Run (and input / output / error streams) streams stdin over the websocket" classname="Container Suite" time="1.0009555"></testcase>
+      <testcase name="container #Run (and input / output / error streams) closes the WebSocketOpen channel on the proc when a close event is received" classname="Container Suite" time="1.0009553"></testcase>
+      <testcase name="container #Run (and input / output / error streams) returns the close message as the exit code" classname="Container Suite" time="1.0019612"></testcase>
+      <testcase name="container #Run (and input / output / error streams) when we receive an error on the channel returns the error" classname="Container Suite" time="1.0020503"></testcase>
+      <testcase name="container #Run (and input / output / error streams) when we receive an error on the channel closes the WebSocketOpen channel on the proc" classname="Container Suite" time="1.0008577"></testcase>
+      <testcase name="container #Run (and input / output / error streams) When the containizer server is down returns the error" classname="Container Suite" time="1.0009438"></testcase>
+      <testcase name="container GetProperties http success returns info about the container" classname="Container Suite" time="0.0010261"></testcase>
+      <testcase name="container GetProperties http 500 and returns Exception Json returns ExceptionMessage as error" classname="Container Suite" time="0.0009769000000000002"></testcase>
+      <testcase name="container GetProperties http fails and returns non understandable json returns http status as error message" classname="Container Suite" time="0.0009682"></testcase>
+      <testcase name="container GetProperty makes a call out to an external service" classname="Container Suite" time="0.0010195"></testcase>
+      <testcase name="container Stop Container container exists should stop the container" classname="Container Suite" time="0.0009953"></testcase>
+      <testcase name="container Stop Container container does not exist should stop the container" classname="Container Suite" time="0"></testcase>
+      <testcase name="container Stop Container containerizer server is not available should stop the container" classname="Container Suite" time="1.0060892"></testcase>
+      <testcase name="container SetProperty makes a call out to an external service" classname="Container Suite" time="0.0009101000000000001"></testcase>
+      <testcase name="container RemoveProperty makes a call out to an external service" classname="Container Suite" time="0.0010061"></testcase>
+  </testsuite>

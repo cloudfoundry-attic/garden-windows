@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+  <testsuite tests="13" failures="0" time="4.007912">
+      <testcase name="backend Containers when no properties are specified returns a list of containers" classname="Backend Suite" time="0.0020021"></testcase>
+      <testcase name="backend Containers when given properties to filter by passes them to containerizer and returns only containers with matching properties" classname="Backend Suite" time="0.0019988000000000002"></testcase>
+      <testcase name="backend Create makes a call out to an external service" classname="Backend Suite" time="0.0020036"></testcase>
+      <testcase name="backend Create sets the container&#39;s handle from the response" classname="Backend Suite" time="0.0020045"></testcase>
+      <testcase name="backend Create when there is an error making the http connection returns an error" classname="Backend Suite" time="0.9940422000000001"></testcase>
+      <testcase name="backend Lookup when the handle exists returns a container with the correct handle" classname="Backend Suite" time="0"></testcase>
+      <testcase name="backend BulkInfo makes a call out to an external service" classname="Backend Suite" time="0"></testcase>
+      <testcase name="backend BulkInfo returns the containers info" classname="Backend Suite" time="0"></testcase>
+      <testcase name="backend BulkInfo when there is an error making the http connection returns an error" classname="Backend Suite" time="0.9980942"></testcase>
+      <testcase name="backend Destroy makes a call out to an external service" classname="Backend Suite" time="0.0008475000000000001"></testcase>
+      <testcase name="backend Destroy when there is an error making the http connection returns an error" classname="Backend Suite" time="1.003042"></testcase>
+      <testcase name="backend Ping windows containerizer server is up makes a call out to an external service" classname="Backend Suite" time="0.0009791000000000001"></testcase>
+      <testcase name="backend Ping windows containerizer server is down returns an error" classname="Backend Suite" time="0.9970263"></testcase>
+  </testsuite>
