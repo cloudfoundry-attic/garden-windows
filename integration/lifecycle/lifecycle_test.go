@@ -53,7 +53,7 @@ var _ = Describe("Lifecycle", func() {
 		It("returns an error", func() {
 			_, err := client.Create(garden.ContainerSpec{Handle: c.Handle()})
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(Equal("handle already exists: foo"))
+			Expect(err.Error()).To(Equal("handle already exists: " + c.Handle()))
 		})
 	})
 })
