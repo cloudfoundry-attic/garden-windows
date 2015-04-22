@@ -83,7 +83,7 @@ namespace Containerizer.Controllers
             {
                 var response = new HttpResponseMessage(HttpStatusCode.Conflict)
                 {
-                    Content = new StringContent("handle already exists: foo")
+                    Content = new StringContent(string.Format("handle already exists: {0}", spec.Handle))
                 };
                 throw new HttpResponseException(response);
             }
