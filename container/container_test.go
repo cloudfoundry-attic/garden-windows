@@ -301,7 +301,7 @@ var _ = Describe("container", func() {
 						body, err := ioutil.ReadAll(req.Body)
 						req.Body.Close()
 						Expect(err).ShouldNot(HaveOccurred())
-						Expect(string(body)).Should(Equal(`{"hostPort": 1234}`))
+						Expect(string(body)).Should(Equal(`{"hostPort": 1234, "containerPort": 3456}`))
 					},
 				),
 			)

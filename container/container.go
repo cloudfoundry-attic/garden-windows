@@ -211,7 +211,7 @@ func (container *container) CurrentMemoryLimits() (garden.MemoryLimits, error) {
 
 func (container *container) NetIn(hostPort, containerPort uint32) (uint32, uint32, error) {
 	url := container.containerizerURL.NetIn(container.Handle())
-	response, err := http.Post(url, "application/json", strings.NewReader(fmt.Sprintf(`{"hostPort": %v}`, hostPort)))
+	response, err := http.Post(url, "application/json", strings.NewReader(fmt.Sprintf(`{"hostPort": %v, "containerPort": %v}`, hostPort, containerPort)))
 	var responseJSON netInResponse
 
 	err = container.parseJson(response, err, &responseJSON)

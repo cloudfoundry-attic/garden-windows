@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 
 namespace Containerizer.Services.Implementations
@@ -62,10 +63,14 @@ namespace Containerizer.Services.Implementations
             }
         }
 
-        private static void OverrideEnvPort(ProcessSpec processSpec, ContainerInfo info)
+        private void OverrideEnvPort(ProcessSpec processSpec, ContainerInfo info)
         {
-            if (info.ReservedPorts.Count > 0)
-                processSpec.Environment["PORT"] = info.ReservedPorts[0].ToString();
+            if (processSpec.Environment.ContainsKey("PORT"))
+            {
+                var hostport = container.GetProperty("ContainerPort:" + processSpec.Environment["PORT"]);
+                processSpec.Environment["PORT"] = hostport;
+                return;
+            }
         }
 
         private ProcessSpec NewProcessSpec(Models.ApiProcessSpec apiProcessSpec)

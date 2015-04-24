@@ -30,7 +30,6 @@ namespace Containerizer.Controllers
         private readonly IContainerService containerService;
         private readonly ILogger logger;
 
-
         public ContainersController(IContainerService containerService, ILogger logger)
         {
             this.containerService = containerService;

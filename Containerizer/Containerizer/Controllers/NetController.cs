@@ -16,6 +16,7 @@ namespace Containerizer.Controllers
     public class NetInRequest
     {
         public int HostPort { get; set; }
+        public int ContainerPort { get; set; }
     }
 
     public class NetInResponse
@@ -45,6 +46,7 @@ namespace Containerizer.Controllers
             try
             {
                 var returnedPort = container.ReservePort(request.HostPort);
+                container.SetProperty("ContainerPort:" + request.ContainerPort.ToString(), returnedPort.ToString() );
                 return Json(new NetInResponse { HostPort = returnedPort });
             }
             catch (Exception ex)

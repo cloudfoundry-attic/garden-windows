@@ -57,7 +57,7 @@ namespace Containerizer.Tests.Specs.Features
         "@echo off\r\n:loop\r\ndate /t\r\ngoto loop\r\n"));
 
                         response =
-                            httpClient.PostAsJsonAsync("/api/containers/" + handle + "/net/in", new { hostPort = 0 })
+                            httpClient.PostAsJsonAsync("/api/containers/" + handle + "/net/in", new { containerPort = 8080, hostPort = 0 })
                                 .GetAwaiter()
                                 .GetResult();
                         var json = response.Content.ReadAsJson();
@@ -75,7 +75,7 @@ namespace Containerizer.Tests.Specs.Features
                             var encoder = new UTF8Encoding();
                             var buffer =
                                 encoder.GetBytes(
-                                    "{\"type\":\"run\", \"pspec\":{\"Path\":\"myfile.bat\", Args:[\"/all\"]}}");
+                                    "{\"type\":\"run\", \"pspec\":{\"Path\":\"myfile.bat\", Env:[\"PORT=8080\"]}}");
                             client.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true,
                                 CancellationToken.None).GetAwaiter().GetResult();
 

@@ -1,15 +1,12 @@
 ﻿#region
 
 using System;
-using System.Collections.Generic;
-using System.Net.Http;
 using System.Web.Http;
+using System.Web.Http.Results;
 using Containerizer.Controllers;
-using Containerizer.Services.Interfaces;
+using IronFrame;
 using Moq;
 using NSpec;
-using IronFrame;
-using System.Web.Http.Results;
 
 #endregion
 
@@ -32,7 +29,8 @@ namespace Containerizer.Tests.Specs.Controllers
             describe[Controller.Create] = () =>
             {
                 string containerId = null;
-                int requestedHostPort = 0;
+                var requestedHostPort = 0;
+                var requestedContainerPort = 5678;
                 IHttpActionResult result = null;
                 Mock<IContainer> mockContainer = null;
 
@@ -45,61 +43,62 @@ namespace Containerizer.Tests.Specs.Controllers
                     mockContainerService.Setup(x => x.GetContainerByHandle(containerId)).Returns(mockContainer.Object);
                 };
 
-                act = () =>
-                {
-                    result = netController.Create(containerId, new NetInRequest { HostPort = requestedHostPort });
-                };
+                act =
+                    () =>
+                    {
+                        result = netController.Create(containerId,
+                            new NetInRequest {ContainerPort = requestedContainerPort, HostPort = requestedHostPort});
+                    };
 
-                it["reserves the Port in the container"] = () =>
-                {
-                    mockContainer.Verify(x => x.ReservePort(requestedHostPort));
-                };
+                it["reserves the Port in the container"] =
+                    () => { mockContainer.Verify(x => x.ReservePort(requestedHostPort)); };
 
                 context["when the container does not exist"] = () =>
                 {
-                    before = () =>
-                    {
-                        mockContainerService.Setup(x => x.GetContainerByHandle(It.IsAny<string>())).Returns(null as IContainer);
-                    };
+                    before =
+                        () =>
+                        {
+                            mockContainerService.Setup(x => x.GetContainerByHandle(It.IsAny<string>()))
+                                .Returns(null as IContainer);
+                        };
 
-                    it["Returns not found"] = () =>
-                    {
-                        result.should_cast_to<NotFoundResult>();
-                    };
+                    it["Returns not found"] = () => { result.should_cast_to<NotFoundResult>(); };
                 };
 
                 context["reserving the Port in the container succeeds and returns a Port"] = () =>
                 {
-                    before = () =>
-                    {
-                        mockContainer.Setup(x => x.ReservePort(requestedHostPort)).Returns(8765);
-                    };
+                    const int returnedPort = 8765;
+                    before = () => { mockContainer.Setup(x => x.ReservePort(requestedHostPort)).Returns(returnedPort); };
 
-                    it["calls reservePort on the container"] = () =>
-                        {
-                            mockContainer.Verify(x => x.ReservePort(requestedHostPort));
-                        };
+                    it["calls reservePort on the container"] =
+                        () => { mockContainer.Verify(x => x.ReservePort(requestedHostPort)); };
 
                     context["container reservePort succeeds and returns a Port"] = () =>
                     {
-                        before = () =>
-                        {
-                            mockContainer.Setup(x => x.ReservePort(requestedHostPort)).Returns(8765);
-                        };
+                        before = () => { mockContainer.Setup(x => x.ReservePort(requestedHostPort)).Returns(returnedPort); };
 
                         it["returns the Port that the net in service returns"] = () =>
                         {
                             var jsonResult = result.should_cast_to<JsonResult<NetInResponse>>();
                             jsonResult.Content.HostPort.should_be(8765);
                         };
+
+
+                        it["sets the containerport property key lookup"] =
+                        () =>
+                        {
+                            mockContainer.Verify(
+                                x => x.SetProperty("ContainerPort:" + requestedContainerPort.ToString(), returnedPort.ToString()));
+                        };
                     };
 
                     context["reserving the Port in the container fails and throws an exception"] = () =>
                     {
-                        before = () =>
-                        {
-                            mockContainer.Setup(x => x.ReservePort(requestedHostPort)).Throws(new Exception("BOOM"));
-                        };
+                        before =
+                            () =>
+                            {
+                                mockContainer.Setup(x => x.ReservePort(requestedHostPort)).Throws(new Exception("BOOM"));
+                            };
 
                         it["returns an error"] = () =>
                         {

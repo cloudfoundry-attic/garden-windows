@@ -149,17 +149,34 @@ namespace Containerizer.Tests.Specs.Services
                     containerMock.Verify(x => x.Run(It.Is((ProcessSpec p) => p.Environment["FOO"] == "Baz"), It.IsAny<IProcessIO>()));
                 };
 
-                it["overrides ENV[PORT] with reserved port"] = () =>
+                it["overrides ENV[PORT] with the hostport matching the requested container port"] = () =>
                 {
                     containerMock.Setup(x => x.GetInfo()).Returns(new ContainerInfo
                     {
                         Properties = new System.Collections.Generic.Dictionary<string, string> { { "executor:env", "[{\"name\":\"PORT\",\"value\":\"8080\"}]" } },
-                        ReservedPorts = new System.Collections.Generic.List<int> { 1234 },
                     });
+                    containerMock.Setup(x => x.GetProperty("ContainerPort:8080")).Returns("1234");
+
 
                     runService.Run(websocketMock.Object, new ApiProcessSpec());
-
                     containerMock.Verify(x => x.Run(It.Is((ProcessSpec p) => p.Environment["PORT"] == "1234"), It.IsAny<IProcessIO>()));
+
+                };
+
+                context["when no container port is in the request"] = () =>
+                {
+                    it["ENV[PORT] remains unset"] = () =>
+                    {
+                        containerMock.Setup(x => x.GetInfo()).Returns(new ContainerInfo
+                        {
+                            ReservedPorts = new System.Collections.Generic.List<int> {1234},
+                        });
+
+                        runService.Run(websocketMock.Object, new ApiProcessSpec());
+                        containerMock.Verify(
+                            x =>
+                                x.Run(It.Is((ProcessSpec p) => !p.Environment.ContainsKey("PORT")), It.IsAny<IProcessIO>()));
+                    };
                 };
             };
         }
