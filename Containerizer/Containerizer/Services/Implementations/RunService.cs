@@ -5,7 +5,6 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.Remoting.Messaging;
 using System.Text;
 
 namespace Containerizer.Services.Implementations
@@ -69,7 +68,17 @@ namespace Containerizer.Services.Implementations
             {
                 var hostport = container.GetProperty("ContainerPort:" + processSpec.Environment["PORT"]);
                 processSpec.Environment["PORT"] = hostport;
-                return;
+            }
+            else if (processSpec.Arguments != null)
+            {
+                // TODO: Remove this. This case is for Healthcheck ; when nsync sends port as env variable we can remove this. (https://github.com/cloudfoundry-incubator/nsync/pull/1)
+                var portArg = Array.Find(processSpec.Arguments, s => s.StartsWith("-port="));
+                if (portArg != null)
+                {
+                    var containerPort = portArg.Split(new Char[] {'='})[1];
+                    var hostport = container.GetProperty("ContainerPort:" + containerPort);
+                    processSpec.Environment["PORT"] = hostport;
+                }
             }
         }
 

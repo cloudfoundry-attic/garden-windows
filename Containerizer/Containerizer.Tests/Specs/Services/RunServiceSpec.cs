@@ -177,7 +177,23 @@ namespace Containerizer.Tests.Specs.Services
                             x =>
                                 x.Run(It.Is((ProcessSpec p) => !p.Environment.ContainsKey("PORT")), It.IsAny<IProcessIO>()));
                     };
+                    context["when a 'port' argument is in the request"] = () =>
+                    {
+                        it["sets the ENV[PORT] to the hostport matching the requested container port"] = () =>
+                        {
+                            containerMock.Setup(x => x.GetInfo()).Returns(new ContainerInfo { });
+                            containerMock.Setup(x => x.GetProperty("ContainerPort:8080")).Returns("1234");
+
+                            runService.Run(websocketMock.Object, new ApiProcessSpec
+                            {
+                                Args = new string[] { "-port=8080" },
+                            });
+
+                            containerMock.Verify(x => x.Run(It.Is((ProcessSpec p) => p.Environment["PORT"] == "1234"), It.IsAny<IProcessIO>()));
+                        };
+                    };
                 };
+
             };
         }
 
