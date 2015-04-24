@@ -30,6 +30,12 @@ func (self ContainerizerURL) Ping() string {
 	return base.String()
 }
 
+func (self ContainerizerURL) Capacity() string {
+	base := *self.base
+	base.Path = "/api/capacity"
+	return base.String()
+}
+
 func (self ContainerizerURL) Create() string {
 	base := *self.base
 	base.Path = "/api/containers"

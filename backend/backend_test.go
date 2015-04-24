@@ -39,6 +39,34 @@ var _ = Describe("backend", func() {
 		}
 	})
 
+	Describe("Capacity", func() {
+		BeforeEach(func() {
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/capacity"),
+					ghttp.RespondWith(200, `{"disk_in_bytes":11111,"memory_in_bytes":22222,"max_containers":33333}`),
+				),
+			)
+		})
+
+		It("returns capacity", func() {
+			capacity, err := dotNetBackend.Capacity()
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(capacity.DiskInBytes).To(Equal(uint64(11111)))
+			Expect(capacity.MemoryInBytes).To(Equal(uint64(22222)))
+			Expect(capacity.MaxContainers).To(Equal(uint64(33333)))
+		})
+
+		Context("when there is an error making the http connection", func() {
+			It("returns an error", func() {
+				server.Close()
+				_, err := dotNetBackend.Capacity()
+				Expect(err).To(HaveOccurred())
+			})
+		})
+	})
+
 	Describe("Containers", func() {
 		Context("when no properties are specified", func() {
 			BeforeEach(func() {

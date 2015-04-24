@@ -48,11 +48,21 @@ func (dotNetBackend *dotNetBackend) Ping() error {
 }
 
 func (dotNetBackend *dotNetBackend) Capacity() (garden.Capacity, error) {
-	capacity := garden.Capacity{
-		MemoryInBytes: 8 * 1024 * 1024 * 1024,
-		DiskInBytes:   80 * 1024 * 1024 * 1024,
-		MaxContainers: 100,
+	var capacity garden.Capacity
+	url := dotNetBackend.containerizerURL.Capacity()
+
+	response, err := http.Get(url)
+	if err != nil {
+		return capacity, err
 	}
+	defer response.Body.Close()
+
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return capacity, err
+	}
+	err = json.Unmarshal(body, &capacity)
+
 	return capacity, nil
 }
 
