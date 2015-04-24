@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path"
 	"syscall"
 	"testing"
 	"time"
 
 	"github.com/cloudfoundry-incubator/garden"
+	"github.com/cloudfoundry/loggregator/src/bitbucket.org/kardianos/osext"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
@@ -19,9 +21,8 @@ import (
 	garden_runner "github.com/cloudfoundry-incubator/garden-windows/integration/runner"
 )
 
-var gardenBin string
+var gardenBin, containerizerBin string
 
-var containerizerBin = os.Getenv("CONTAINERIZER_BIN")
 var containerizerRunner ifrit.Runner
 var gardenRunner *garden_runner.Runner
 var gardenProcess ifrit.Process
@@ -71,7 +72,9 @@ func ensureGardenRunning() {
 func TestLifecycle(t *testing.T) {
 
 	SynchronizedBeforeSuite(func() []byte {
-		Expect(containerizerBin).To(BeAnExistingFile(), "Expected $CONTAINERIZER_BIN to be a file")
+		currentDir, err := osext.ExecutableFolder()
+		containerizerBin = path.Join(currentDir, `..\..\Containerizer\Containerizer\bin\Containerizer.exe`)
+		Expect(containerizerBin).To(BeAnExistingFile(), "Expected to find Containerizer.exe at "+containerizerBin)
 		gardenPath, err := gexec.Build("github.com/cloudfoundry-incubator/garden-windows", "-a", "-race", "-tags", "daemon")
 		Expect(err).ShouldNot(HaveOccurred())
 		return []byte(gardenPath)
