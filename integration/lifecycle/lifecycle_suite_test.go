@@ -34,6 +34,9 @@ func startGarden(argv ...string) garden.Client {
 
 	tmpDir := os.TempDir()
 
+	// If below fails, try
+	// netsh advfirewall firewall add rule name="Open Port 48080"  dir=in action=allow protocol=TCP localport=48080
+
 	gardenRunner = garden_runner.New("tcp4", gardenAddr, tmpDir, gardenBin, "http://127.0.0.1:48080")
 	containerizerRunner = ginkgomon.New(ginkgomon.Config{
 		Name:              "containerizer",
