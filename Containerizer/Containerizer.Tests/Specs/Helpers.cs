@@ -119,7 +119,7 @@ namespace Containerizer.Tests.Specs
 
         public static ContainerizerProcess CreateContainerizerProcess()
         {
-            var port = new Random().Next(10000, 50000);
+            var port = 48080;
             var process = new ContainerizerProcess(port);
             process.Start();
             return process;
