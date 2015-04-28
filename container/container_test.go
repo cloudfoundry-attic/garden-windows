@@ -301,7 +301,7 @@ var _ = Describe("container", func() {
 						body, err := ioutil.ReadAll(req.Body)
 						req.Body.Close()
 						Expect(err).ShouldNot(HaveOccurred())
-						Expect(string(body)).Should(Equal(`{"hostPort": 1234, "containerPort": 3456}`))
+						Expect(string(body)).Should(Equal(`{"hostPort":1234,"containerPort":3456}`))
 					},
 				),
 			)
@@ -336,10 +336,8 @@ var _ = Describe("container", func() {
 						ghttp.RespondWith(200, `{"error":"Port in use"}`),
 					),
 				)
-				returnedHostPort, returnedContainerPort, err := container.NetIn(1234, 3456)
+				_, _, err := container.NetIn(1234, 3456)
 				Expect(err).Should(MatchError(errors.New("Port in use")))
-				Expect(returnedHostPort).Should(Equal(uint32(0)))
-				Expect(returnedContainerPort).Should(Equal(uint32(0)))
 			})
 		})
 
@@ -351,10 +349,8 @@ var _ = Describe("container", func() {
 						ghttp.RespondWith(200, `hi { fred`),
 					),
 				)
-				returnedHostPort, returnedContainerPort, err := container.NetIn(1234, 3456)
+				_, _, err := container.NetIn(1234, 3456)
 				Expect(err).To(HaveOccurred())
-				Expect(returnedHostPort).Should(Equal(uint32(0)))
-				Expect(returnedContainerPort).Should(Equal(uint32(0)))
 			})
 		})
 	})

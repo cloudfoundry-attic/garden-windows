@@ -44,7 +44,16 @@ namespace Containerizer.Controllers
         public IHttpActionResult Show(string handle, string propertyKey)
         {
             var container = containerService.GetContainerByHandle(handle);
+            if (container == null)
+                return ResponseMessage(Request.CreateResponse(System.Net.HttpStatusCode.NotFound, string.Format("unknown handle: {0}", handle)));
+
+
             var value = container.GetProperty(propertyKey);
+            if (value == null)
+            {
+                return ResponseMessage(Request.CreateResponse(System.Net.HttpStatusCode.NotFound, string.Format("property does not exist: {0}", propertyKey)));
+            }
+
             return Json(value);
         }
 

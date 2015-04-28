@@ -196,7 +196,7 @@ namespace Containerizer.Tests.Specs.Controllers
                         {
                             var httpResponse = ex.should_cast_to<HttpResponseException>();
                             httpResponse.Response.StatusCode.should_be(HttpStatusCode.Conflict);
-                            httpResponse.Response.Content.ReadAsString().should_be("handle already exists: foo");
+                            httpResponse.Response.Content.ReadAsJsonString().should_be("handle already exists: foo");
                         };
                     };
 
@@ -211,7 +211,7 @@ namespace Containerizer.Tests.Specs.Controllers
                         {
                             var httpResponse = ex.should_cast_to<HttpResponseException>();
                             httpResponse.Response.StatusCode.should_be(HttpStatusCode.InternalServerError);
-                            httpResponse.Response.Content.ReadAsString().should_be("BOOM");
+                            httpResponse.Response.Content.ReadAsJsonString().should_be("BOOM");
                         };
                     };
                 };

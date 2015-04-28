@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Web.Http;
@@ -44,7 +45,7 @@ namespace Containerizer.Tests.Specs.Controllers
                 mockContainerService.Setup(x => x.GetContainerByHandle(containerHandle))
                         .Returns(() =>
                         {
-                            return mockContainer.Object;
+                            return mockContainer != null ? mockContainer.Object : null;
                         });
             };
 
@@ -72,7 +73,7 @@ namespace Containerizer.Tests.Specs.Controllers
                 };
             };
              * */
-                 
+
             describe[Controller.Show] = () =>
             {
                 IHttpActionResult result = null;
@@ -81,9 +82,10 @@ namespace Containerizer.Tests.Specs.Controllers
                 before = () =>
                 {
                     propertyValue = "a lion, a hippo, the number 25";
-                    mockContainer.Setup(x => x.GetProperty(key)).Returns(propertyValue);
-                    result = propertiesController.Show(containerHandle, key);
+                    mockContainer.Setup(x => x.GetProperty(key)).Returns(() => propertyValue);
                 };
+
+                act = () => result = propertiesController.Show(containerHandle, key);
 
                 it["returns a successful status code"] = () =>
                 {
@@ -94,6 +96,26 @@ namespace Containerizer.Tests.Specs.Controllers
                 {
                     var actualValue = result.should_cast_to<JsonResult<string>>();
                     actualValue.Content.should_be(propertyValue);
+                };
+
+                context["when the property does not exist"] = () =>
+                {
+                    before = () => propertyValue = null;
+                    it["returns a 404"] = () =>
+                    {
+                        var message = result.should_cast_to<ResponseMessageResult>();
+                        message.Response.StatusCode.should_be(HttpStatusCode.NotFound);
+                    };
+                };
+
+                context["when the container does not exist"] = () =>
+                {
+                    before = () => mockContainer = null;
+                    it["returns a 404"] = () =>
+                    {
+                        var message = result.should_cast_to<ResponseMessageResult>();
+                        message.Response.StatusCode.should_be(HttpStatusCode.NotFound);
+                    };
                 };
             };
 

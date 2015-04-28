@@ -80,19 +80,13 @@ namespace Containerizer.Controllers
             }
             catch (PrincipalExistsException ex)
             {
-                var response = new HttpResponseMessage(HttpStatusCode.Conflict)
-                {
-                    Content = new StringContent(string.Format("handle already exists: {0}", spec.Handle))
-                };
-                throw new HttpResponseException(response);
+                throw new HttpResponseException(Request.CreateResponse(HttpStatusCode.Conflict,
+                    string.Format("handle already exists: {0}", spec.Handle)));
             }
             catch (Exception ex)
             {
-                var response = new HttpResponseMessage(HttpStatusCode.InternalServerError)
-                {
-                    Content = new StringContent(ex.Message)
-                };
-                throw new HttpResponseException(response);
+                throw new HttpResponseException(Request.CreateResponse(HttpStatusCode.InternalServerError,
+    ex.Message));
             }
         }
 

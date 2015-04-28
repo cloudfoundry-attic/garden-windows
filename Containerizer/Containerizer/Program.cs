@@ -1,15 +1,7 @@
-﻿using Microsoft.Owin.Hosting;
+﻿using Containerizer.Services.Implementations;
+using Microsoft.Owin.Hosting;
 using System;
-using System.Net.Http;
-using System.Net.WebSockets;
-using System.Text;
 using System.Threading;
-using Owin.WebSocket;
-using Owin.WebSocket.Extensions;
-using System.Threading.Tasks;
-using Microsoft.Owin.Builder;
-using System.Net;
-using Containerizer.Services.Implementations;
 
 namespace Containerizer
 {

@@ -1,29 +1,26 @@
 package backend
 
 import (
-	"encoding/json"
-	"errors"
-	"io/ioutil"
-	"net/http"
 	"time"
-
-	"strings"
 
 	"github.com/cloudfoundry-incubator/garden"
 	"github.com/cloudfoundry-incubator/garden-windows/container"
 	"github.com/cloudfoundry-incubator/garden-windows/containerizer_url"
+	"github.com/cloudfoundry-incubator/garden-windows/http_client"
 	"github.com/pivotal-golang/lager"
 )
 
 type dotNetBackend struct {
 	containerizerURL *containerizer_url.ContainerizerURL
 	logger           lager.Logger
+	client           *http_client.Client
 }
 
 func NewDotNetBackend(containerizerURL *containerizer_url.ContainerizerURL, logger lager.Logger) (*dotNetBackend, error) {
 	return &dotNetBackend{
 		containerizerURL: containerizerURL,
 		logger:           logger,
+		client:           http_client.NewClient(logger),
 	}, nil
 }
 
@@ -39,78 +36,26 @@ func (dotNetBackend *dotNetBackend) GraceTime(garden.Container) time.Duration {
 }
 
 func (dotNetBackend *dotNetBackend) Ping() error {
-	resp, err := http.Get(dotNetBackend.containerizerURL.Ping())
-	if err != nil {
-		return err
-	}
-	resp.Body.Close()
-	return nil
+	return dotNetBackend.client.Get(dotNetBackend.containerizerURL.Ping(), nil)
 }
 
 func (dotNetBackend *dotNetBackend) Capacity() (garden.Capacity, error) {
 	var capacity garden.Capacity
-	url := dotNetBackend.containerizerURL.Capacity()
-
-	response, err := http.Get(url)
-	if err != nil {
-		return capacity, err
-	}
-	defer response.Body.Close()
-
-	body, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return capacity, err
-	}
-	err = json.Unmarshal(body, &capacity)
-
-	return capacity, nil
+	err := dotNetBackend.client.Get(dotNetBackend.containerizerURL.Capacity(), &capacity)
+	return capacity, err
 }
 
 func (dotNetBackend *dotNetBackend) Create(containerSpec garden.ContainerSpec) (garden.Container, error) {
 	url := dotNetBackend.containerizerURL.Create()
-	containerSpecJSON, err := json.Marshal(containerSpec)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := http.Post(url, "application/json", strings.NewReader(string(containerSpecJSON)))
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		msg, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-		return nil, errors.New(string(msg))
-	}
-
 	var returnedContainer createContainerResponse
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	err = json.Unmarshal(body, &returnedContainer)
-
+	err := dotNetBackend.client.Post(url, containerSpec, &returnedContainer)
 	netContainer := container.NewContainer(dotNetBackend.containerizerURL, returnedContainer.Handle, dotNetBackend.logger)
-	return netContainer, nil
+	return netContainer, err
 }
 
 func (dotNetBackend *dotNetBackend) Destroy(handle string) error {
 	url := dotNetBackend.containerizerURL.Destroy(handle)
-
-	req, err := http.NewRequest("DELETE", url, nil)
-	if err != nil {
-		return err
-	}
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-	resp.Body.Close()
-
-	return nil
+	return dotNetBackend.client.Delete(url)
 }
 
 func (dotNetBackend *dotNetBackend) Containers(props garden.Properties) ([]garden.Container, error) {
@@ -118,24 +63,13 @@ func (dotNetBackend *dotNetBackend) Containers(props garden.Properties) ([]garde
 	if err != nil {
 		return nil, err
 	}
-	response, err := http.Get(url)
-	if err != nil {
-		return nil, err
-	}
-	defer response.Body.Close()
-
 	var ids []string
-	body, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return nil, err
-	}
-	err = json.Unmarshal(body, &ids)
-
+	err = dotNetBackend.client.Get(url, &ids)
 	containers := []garden.Container{}
 	for _, containerId := range ids {
 		containers = append(containers, container.NewContainer(dotNetBackend.containerizerURL, containerId, dotNetBackend.logger))
 	}
-	return containers, nil
+	return containers, err
 }
 
 func (dotNetBackend *dotNetBackend) Lookup(handle string) (garden.Container, error) {
@@ -145,18 +79,8 @@ func (dotNetBackend *dotNetBackend) Lookup(handle string) (garden.Container, err
 
 func (dotNetBackend *dotNetBackend) BulkInfo(handles []string) (map[string]garden.ContainerInfoEntry, error) {
 	url := dotNetBackend.containerizerURL.BulkInfo()
-	containerSpecJSON, err := json.Marshal(handles)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := http.Post(url, "application/json", strings.NewReader(string(containerSpecJSON)))
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
 	containersInfo := make(map[string]garden.ContainerInfoEntry)
-	err = json.NewDecoder(resp.Body).Decode(&containersInfo)
+	err := dotNetBackend.client.Post(url, handles, &containersInfo)
 	return containersInfo, err
 }
 

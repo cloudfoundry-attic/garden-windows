@@ -2,6 +2,7 @@ package lifecycle_test
 
 import (
 	"github.com/cloudfoundry-incubator/garden"
+	"github.com/cloudfoundry-incubator/garden/client/connection"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -57,8 +58,7 @@ var _ = Describe("Container information", func() {
 		})
 
 		AfterEach(func() {
-			err := client.Destroy(container.Handle())
-			Expect(err).ToNot(HaveOccurred())
+			client.Destroy(container.Handle())
 		})
 
 		Describe("info for one container", func() {
@@ -102,6 +102,20 @@ var _ = Describe("Container information", func() {
 				Expect(info.Properties).To(Equal(garden.Properties{
 					"foo": "baz",
 				}))
+
+				err = container.RemoveProperty("foo")
+				Expect(err).ToNot(HaveOccurred())
+
+				value, err = container.GetProperty("foo")
+				Expect(err).To(HaveOccurred())
+				Expect(err.(connection.Error).StatusCode).To(Equal(500))
+				Expect(err.(connection.Error).Message).To(Equal("property does not exist: foo"))
+
+				client.Destroy(container.Handle())
+				value, err = container.GetProperty("foo")
+				Expect(err).To(HaveOccurred())
+				Expect(err.(connection.Error).StatusCode).To(Equal(500))
+				Expect(err.(connection.Error).Message).To(Equal("unknown handle: " + container.Handle()))
 			})
 		})
 
