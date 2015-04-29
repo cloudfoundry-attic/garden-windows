@@ -46,6 +46,7 @@ namespace Containerizer
             containerBuilder.RegisterType<TarStreamService>().As<ITarStreamService>();
             containerBuilder.Register(context => logger).As<ILogger>();
             containerBuilder.RegisterType<ContainersController>();
+            containerBuilder.RegisterType<ContainerProcessController>();
             containerBuilder.RegisterType<FilesController>();
             containerBuilder.RegisterType<NetController>();
             containerBuilder.RegisterType<PropertiesController>();

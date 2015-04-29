@@ -12,6 +12,10 @@ type ContainerizerURL struct {
 	base *url.URL
 }
 
+func (self ContainerizerURL) Base() *url.URL {
+	return self.base
+}
+
 func FromString(hi string) (*ContainerizerURL, error) {
 	url, err := url.Parse(hi)
 	if err != nil {

@@ -20,7 +20,7 @@ func NewDotNetBackend(containerizerURL *containerizer_url.ContainerizerURL, logg
 	return &dotNetBackend{
 		containerizerURL: containerizerURL,
 		logger:           logger,
-		client:           http_client.NewClient(logger),
+		client:           http_client.NewClient(logger, containerizerURL.Base()),
 	}, nil
 }
 

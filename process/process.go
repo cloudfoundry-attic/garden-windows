@@ -1,6 +1,11 @@
 package process
 
-import "github.com/cloudfoundry-incubator/garden"
+import (
+	"fmt"
+
+	"github.com/cloudfoundry-incubator/garden"
+	"github.com/cloudfoundry-incubator/garden-windows/http_client"
+)
 
 type DotNetProcessExitStatus struct {
 	ExitCode int
@@ -8,13 +13,17 @@ type DotNetProcessExitStatus struct {
 }
 
 type DotNetProcess struct {
-	Pid        uint32
-	StreamOpen chan DotNetProcessExitStatus
+	Pid             uint32
+	StreamOpen      chan DotNetProcessExitStatus
+	containerHandle string
+	client          *http_client.Client
 }
 
-func NewDotNetProcess() DotNetProcess {
+func NewDotNetProcess(containerHandle string, client *http_client.Client) DotNetProcess {
 	return DotNetProcess{
-		StreamOpen: make(chan DotNetProcessExitStatus),
+		StreamOpen:      make(chan DotNetProcessExitStatus),
+		containerHandle: containerHandle,
+		client:          client,
 	}
 }
 
@@ -32,5 +41,6 @@ func (process DotNetProcess) SetTTY(ttyspec garden.TTYSpec) error {
 }
 
 func (process DotNetProcess) Signal(signal garden.Signal) error {
-	return nil
+	url := fmt.Sprintf("/api/containers/%s/processes/%d", process.containerHandle, process.Pid)
+	return process.client.Delete(url)
 }

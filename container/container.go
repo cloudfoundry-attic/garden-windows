@@ -40,7 +40,7 @@ type ProcessStreamEvent struct {
 func NewContainer(containerizerURL *containerizer_url.ContainerizerURL, handle string, logger lager.Logger) *container {
 	return &container{
 		containerizerURL: containerizerURL,
-		client:           http_client.NewClient(logger),
+		client:           http_client.NewClient(logger, containerizerURL.Base()),
 		handle:           handle,
 		logger:           logger,
 	}
@@ -165,7 +165,7 @@ func (container *container) Run(processSpec garden.ProcessSpec, processIO garden
 		ApiProcessSpec: processSpec,
 	})
 
-	proc := process.NewDotNetProcess()
+	proc := process.NewDotNetProcess(container.Handle(), container.client)
 	pidChannel := make(chan uint32)
 
 	streamWebsocketIOToContainerizer(ws, processIO)
@@ -181,7 +181,7 @@ func (container *container) Run(processSpec garden.ProcessSpec, processIO garden
 }
 
 func (container *container) Attach(uint32, garden.ProcessIO) (garden.Process, error) {
-	return process.NewDotNetProcess(), nil
+	return process.NewDotNetProcess(container.Handle(), container.client), nil
 }
 
 func (container *container) Metrics() (garden.Metrics, error) {

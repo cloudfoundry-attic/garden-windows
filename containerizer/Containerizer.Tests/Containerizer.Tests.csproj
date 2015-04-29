@@ -117,6 +117,7 @@
   <ItemGroup>
     <Compile Include="Specs\Controllers\BulkInfoControllerSpec.cs" />
     <Compile Include="Specs\Controllers\CapacityControllerSpec.cs" />
+    <Compile Include="Specs\Controllers\ContainerProcessControllerSpec.cs" />
     <Compile Include="Specs\Controllers\InfoControllerSpec.cs" />
     <Compile Include="Specs\Controllers\LimitsControllerSpec.cs" />
     <Compile Include="Specs\Controllers\PropertiesControllerSpec.cs" />

@@ -7,17 +7,19 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	neturl "net/url"
 	"strings"
 
 	"github.com/pivotal-golang/lager"
 )
 
 type Client struct {
-	logger lager.Logger
+	logger  lager.Logger
+	baseUrl *neturl.URL
 }
 
-func NewClient(logger lager.Logger) *Client {
-	return &Client{logger: logger}
+func NewClient(logger lager.Logger, baseUrl *neturl.URL) *Client {
+	return &Client{logger: logger, baseUrl: baseUrl}
 }
 
 func (client *Client) Get(url string, output interface{}) error {
@@ -52,6 +54,14 @@ func (client *Client) Put(url string, payload io.Reader, contentType string) err
 }
 
 func (client *Client) Delete(url string) error {
+	uri, err := neturl.Parse(url)
+	if err != nil {
+		return err
+	}
+	uri.Scheme = client.baseUrl.Scheme
+	uri.Host = client.baseUrl.Host
+	url = uri.String()
+
 	req, err := http.NewRequest("DELETE", url, strings.NewReader(""))
 	if err != nil {
 		return err
