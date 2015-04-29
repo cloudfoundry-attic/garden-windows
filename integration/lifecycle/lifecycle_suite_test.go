@@ -76,8 +76,15 @@ func TestLifecycle(t *testing.T) {
 
 	SynchronizedBeforeSuite(func() []byte {
 		currentDir, err := osext.ExecutableFolder()
-		containerizerBin = path.Join(currentDir, `..\..\Containerizer\Containerizer\bin\Containerizer.exe`)
-		Expect(containerizerBin).To(BeAnExistingFile(), "Expected to find Containerizer.exe at "+containerizerBin)
+		Expect(err).ShouldNot(HaveOccurred())
+		containerizerDir := path.Join(currentDir, "..", "..", "..", "Containerizer", "Containerizer")
+		windir := os.Getenv("WINDIR")
+		msbuild := path.Join(windir, "Microsoft.NET", "Framework64", "v4.0.30319", "MSBuild")
+		cmd := exec.Command(msbuild, `Containerizer.csproj`)
+		cmd.Dir = containerizerDir
+		Expect(cmd.Run()).To(Succeed())
+		containerizerBin = path.Join(containerizerDir, "bin", "Containerizer.exe")
+		Expect(containerizerBin).To(BeAnExistingFile())
 		gardenPath, err := gexec.Build("github.com/cloudfoundry-incubator/garden-windows", "-a", "-race", "-tags", "daemon")
 		Expect(err).ShouldNot(HaveOccurred())
 		return []byte(gardenPath)
