@@ -1,26 +1,26 @@
 package backend
 
 import (
+	"encoding/json"
+	"fmt"
+	"net/url"
 	"time"
 
 	"github.com/cloudfoundry-incubator/garden"
 	"github.com/cloudfoundry-incubator/garden-windows/container"
-	"github.com/cloudfoundry-incubator/garden-windows/containerizer_url"
 	"github.com/cloudfoundry-incubator/garden-windows/http_client"
 	"github.com/pivotal-golang/lager"
 )
 
 type dotNetBackend struct {
-	containerizerURL *containerizer_url.ContainerizerURL
-	logger           lager.Logger
-	client           *http_client.Client
+	logger lager.Logger
+	client *http_client.Client
 }
 
-func NewDotNetBackend(containerizerURL *containerizer_url.ContainerizerURL, logger lager.Logger) (*dotNetBackend, error) {
+func NewDotNetBackend(client *http_client.Client, logger lager.Logger) (*dotNetBackend, error) {
 	return &dotNetBackend{
-		containerizerURL: containerizerURL,
-		logger:           logger,
-		client:           http_client.NewClient(logger, containerizerURL.Base()),
+		logger: logger,
+		client: client, // http_client.NewClient(logger, containerizerURL.Base()),
 	}, nil
 }
 
@@ -36,51 +36,55 @@ func (dotNetBackend *dotNetBackend) GraceTime(garden.Container) time.Duration {
 }
 
 func (dotNetBackend *dotNetBackend) Ping() error {
-	return dotNetBackend.client.Get(dotNetBackend.containerizerURL.Ping(), nil)
+	return dotNetBackend.client.Get("/api/ping", nil)
 }
 
 func (dotNetBackend *dotNetBackend) Capacity() (garden.Capacity, error) {
 	var capacity garden.Capacity
-	err := dotNetBackend.client.Get(dotNetBackend.containerizerURL.Capacity(), &capacity)
+	err := dotNetBackend.client.Get("/api/capacity", &capacity)
 	return capacity, err
 }
 
 func (dotNetBackend *dotNetBackend) Create(containerSpec garden.ContainerSpec) (garden.Container, error) {
-	url := dotNetBackend.containerizerURL.Create()
 	var returnedContainer createContainerResponse
-	err := dotNetBackend.client.Post(url, containerSpec, &returnedContainer)
-	netContainer := container.NewContainer(dotNetBackend.containerizerURL, returnedContainer.Handle, dotNetBackend.logger)
+	err := dotNetBackend.client.Post("/api/containers", containerSpec, &returnedContainer)
+	netContainer := container.NewContainer(dotNetBackend.client, returnedContainer.Handle, dotNetBackend.logger)
 	return netContainer, err
 }
 
 func (dotNetBackend *dotNetBackend) Destroy(handle string) error {
-	url := dotNetBackend.containerizerURL.Destroy(handle)
-	return dotNetBackend.client.Delete(url)
+	u := fmt.Sprintf("/api/containers/%s", handle)
+	return dotNetBackend.client.Delete(u)
 }
 
 func (dotNetBackend *dotNetBackend) Containers(props garden.Properties) ([]garden.Container, error) {
-	url, err := dotNetBackend.containerizerURL.List(props)
-	if err != nil {
-		return nil, err
-	}
-	var ids []string
-	err = dotNetBackend.client.Get(url, &ids)
 	containers := []garden.Container{}
+	u, err := url.Parse("/api/containers")
+	if len(props) > 0 {
+		jsonString, err := json.Marshal(props)
+		if err != nil {
+			return containers, err
+		}
+		values := url.Values{"q": []string{string(jsonString)}}
+		u.RawQuery = values.Encode()
+	}
+
+	var ids []string
+	err = dotNetBackend.client.Get(u.String(), &ids)
 	for _, containerId := range ids {
-		containers = append(containers, container.NewContainer(dotNetBackend.containerizerURL, containerId, dotNetBackend.logger))
+		containers = append(containers, container.NewContainer(dotNetBackend.client, containerId, dotNetBackend.logger))
 	}
 	return containers, err
 }
 
 func (dotNetBackend *dotNetBackend) Lookup(handle string) (garden.Container, error) {
-	netContainer := container.NewContainer(dotNetBackend.containerizerURL, handle, dotNetBackend.logger)
+	netContainer := container.NewContainer(dotNetBackend.client, handle, dotNetBackend.logger)
 	return netContainer, nil
 }
 
 func (dotNetBackend *dotNetBackend) BulkInfo(handles []string) (map[string]garden.ContainerInfoEntry, error) {
-	url := dotNetBackend.containerizerURL.BulkInfo()
 	containersInfo := make(map[string]garden.ContainerInfoEntry)
-	err := dotNetBackend.client.Post(url, handles, &containersInfo)
+	err := dotNetBackend.client.Post("/api/bulkcontainerinfo", handles, &containersInfo)
 	return containersInfo, err
 }
 

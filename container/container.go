@@ -3,14 +3,13 @@ package container
 import (
 	"fmt"
 	"io"
-	"net/http"
+	"net/url"
 
 	"errors"
 	"strconv"
 	"strings"
 
 	"github.com/cloudfoundry-incubator/garden"
-	"github.com/cloudfoundry-incubator/garden-windows/containerizer_url"
 	"github.com/cloudfoundry-incubator/garden-windows/http_client"
 	"github.com/cloudfoundry-incubator/garden-windows/process"
 
@@ -19,10 +18,9 @@ import (
 )
 
 type container struct {
-	containerizerURL *containerizer_url.ContainerizerURL
-	handle           string
-	logger           lager.Logger
-	client           *http_client.Client
+	handle string
+	logger lager.Logger
+	client *http_client.Client
 }
 
 type ports struct {
@@ -37,12 +35,11 @@ type ProcessStreamEvent struct {
 	Data           string             `json:"data"`
 }
 
-func NewContainer(containerizerURL *containerizer_url.ContainerizerURL, handle string, logger lager.Logger) *container {
+func NewContainer(client *http_client.Client, handle string, logger lager.Logger) *container {
 	return &container{
-		containerizerURL: containerizerURL,
-		client:           http_client.NewClient(logger, containerizerURL.Base()),
-		handle:           handle,
-		logger:           logger,
+		client: client,
+		handle: handle,
+		logger: logger,
 	}
 }
 
@@ -62,42 +59,34 @@ func (err UndefinedPropertyError) Error() string {
 }
 
 func (container *container) Stop(kill bool) error {
-	url := container.containerizerURL.Stop(container.Handle())
-	err := container.client.Post(url, nil, nil)
-	return err
-}
-
-func (container *container) Properties() (garden.Properties, error) {
-	url := container.containerizerURL.GetProperties(container.Handle())
-	properties := garden.Properties{}
-	err := container.client.Get(url, &properties)
-	return properties, err
+	url := fmt.Sprintf("/api/containers/%s/stop", container.Handle())
+	return container.client.Post(url, nil, nil)
 }
 
 func (container *container) Info() (garden.ContainerInfo, error) {
-	url := container.containerizerURL.Info(container.Handle())
+	url := fmt.Sprintf("/api/containers/%s/info", container.Handle())
 	info := garden.ContainerInfo{}
 	err := container.client.Get(url, &info)
 	return info, err
 }
 
+func (container *container) streamUrl(paramName, fileName string) string {
+	base := url.URL{}
+	base.Path = fmt.Sprintf("/api/containers/%s/files", container.Handle())
+	q := base.Query()
+	q.Add(paramName, fileName)
+	base.RawQuery = q.Encode()
+	return base.String()
+}
+
 func (container *container) StreamIn(dstPath string, tarStream io.Reader) error {
-	url := container.containerizerURL.StreamIn(container.Handle(), dstPath)
-	err := container.client.Put(url, tarStream, "application/octet-stream")
-	return err
+	url := container.streamUrl("destination", dstPath)
+	return container.client.Put(url, tarStream, "application/octet-stream")
 }
 
 func (container *container) StreamOut(srcPath string) (io.ReadCloser, error) {
-	url := container.containerizerURL.StreamOut(container.Handle(), srcPath)
-	resp, err := http.Get(url)
-	if err != nil {
-		return nil, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		resp.Body.Close()
-		return nil, ErrReadFromPath
-	}
-	return resp.Body, nil
+	url := container.streamUrl("source", srcPath)
+	return container.client.ReadBody(url)
 }
 
 func (container *container) LimitBandwidth(limits garden.BandwidthLimits) error {
@@ -108,8 +97,7 @@ func (container *container) CurrentBandwidthLimits() (garden.BandwidthLimits, er
 }
 
 func (container *container) LimitCPU(limits garden.CPULimits) error {
-	url := container.containerizerURL.CPULimit(container.Handle())
-
+	url := fmt.Sprintf("/api/containers/%s/cpu_limit", container.Handle())
 	err := container.client.Post(url, limits, nil)
 	return err
 }
@@ -126,20 +114,19 @@ func (container *container) CurrentDiskLimits() (garden.DiskLimits, error) {
 }
 
 func (container *container) LimitMemory(limits garden.MemoryLimits) error {
-	url := container.containerizerURL.MemoryLimit(container.Handle())
-	err := container.client.Post(url, limits, nil)
-	return err
+	url := fmt.Sprintf("/api/containers/%s/memory_limit", container.Handle())
+	return container.client.Post(url, limits, nil)
 }
 
 func (container *container) CurrentMemoryLimits() (garden.MemoryLimits, error) {
-	url := container.containerizerURL.MemoryLimit(container.Handle())
+	url := fmt.Sprintf("/api/containers/%s/memory_limit", container.Handle())
 	limits := garden.MemoryLimits{}
 	err := container.client.Get(url, &limits)
 	return limits, err
 }
 
 func (container *container) NetIn(hostPort, containerPort uint32) (uint32, uint32, error) {
-	url := container.containerizerURL.NetIn(container.Handle())
+	url := fmt.Sprintf("/api/containers/%s/net/in", container.Handle())
 	netInResponse := ports{HostPort: hostPort, ContainerPort: containerPort}
 	err := container.client.Post(url, netInResponse, &netInResponse)
 
@@ -155,7 +142,7 @@ func (container *container) NetOut(rule garden.NetOutRule) error {
 }
 
 func (container *container) Run(processSpec garden.ProcessSpec, processIO garden.ProcessIO) (garden.Process, error) {
-	wsUri := container.containerizerURL.Run(container.Handle())
+	wsUri := container.client.RunURL(container.Handle())
 	ws, _, err := websocket.DefaultDialer.Dial(wsUri, nil)
 	if err != nil {
 		return nil, err
@@ -189,22 +176,27 @@ func (container *container) Metrics() (garden.Metrics, error) {
 }
 
 func (container *container) Property(name string) (string, error) {
-	url := container.containerizerURL.GetProperty(container.Handle(), name)
+	url := fmt.Sprintf("/api/containers/%s/properties/%s", container.Handle(), name)
 	var property string
 	err := container.client.Get(url, &property)
 	return property, err
 }
 
+func (container *container) Properties() (garden.Properties, error) {
+	url := fmt.Sprintf("/api/containers/%s/properties", container.Handle())
+	properties := garden.Properties{}
+	err := container.client.Get(url, &properties)
+	return properties, err
+}
+
 func (container *container) SetProperty(name string, value string) error {
-	url := container.containerizerURL.SetProperty(container.Handle(), name)
-	err := container.client.Put(url, strings.NewReader(value), "application/json")
-	return err
+	url := fmt.Sprintf("/api/containers/%s/properties/%s", container.Handle(), name)
+	return container.client.Put(url, strings.NewReader(value), "application/json")
 }
 
 func (container *container) RemoveProperty(name string) error {
-	url := container.containerizerURL.RemoveProperty(container.Handle(), name)
-	err := container.client.Delete(url)
-	return err
+	url := fmt.Sprintf("/api/containers/%s/properties/%s", container.Handle(), name)
+	return container.client.Delete(url)
 }
 
 func streamWebsocketIOToContainerizer(ws *websocket.Conn, processIO garden.ProcessIO) {
