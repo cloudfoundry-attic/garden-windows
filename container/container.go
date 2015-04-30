@@ -67,7 +67,7 @@ func (container *container) Stop(kill bool) error {
 	return err
 }
 
-func (container *container) GetProperties() (garden.Properties, error) {
+func (container *container) Properties() (garden.Properties, error) {
 	url := container.containerizerURL.GetProperties(container.Handle())
 	properties := garden.Properties{}
 	err := container.client.Get(url, &properties)
@@ -188,7 +188,7 @@ func (container *container) Metrics() (garden.Metrics, error) {
 	return garden.Metrics{}, nil
 }
 
-func (container *container) GetProperty(name string) (string, error) {
+func (container *container) Property(name string) (string, error) {
 	url := container.containerizerURL.GetProperty(container.Handle(), name)
 	var property string
 	err := container.client.Get(url, &property)

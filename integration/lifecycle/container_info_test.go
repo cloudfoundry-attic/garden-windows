@@ -77,7 +77,7 @@ var _ = Describe("Container information", func() {
 			It("can list properties", func() {
 				err := container.SetProperty("bar", "baz")
 
-				value, err := container.GetProperties()
+				value, err := container.Properties()
 				Expect(err).ToNot(HaveOccurred())
 				Expect(value).To(HaveKeyWithValue("foo", "bar"))
 				Expect(value).To(HaveKeyWithValue("bar", "baz"))
@@ -86,7 +86,7 @@ var _ = Describe("Container information", func() {
 
 		Describe("updating container properties", func() {
 			It("can CRUD", func() {
-				value, err := container.GetProperty("foo")
+				value, err := container.Property("foo")
 				Expect(err).ToNot(HaveOccurred())
 				Expect(value).To(Equal("bar"))
 
@@ -106,13 +106,13 @@ var _ = Describe("Container information", func() {
 				err = container.RemoveProperty("foo")
 				Expect(err).ToNot(HaveOccurred())
 
-				value, err = container.GetProperty("foo")
+				value, err = container.Property("foo")
 				Expect(err).To(HaveOccurred())
 				Expect(err.(connection.Error).StatusCode).To(Equal(500))
 				Expect(err.(connection.Error).Message).To(Equal("property does not exist: foo"))
 
 				client.Destroy(container.Handle())
-				value, err = container.GetProperty("foo")
+				value, err = container.Property("foo")
 				Expect(err).To(HaveOccurred())
 				Expect(err.(connection.Error).StatusCode).To(Equal(500))
 				Expect(err.(connection.Error).Message).To(Equal("unknown handle: " + container.Handle()))

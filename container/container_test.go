@@ -558,7 +558,7 @@ var _ = Describe("container", func() {
 		})
 	})
 
-	Describe("GetProperties", func() {
+	Describe("Properties", func() {
 		Context("http success", func() {
 			BeforeEach(func() {
 				server.AppendHandlers(
@@ -573,7 +573,7 @@ var _ = Describe("container", func() {
 			})
 
 			It("returns info about the container", func() {
-				properties, err := container.GetProperties()
+				properties, err := container.Properties()
 				Expect(err).NotTo(HaveOccurred())
 				Expect(properties).Should(Equal(garden.Properties{"Keymaster": "Gatekeeper"}))
 			})
@@ -592,7 +592,7 @@ var _ = Describe("container", func() {
 				)
 			})
 			It("returns ExceptionMessage as error", func() {
-				_, err := container.GetProperties()
+				_, err := container.Properties()
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("Object reference not set to an instance of an object."))
 			})
@@ -611,14 +611,14 @@ var _ = Describe("container", func() {
 				)
 			})
 			It("returns http status as error message", func() {
-				_, err := container.GetProperties()
+				_, err := container.Properties()
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("500 Internal Server Error"))
 			})
 		})
 	})
 
-	Describe("GetProperty", func() {
+	Describe("Property", func() {
 		BeforeEach(func() {
 			server.AppendHandlers(
 				ghttp.CombineHandlers(
@@ -629,7 +629,7 @@ var _ = Describe("container", func() {
 		})
 
 		It("makes a call out to an external service", func() {
-			property, err := container.GetProperty("key:val")
+			property, err := container.Property("key:val")
 			Expect(err).NotTo(HaveOccurred())
 			Expect(server.ReceivedRequests()).Should(HaveLen(1))
 
