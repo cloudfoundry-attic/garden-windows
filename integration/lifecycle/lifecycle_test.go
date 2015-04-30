@@ -68,7 +68,7 @@ var _ = Describe("Lifecycle", func() {
 			}()
 			process.Wait()
 			close(done)
-		}, 2.0)
+		}, 10.0)
 	})
 
 	Describe("handle collisions", func() {
