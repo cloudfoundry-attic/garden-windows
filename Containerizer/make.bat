@@ -5,7 +5,7 @@ if errorLevel 1 ( echo "msbuild was not found on PATH" && exit /b 1 )
 
 git submodule update --init --recursive
 cd IronFrame
-call build.bat || exit /b 1
+call build.bat build || exit /b 1
 cd ..
 
 rmdir /S /Q packages
