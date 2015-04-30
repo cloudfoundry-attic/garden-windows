@@ -65,7 +65,7 @@ namespace Containerizer.Controllers
 
         public override void OnReceiveError(Exception error)
         {
-            logger.Error("OnReceiveError: {0}", error.Message);
+            logger.Error("OnReceiveError: {0} :: {1}", error.Message, error.StackTrace);
         }
 
         public override Task OnMessageReceived(ArraySegment<byte> message, WebSocketMessageType type)
