@@ -9,7 +9,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-lager"
 	"github.com/cloudfoundry-incubator/garden-windows/backend"
-	"github.com/cloudfoundry-incubator/garden-windows/http_client"
+	"github.com/cloudfoundry-incubator/garden-windows/dotnet"
 	"github.com/cloudfoundry-incubator/garden/server"
 	"github.com/pivotal-golang/lager"
 )
@@ -53,7 +53,7 @@ func main() {
 			"containerizerURL": containerizerURL,
 		})
 	}
-	client := http_client.NewClient(logger, url)
+	client := dotnet.NewClient(logger, url)
 	netBackend, err := backend.NewDotNetBackend(client, logger)
 	if err != nil {
 		logger.Fatal("Server Failed to Start", err)

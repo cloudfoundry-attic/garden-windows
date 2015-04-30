@@ -8,19 +8,19 @@ import (
 
 	"github.com/cloudfoundry-incubator/garden"
 	"github.com/cloudfoundry-incubator/garden-windows/container"
-	"github.com/cloudfoundry-incubator/garden-windows/http_client"
+	"github.com/cloudfoundry-incubator/garden-windows/dotnet"
 	"github.com/pivotal-golang/lager"
 )
 
 type dotNetBackend struct {
 	logger lager.Logger
-	client *http_client.Client
+	client *dotnet.Client
 }
 
-func NewDotNetBackend(client *http_client.Client, logger lager.Logger) (*dotNetBackend, error) {
+func NewDotNetBackend(client *dotnet.Client, logger lager.Logger) (*dotNetBackend, error) {
 	return &dotNetBackend{
 		logger: logger,
-		client: client, // http_client.NewClient(logger, containerizerURL.Base()),
+		client: client,
 	}, nil
 }
 

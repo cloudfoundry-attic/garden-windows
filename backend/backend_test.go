@@ -9,7 +9,7 @@ import (
 	"github.com/cloudfoundry-incubator/garden"
 	"github.com/cloudfoundry-incubator/garden-windows/backend"
 	"github.com/cloudfoundry-incubator/garden-windows/container"
-	"github.com/cloudfoundry-incubator/garden-windows/http_client"
+	"github.com/cloudfoundry-incubator/garden-windows/dotnet"
 	"github.com/pivotal-golang/lager/lagertest"
 
 	"time"
@@ -22,13 +22,13 @@ var _ = Describe("backend", func() {
 	var dotNetBackend garden.Backend
 	var serverUri *url.URL
 	var logger *lagertest.TestLogger
-	var client *http_client.Client
+	var client *dotnet.Client
 
 	BeforeEach(func() {
 		server = ghttp.NewServer()
 		logger = lagertest.NewTestLogger("backend")
 		serverUri, _ = url.Parse(server.URL())
-		client = http_client.NewClient(logger, serverUri)
+		client = dotnet.NewClient(logger, serverUri)
 		dotNetBackend, _ = backend.NewDotNetBackend(client, logger)
 	})
 

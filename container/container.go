@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/cloudfoundry-incubator/garden"
-	"github.com/cloudfoundry-incubator/garden-windows/http_client"
+	"github.com/cloudfoundry-incubator/garden-windows/dotnet"
 	"github.com/cloudfoundry-incubator/garden-windows/process"
 
 	"github.com/gorilla/websocket"
@@ -20,7 +20,7 @@ import (
 type container struct {
 	handle string
 	logger lager.Logger
-	client *http_client.Client
+	client *dotnet.Client
 }
 
 type ports struct {
@@ -35,7 +35,7 @@ type ProcessStreamEvent struct {
 	Data           string             `json:"data"`
 }
 
-func NewContainer(client *http_client.Client, handle string, logger lager.Logger) *container {
+func NewContainer(client *dotnet.Client, handle string, logger lager.Logger) *container {
 	return &container{
 		client: client,
 		handle: handle,

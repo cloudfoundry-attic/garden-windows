@@ -8,7 +8,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/garden"
 	netContainer "github.com/cloudfoundry-incubator/garden-windows/container"
-	"github.com/cloudfoundry-incubator/garden-windows/http_client"
+	"github.com/cloudfoundry-incubator/garden-windows/dotnet"
 	"github.com/cloudfoundry-incubator/garden-windows/process"
 
 	"io/ioutil"
@@ -33,7 +33,7 @@ var _ = Describe("container", func() {
 	var server *ghttp.Server
 	var container garden.Container
 	var logger *lagertest.TestLogger
-	var client *http_client.Client
+	var client *dotnet.Client
 	var externalIP string
 
 	BeforeEach(func() {
@@ -41,7 +41,7 @@ var _ = Describe("container", func() {
 		externalIP = "10.11.12.13"
 		logger = lagertest.NewTestLogger("container")
 		serverUri, _ := url.Parse(server.URL())
-		client = http_client.NewClient(logger, serverUri)
+		client = dotnet.NewClient(logger, serverUri)
 		container = netContainer.NewContainer(client, "containerhandle", logger)
 	})
 
@@ -365,7 +365,7 @@ var _ = Describe("container", func() {
 		})
 
 		JustBeforeEach(func() {
-			client := http_client.NewClient(logger, testServer.Url)
+			client := dotnet.NewClient(logger, testServer.Url)
 			container = netContainer.NewContainer(client, "containerhandle", logger)
 		})
 
