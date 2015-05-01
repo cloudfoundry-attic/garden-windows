@@ -8,7 +8,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/garden"
 	netContainer "github.com/cloudfoundry-incubator/garden-windows/container"
-	"github.com/cloudfoundry-incubator/garden-windows/containerizer_url"
+	"github.com/cloudfoundry-incubator/garden-windows/dotnet"
 	"github.com/cloudfoundry-incubator/garden-windows/process"
 
 	"io/ioutil"
@@ -33,15 +33,16 @@ var _ = Describe("container", func() {
 	var server *ghttp.Server
 	var container garden.Container
 	var logger *lagertest.TestLogger
-	var containerizerURL *containerizer_url.ContainerizerURL
+	var client *dotnet.Client
 	var externalIP string
 
 	BeforeEach(func() {
 		server = ghttp.NewServer()
-		containerizerURL, _ = containerizer_url.FromString(server.URL())
 		externalIP = "10.11.12.13"
 		logger = lagertest.NewTestLogger("container")
-		container = netContainer.NewContainer(containerizerURL, "containerhandle", logger)
+		serverUri, _ := url.Parse(server.URL())
+		client = dotnet.NewClient(logger, serverUri)
+		container = netContainer.NewContainer(client, "containerhandle", logger)
 	})
 
 	AfterEach(func() {
@@ -264,8 +265,8 @@ var _ = Describe("container", func() {
 
 			It("makes a call out to an external service", func() {
 				stream, err := container.StreamOut("a/path")
-				defer stream.Close()
 				Expect(err).NotTo(HaveOccurred())
+				defer stream.Close()
 				Expect(server.ReceivedRequests()).Should(HaveLen(1))
 
 				body, err := ioutil.ReadAll(stream)
@@ -364,8 +365,8 @@ var _ = Describe("container", func() {
 		})
 
 		JustBeforeEach(func() {
-			testServerUrl, _ := containerizer_url.FromString(testServer.Url.String())
-			container = netContainer.NewContainer(testServerUrl, "containerhandle", logger)
+			client := dotnet.NewClient(logger, testServer.Url)
+			container = netContainer.NewContainer(client, "containerhandle", logger)
 		})
 
 		AfterEach(func() {

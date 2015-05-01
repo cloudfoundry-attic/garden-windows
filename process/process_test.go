@@ -12,12 +12,12 @@ import (
 	"github.com/pivotal-golang/lager/lagertest"
 
 	"github.com/cloudfoundry-incubator/garden"
-	"github.com/cloudfoundry-incubator/garden-windows/http_client"
+	"github.com/cloudfoundry-incubator/garden-windows/dotnet"
 )
 
 var _ = Describe("process", func() {
 	var proc DotNetProcess
-	var client *http_client.Client
+	var client *dotnet.Client
 
 	type IntErrorTuple struct {
 		exitStatus int
@@ -28,7 +28,7 @@ var _ = Describe("process", func() {
 		logger := lagertest.NewTestLogger("process")
 		baseUrl, err := url.Parse("http://example.com")
 		Expect(err).NotTo(HaveOccurred())
-		client = http_client.NewClient(logger, baseUrl)
+		client = dotnet.NewClient(logger, baseUrl)
 		proc = NewDotNetProcess("cHandle", client)
 	})
 
@@ -93,7 +93,7 @@ var _ = Describe("process", func() {
 			logger := lagertest.NewTestLogger("backend")
 			baseUrl, err := url.Parse(server.URL())
 			Expect(err).NotTo(HaveOccurred())
-			client = http_client.NewClient(logger, baseUrl)
+			client = dotnet.NewClient(logger, baseUrl)
 
 			server.AppendHandlers(
 				ghttp.CombineHandlers(

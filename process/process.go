@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/cloudfoundry-incubator/garden"
-	"github.com/cloudfoundry-incubator/garden-windows/http_client"
+	"github.com/cloudfoundry-incubator/garden-windows/dotnet"
 )
 
 type DotNetProcessExitStatus struct {
@@ -16,10 +16,10 @@ type DotNetProcess struct {
 	Pid             uint32
 	StreamOpen      chan DotNetProcessExitStatus
 	containerHandle string
-	client          *http_client.Client
+	client          *dotnet.Client
 }
 
-func NewDotNetProcess(containerHandle string, client *http_client.Client) DotNetProcess {
+func NewDotNetProcess(containerHandle string, client *dotnet.Client) DotNetProcess {
 	return DotNetProcess{
 		StreamOpen:      make(chan DotNetProcessExitStatus),
 		containerHandle: containerHandle,

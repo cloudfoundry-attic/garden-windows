@@ -9,7 +9,7 @@ import (
 	"github.com/cloudfoundry-incubator/garden"
 	"github.com/cloudfoundry-incubator/garden-windows/backend"
 	"github.com/cloudfoundry-incubator/garden-windows/container"
-	"github.com/cloudfoundry-incubator/garden-windows/containerizer_url"
+	"github.com/cloudfoundry-incubator/garden-windows/dotnet"
 	"github.com/pivotal-golang/lager/lagertest"
 
 	"time"
@@ -22,14 +22,14 @@ var _ = Describe("backend", func() {
 	var dotNetBackend garden.Backend
 	var serverUri *url.URL
 	var logger *lagertest.TestLogger
-	var containerizerURL *containerizer_url.ContainerizerURL
+	var client *dotnet.Client
 
 	BeforeEach(func() {
 		server = ghttp.NewServer()
 		logger = lagertest.NewTestLogger("backend")
-		containerizerURL, _ = containerizer_url.FromString(server.URL())
-		dotNetBackend, _ = backend.NewDotNetBackend(containerizerURL, logger)
 		serverUri, _ = url.Parse(server.URL())
+		client = dotnet.NewClient(logger, serverUri)
+		dotNetBackend, _ = backend.NewDotNetBackend(client, logger)
 	})
 
 	AfterEach(func() {
@@ -81,8 +81,8 @@ var _ = Describe("backend", func() {
 				containers, err := dotNetBackend.Containers(nil)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(containers).Should(Equal([]garden.Container{
-					container.NewContainer(containerizerURL, "MyFirstContainer", logger),
-					container.NewContainer(containerizerURL, "MySecondContainer", logger),
+					container.NewContainer(client, "MyFirstContainer", logger),
+					container.NewContainer(client, "MySecondContainer", logger),
 				}))
 			})
 		})
@@ -102,7 +102,7 @@ var _ = Describe("backend", func() {
 				)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(containers).Should(Equal([]garden.Container{
-					container.NewContainer(containerizerURL, "MatchingContainer", logger),
+					container.NewContainer(client, "MatchingContainer", logger),
 				}))
 			})
 		})
