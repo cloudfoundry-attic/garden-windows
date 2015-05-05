@@ -1,12 +1,15 @@
 :: msbuild must be in path
-SET PATH=%PATH%;%WINDIR%\Microsoft.NET\Framework64\v4.0.30319
+SET DEVENV_PATH=%programfiles(x86)%\Microsoft Visual Studio 12.0\Common7\IDE
+SET PATH=%PATH%;%DEVENV_PATH%;%WINDIR%\Microsoft.NET\Framework64\v4.0.30319
 where msbuild
 if errorLevel 1 ( echo "msbuild was not found on PATH" && exit /b 1 )
 
 git submodule update --init --recursive
-cd IronFrame
-call build.bat build || exit /b 1
-cd ..
+pushd IronFrame || exit /b 1
+  ..\bin\nuget restore || exit /b 1
+  devenv IronFrame.sln /build "Release" || exit /b 1
+  :: call build.bat build || exit /b 1
+popd
 
 rmdir /S /Q packages
 bin\nuget restore || exit /b 1
