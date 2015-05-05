@@ -1,7 +1,5 @@
 /gin-bin
 
-*.test.exe
-
 junit.xml
 
 *~
@@ -20,6 +18,8 @@ junit.xml
 x64/
 build/
 [Bb]in/
+*.exe
+!integration/bin/
 [Oo]bj/
 
 # Enable "build/" folder in the NuGet Packages folder since NuGet packages use it for MSBuild targets
