@@ -27,7 +27,7 @@ var _ = Describe("Lifecycle", func() {
 
 	Describe("process", func() {
 		It("pid is returned", func() {
-			tarFile, err := os.Open("../bin/consume.tar.gz")
+			tarFile, err := os.Open("../bin/consume.tgz")
 			Expect(err).ShouldNot(HaveOccurred())
 			defer tarFile.Close()
 

@@ -18,7 +18,7 @@ func createContainer() garden.Container {
 	Expect(err).ShouldNot(HaveOccurred())
 	container, err := client.Create(garden.ContainerSpec{Handle: handle.String()})
 	Expect(err).ShouldNot(HaveOccurred())
-	tarFile, err := os.Open("../bin/consume.tar.gz")
+	tarFile, err := os.Open("../bin/consume.tgz")
 	Expect(err).ShouldNot(HaveOccurred())
 	defer tarFile.Close()
 	err = container.StreamIn("bin", tarFile)
