@@ -64,7 +64,7 @@ namespace Containerizer.Controllers
             {
                 return NotFound();
             }
-            container.CreateFirewallRule(netOutRequest);
+            container.CreateOutboundFirewallRule(netOutRequest);
             return Ok();
         }
     }

@@ -140,7 +140,7 @@ namespace Containerizer.Tests.Specs.Controllers
 
                 it["reserves the Port in the container"] = () =>
                 {
-                    mockContainer.Verify(x => x.CreateFirewallRule(firewallRuleSpec.Object));
+                    mockContainer.Verify(x => x.CreateOutboundFirewallRule(firewallRuleSpec.Object));
                 };
            };
         }
