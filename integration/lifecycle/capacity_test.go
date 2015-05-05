@@ -1,4 +1,4 @@
-package lifecycle_test
+package lifecycle
 
 import (
 	. "github.com/onsi/ginkgo"
