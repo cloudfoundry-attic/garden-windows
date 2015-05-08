@@ -54,10 +54,11 @@ namespace Containerizer.Tests.Specs.Controllers
             describe[Controller.Index] = () =>
             {
                 IReadOnlyList<string> result = null;
+                Mock<IContainer> mockContainer1 = null;
 
                 before = () =>
                 {
-                    var mockContainer1 = mockContainerWithHandle("handle1");
+                    mockContainer1 = mockContainerWithHandle("handle1");
                     var mockContainer2 = mockContainerWithHandle("handle2");
                     var mockContainer3 = mockContainerWithHandle("handle3");
 
@@ -90,6 +91,16 @@ namespace Containerizer.Tests.Specs.Controllers
                     result.should_not_be_null();
                     result.Count.should_be(3);
                     result.should_contain("handle1");
+                    result.should_contain("handle2");
+                    result.should_contain("handle3");
+                };
+
+                it["filters out destroyed containers when a query is passed"] = () =>
+                {
+                    mockContainer1.Setup(x => x.GetProperties()).Returns(() => { throw new InvalidOperationException(); });
+
+                    result = containersController.Index("{}");
+                    result.should_not_contain("handle1");
                     result.should_contain("handle2");
                     result.should_contain("handle3");
                 };
@@ -237,7 +248,7 @@ namespace Containerizer.Tests.Specs.Controllers
                         result.should_cast_to<System.Web.Http.Results.OkResult>();
                     };
 
-                    it["calls delete on the containerPathService"] = () =>
+                    it["calls stop on the container"] = () =>
                     {
                         mockContainer.Verify(x => x.Stop(true));
                     };
