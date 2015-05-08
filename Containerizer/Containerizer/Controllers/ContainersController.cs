@@ -1,6 +1,7 @@
 ﻿#region
 
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -41,19 +42,27 @@ namespace Containerizer.Controllers
         public IReadOnlyList<string> Index(string q = null)
         {
             IEnumerable<IContainer> containers = containerService.GetContainers();
+
             if (q != null)
             {
                 var desiredProps = JsonConvert.DeserializeObject<Dictionary<string, string>>(q);
 
                 containers = containers.Where((x) =>
                 {
-                    var properties = x.GetProperties();
-                    return desiredProps.All(p =>
+                    try
                     {
-                        string propValue;
-                        var exists = properties.TryGetValue(p.Key, out propValue);
-                        return exists && propValue == p.Value;
-                    });
+                        var properties = x.GetProperties();
+                        return desiredProps.All(p =>
+                        {
+                            string propValue;
+                            var exists = properties.TryGetValue(p.Key, out propValue);
+                            return exists && propValue == p.Value;
+                        });
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        return false;
+                    }
                 });
             }
             return containers.Select(x => x.Handle).ToList();
