@@ -780,6 +780,49 @@ var _ = Describe("container", func() {
 			Expect(server.ReceivedRequests()).Should(HaveLen(1))
 		})
 	})
+
+	Describe("Metrics", func() {
+		Describe("for a valid handle", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/containers/containerhandle/metrics"),
+						ghttp.RespondWith(200, `{"MemoryStat":{"TotalBytesUsed": 1234}, "DiskStat":{"BytesUsed":3456}, "CPUStat":{"Usage":5678}}`),
+						func(w http.ResponseWriter, req *http.Request) {
+							req.Body.Close()
+						},
+					),
+				)
+			})
+			It("returns metrics for the container", func() {
+				metrics, err := container.Metrics()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(metrics.MemoryStat.TotalBytesUsed).Should(Equal(uint64(1234)))
+				Expect(metrics.DiskStat.BytesUsed).Should(Equal(uint64(3456)))
+				Expect(metrics.CPUStat.Usage).Should(Equal(uint64(5678)))
+			})
+		})
+
+		Describe("for an invalid handle", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/containers/containerhandle/metrics"),
+						ghttp.RespondWith(404, nil),
+						func(w http.ResponseWriter, req *http.Request) {
+							req.Body.Close()
+						},
+					),
+				)
+			})
+
+			It("returns an error", func() {
+				_, err := container.Metrics()
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("Not Found"))
+			})
+		})
+	})
 })
 
 // It("process.wait returns the exit status", func() {
