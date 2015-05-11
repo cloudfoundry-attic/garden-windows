@@ -31,7 +31,7 @@ namespace Containerizer.Tests.Specs
     {
         public const string Index = "Index";
         public const string Show = "Show";
-        public const string Create = "Create";
+        public const string Create = "NetIn";
         public const string Update = "Update";
         public const string Destroy = "Destroy";
     }

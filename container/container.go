@@ -138,7 +138,8 @@ func (container *container) NetIn(hostPort, containerPort uint32) (uint32, uint3
 }
 
 func (container *container) NetOut(rule garden.NetOutRule) error {
-	return nil
+	url := fmt.Sprintf("/api/containers/%s/net/out", container.Handle())
+	return container.client.Post(url, rule, nil)
 }
 
 func (container *container) Run(processSpec garden.ProcessSpec, processIO garden.ProcessIO) (garden.Process, error) {

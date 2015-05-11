@@ -72,7 +72,6 @@ namespace Containerizer.Controllers
             try
             {
                 var container = containerService.CreateContainer(containerSpec);
-
                 return new CreateResponse
                 {
                     Handle = container.Handle

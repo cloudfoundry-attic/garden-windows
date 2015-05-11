@@ -1,4 +1,4 @@
-package lifecycle_test
+package lifecycle
 
 import (
 	"fmt"
@@ -37,10 +37,10 @@ func startGarden(argv ...string) garden.Client {
 	// If below fails, try
 	// netsh advfirewall firewall add rule name="Open Port 48080"  dir=in action=allow protocol=TCP localport=48080
 
-	gardenRunner = garden_runner.New("tcp4", gardenAddr, tmpDir, gardenBin, "http://127.0.0.1:48080")
+	gardenRunner = garden_runner.New("tcp4", gardenAddr, tmpDir, gardenBin, "http://127.0.0.1:48081")
 	containerizerRunner = ginkgomon.New(ginkgomon.Config{
 		Name:              "containerizer",
-		Command:           exec.Command(containerizerBin, "127.0.0.1", "48080"),
+		Command:           exec.Command(containerizerBin, "127.0.0.1", "48081"),
 		AnsiColorCode:     "",
 		StartCheck:        "Control-C to quit.",
 		StartCheckTimeout: 10 * time.Second,
@@ -82,7 +82,7 @@ func TestLifecycle(t *testing.T) {
 		msbuild := path.Join(windir, "Microsoft.NET", "Framework64", "v4.0.30319", "MSBuild")
 		cmd := exec.Command(msbuild, `Containerizer.csproj`)
 		cmd.Dir = containerizerDir
-		Expect(cmd.Run()).To(Succeed())
+		Expect(cmd.Run()).To(Succeed(), "Cannot build containerizer. Make sure there are no compilation errors")
 		containerizerBin = path.Join(containerizerDir, "bin", "Containerizer.exe")
 		Expect(containerizerBin).To(BeAnExistingFile())
 		gardenPath, err := gexec.Build("github.com/cloudfoundry-incubator/garden-windows", "-a", "-race", "-tags", "daemon")

@@ -27,7 +27,7 @@ namespace Containerizer
             json.SerializerSettings.PreserveReferencesHandling = Newtonsoft.Json.PreserveReferencesHandling.None;
             config.Formatters.Remove(config.Formatters.XmlFormatter);
 
-            // Create and assign a dependency resolver for Web API to use.
+            // NetIn and assign a dependency resolver for Web API to use.
             var dependencyResolver = new DependencyResolver();
             config.DependencyResolver = dependencyResolver;
 

@@ -36,7 +36,7 @@ namespace Containerizer.Controllers
 
         [Route("api/containers/{handle}/net/in")]
         [HttpPost]
-        public IHttpActionResult Create(string handle, NetInRequest request)
+        public IHttpActionResult NetIn(string handle, NetInRequest request)
         {
             var container = containerService.GetContainerByHandle(handle);
             if (container == null)
@@ -54,6 +54,18 @@ namespace Containerizer.Controllers
                 return InternalServerError(ex);
             }
 
+        }
+
+        [Route("api/containers/{handle}/net/out")]
+        public IHttpActionResult NetOut(string handle, FirewallRuleSpec netOutRequest)
+        {
+            var container = containerService.GetContainerByHandle(handle);
+            if (container == null)
+            {
+                return NotFound();
+            }
+            container.CreateOutboundFirewallRule(netOutRequest);
+            return Ok();
         }
     }
 }

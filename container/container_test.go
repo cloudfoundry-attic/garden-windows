@@ -2,6 +2,7 @@ package container_test
 
 import (
 	"io"
+	"net"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -352,6 +353,58 @@ var _ = Describe("container", func() {
 				)
 				_, _, err := container.NetIn(1234, 3456)
 				Expect(err).To(HaveOccurred())
+			})
+		})
+	})
+
+	Describe("NetOut", func() {
+		var err error
+		JustBeforeEach(func() {
+			err = container.NetOut(garden.NetOutRule{
+				Protocol: garden.ProtocolTCP,
+				Networks: []garden.IPRange{
+					{
+						Start: net.ParseIP("0.0.0.0"),
+						End:   net.ParseIP("255.255.255.255"),
+					},
+				},
+			})
+		})
+
+		Describe("succeeds", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/containers/containerhandle/net/out"),
+						ghttp.RespondWith(200, ""),
+						func(w http.ResponseWriter, req *http.Request) {
+							body, err := ioutil.ReadAll(req.Body)
+							req.Body.Close()
+							Expect(err).ShouldNot(HaveOccurred())
+							Expect(string(body)).Should(Equal(`{"protocol":1,"networks":[{"start":"0.0.0.0","end":"255.255.255.255"}]}`))
+						},
+					),
+				)
+			})
+
+			It("delegates to containerizer", func() {
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(server.ReceivedRequests()).Should(HaveLen(1))
+			})
+		})
+
+		Context("Containerizer has an error", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/containers/containerhandle/net/out"),
+						ghttp.RespondWith(500, `"user does not exist"`),
+					),
+				)
+			})
+
+			It("returns the error", func() {
+				Expect(err).Should(MatchError(errors.New("user does not exist")))
 			})
 		})
 	})
