@@ -1,7 +1,7 @@
 # Garden windows api limitation
 
 | Method name                      | Implementation                                                      |
-|----------------------------------+---------------------------------------------------------------------|
+|----------------------------------|---------------------------------------------------------------------|
 | Backend#Start                    | Not implmented                                                      |
 | Backend#Stop                     | Not implemented                                                     |
 | Backend#GraceTime                | Not implemented                                                     |
@@ -10,7 +10,7 @@
 | Backend#Create                   | (All container specs are ignored except `Handle` and `Properties`)  |
 | Backend#Destroy                  | Implemented                                                         |
 | Backend#Containers               | Implemented                                                         |
-| Backend#Lookup                   | (dummy returns a container without checking if the handle exists)   |
+| Backend#Lookup                   | (dummy ; returns a container without checking if the handle exists) |
 | Backend#BulkInfo                 | Implemented                                                         |
 | Backend#BulkMetrics              | In progress                                                         |
 | Container#Handle                 | Implemented                                                         |
@@ -54,3 +54,4 @@ the cpu was idle (this isn't the case with cpu shares on Linux).
 
 1. No support for `Privileged` contianers (the flag is ignored)
 2. `User` flag is ignored (`garden-windows` creates a new user for each container)
+3. Stdin is not supported (stdout/stderr enforce newlines)
