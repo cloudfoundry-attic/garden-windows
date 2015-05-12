@@ -51,7 +51,6 @@ namespace Containerizer
             containerBuilder.RegisterType<NetController>();
             containerBuilder.RegisterType<PropertiesController>();
             containerBuilder.RegisterType<LimitsController>();
-            containerBuilder.RegisterType<MetricsController>();
             containerBuilder.RegisterType<InfoController>();
             containerBuilder.RegisterType<BulkInfoController>();
             containerBuilder.RegisterType<ContainerProcessHandler>();

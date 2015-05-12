@@ -173,10 +173,7 @@ func (container *container) Attach(uint32, garden.ProcessIO) (garden.Process, er
 }
 
 func (container *container) Metrics() (garden.Metrics, error) {
-	url := fmt.Sprintf("/api/containers/%s/metrics", container.Handle())
-	metrics := garden.Metrics{}
-	err := container.client.Get(url, &metrics)
-	return metrics, err
+	return garden.Metrics{}, nil
 }
 
 func (container *container) Property(name string) (string, error) {
