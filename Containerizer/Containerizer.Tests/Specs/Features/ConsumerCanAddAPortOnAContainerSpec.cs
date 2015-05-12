@@ -55,7 +55,7 @@ namespace Containerizer.Tests.Specs.Features
 
                         before = () =>
                         {
-                            var response = client.PostAsJsonAsync("/api/containers/" + containerId + "/net/in", new { hostPort = 0 }).GetAwaiter().GetResult();
+                            var response = client.PostAsJsonAsync("/api/containers/" + containerId + "/net/in", new { hostPort = 0, containerPort = 8080 }).GetAwaiter().GetResult();
                             var json = response.Content.ReadAsJson();
                             resultingHostPort = json["hostPort"].Value<int>();
                         };
@@ -66,10 +66,6 @@ namespace Containerizer.Tests.Specs.Features
                         };
 
                         it["returns the assigned host ports on an INFO call and a LIE for the container port (see comment)"] = () =>
-                        /* IMPORTANT NOTE!!!  The container port will always be reported as 8080.  THIS IS A LIE. 
-                        * Since Windows can't namespace its network ports like Linux, the HostPort and the ContainerPort are the SAME. *gasp*
-                        * We report 8080 back because NetIn from Diego always requests port 8080 as a ContainerPort and then expects INFO to tell us that 8080 is indeed the ContainerPort.  *facepalm*
-                        * We can get away with this subterfuge because we control how apps are run in the container and give them the truth while lying to the outside world. *wink* */
                         {
                             var response = client.GetAsync("/api/containers/" + containerId + "/info").GetAwaiter().GetResult();
                             var json = response.Content.ReadAsJson();

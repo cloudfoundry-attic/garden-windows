@@ -26,7 +26,8 @@ namespace Containerizer.Tests.Specs.Services
                 string handle = "container-handle";
                 ContainerInfoService service = null;
                 ContainerInfoApiModel result = null;
-                int expectedHostPort = 1337;
+                int expectedHttpPort = 1234;
+                int expectedSsshPort = 4567;
                 string expectedExternalIP = "10.11.12.13";
 
                 before = () =>
@@ -35,10 +36,11 @@ namespace Containerizer.Tests.Specs.Services
                     mockContainer.Setup(x => x.GetInfo()).Returns(
                         new ContainerInfo
                         {
-                            ReservedPorts = new List<int> { expectedHostPort },
                             Properties = new Dictionary<string, string>
                             {
-                                {"Keymaster", "Gatekeeper"}
+                                {"Keymaster", "Gatekeeper"},
+                                {"ContainerPort:8080", "1234" },
+                                {"ContainerPort:2222", "4567" }
                             }
                         });
 
@@ -60,8 +62,11 @@ namespace Containerizer.Tests.Specs.Services
                 it["returns info about the container"] = () =>
                 {
                     var portMapping = result.MappedPorts[0];
-                    portMapping.HostPort.should_be(expectedHostPort);
+                    portMapping.HostPort.should_be(expectedHttpPort);
                     portMapping.ContainerPort.should_be(8080);
+                    portMapping = result.MappedPorts[1];
+                    portMapping.HostPort.should_be(expectedSsshPort);
+                    portMapping.ContainerPort.should_be(2222);
                 };
 
                 it["returns container properties"] = () =>

@@ -29,15 +29,15 @@ namespace Containerizer.Services.Implementations
             }
 
             var rawInfo = container.GetInfo();
-            var portMappings = new List<PortMappingApiModel>();
-            foreach (int reservedPort in rawInfo.ReservedPorts)
+            var portMappings = rawInfo.Properties.Where(x => x.Key.Contains("ContainerPort:")).                Select(x => new PortMappingApiModel
             {
-                portMappings.Add(new PortMappingApiModel { HostPort = reservedPort, ContainerPort = 8080 });
-            }
+                ContainerPort = int.Parse(x.Key.Split(':')[1]),
+                HostPort = int.Parse(x.Value),
+            });
 
             return new ContainerInfoApiModel
             {
-                MappedPorts = portMappings,
+                MappedPorts = portMappings.ToList(),
                 Properties = rawInfo.Properties,
                 ExternalIP = externalIP.ExternalIP(),
             };

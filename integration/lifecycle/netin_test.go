@@ -32,6 +32,24 @@ var _ = Describe("NetIn", func() {
 		Expect(err).ShouldNot(HaveOccurred())
 	})
 
+	It("Sets MappedPorts correctly in container's info", func() {
+		httpPort, _, err := c.NetIn(0, 8080)
+		Expect(err).To(BeNil())
+		sshPort, _, err := c.NetIn(0, 2222)
+		Expect(err).To(BeNil())
+		info, err := c.Info()
+		Expect(err).To(BeNil())
+		mapping := map[uint32]uint32{
+			8080: httpPort,
+			2222: sshPort,
+		}
+		Expect(info.MappedPorts).To(HaveLen(2))
+		Expect(info.MappedPorts[0]).ToNot(Equal(info.MappedPorts[1]))
+		for _, mp := range info.MappedPorts {
+			Expect(mp.HostPort).To(Equal(mapping[mp.ContainerPort]))
+		}
+	})
+
 	It("overrides the container's internal port with it's external port", func() {
 		By("Creating two NetIn mappings")
 		const externalPort1, internalPort1 uint32 = 1000, 1001
