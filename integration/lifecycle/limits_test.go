@@ -145,7 +145,7 @@ var _ = Describe("Process limits", func() {
 				Expect(err).ShouldNot(HaveOccurred())
 			})
 
-			FIt("generated data is enforced", func() {
+			It("generated data is enforced", func() {
 				err := container.LimitDisk(garden.DiskLimits{ByteHard: 5 * 1024 * 1024})
 				Expect(err).ShouldNot(HaveOccurred())
 
@@ -164,6 +164,10 @@ var _ = Describe("Process limits", func() {
 				Expect(stdout.String()).NotTo(ContainSubstring("Consumed:  6 mb"))
 				Expect(stdout.String()).NotTo(ContainSubstring("Disk Consumed Successfully"))
 				Expect(exitCode).NotTo(Equal(42), "process did not get killed")
+
+				limits, err := container.CurrentDiskLimits()
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(limits.ByteHard).To(Equal(uint64(5 * 1024 * 1024)))
 			})
 
 			XIt("streamed in data is enforced", func() {
