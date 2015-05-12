@@ -1,7 +1,7 @@
 # Garden windows api limitation
 
 | Method name                      | Implementation                                                      |
-|----------------------------------+---------------------------------------------------------------------+
+|----------------------------------|---------------------------------------------------------------------|
 | Backend#Start                    | Not implmented                                                      |
 | Backend#Stop                     | Not implemented                                                     |
 | Backend#GraceTime                | Not implemented                                                     |
@@ -45,10 +45,10 @@
 As opposed to garden linux, on windows we **will probably** (this
 isn't implemented yet) use hard caps instead of cpu shares. The hard
 cap will be calculated based on the relative number of shares given to
-the container. This means that two containers with 8/2 will have their
-caps set to 80% and 20%, respectively. The container with 20% cap will
-not be able to use more than 20% of the cpu even if the other
-container was idle (this isn't the case with cpu shares on Linux).
+the container. This means that two containers with `8/2` will have
+their caps set to `80%` and `20%`, respectively. The container with
+`20%` cap will not be able to use more than `20%` of the cpu even if
+the cpu was idle (this isn't the case with cpu shares on Linux).
 
 # Limitations of Container#Run
 
