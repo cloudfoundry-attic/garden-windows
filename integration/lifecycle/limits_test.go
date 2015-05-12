@@ -133,5 +133,42 @@ var _ = Describe("Process limits", func() {
 				close(done)
 			}, 10.0)
 		})
+
+		Describe("disk limits", func() {
+			var container garden.Container
+			BeforeEach(func() {
+				container = createContainer()
+			})
+
+			AfterEach(func() {
+				err := client.Destroy(container.Handle())
+				Expect(err).ShouldNot(HaveOccurred())
+			})
+
+			FIt("generated data is enforced", func() {
+				err := container.LimitDisk(garden.DiskLimits{ByteHard: 5 * 1024 * 1024})
+				Expect(err).ShouldNot(HaveOccurred())
+
+				buf := make([]byte, 0, 1024*1024)
+				stdout := bytes.NewBuffer(buf)
+
+				process, err := container.Run(garden.ProcessSpec{
+					Path: "bin/consume.exe",
+					Args: []string{"disk", "10"},
+				}, garden.ProcessIO{Stdout: stdout})
+				Expect(err).ShouldNot(HaveOccurred())
+
+				exitCode, err := process.Wait()
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(stdout.String()).To(ContainSubstring("Consumed:  3 mb"))
+				Expect(stdout.String()).NotTo(ContainSubstring("Consumed:  6 mb"))
+				Expect(stdout.String()).NotTo(ContainSubstring("Disk Consumed Successfully"))
+				Expect(exitCode).NotTo(Equal(42), "process did not get killed")
+			})
+
+			XIt("streamed in data is enforced", func() {
+
+			})
+		})
 	})
 })
