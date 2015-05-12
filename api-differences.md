@@ -1,7 +1,7 @@
 # Garden windows api limitation
 
 | Method name                      | Implementation                                                      |
-|----------------------------------|---------------------------------------------------------------------|
+|----------------------------------+---------------------------------------------------------------------|
 | Backend#Start                    | Not implmented                                                      |
 | Backend#Stop                     | Not implemented                                                     |
 | Backend#GraceTime                | Not implemented                                                     |
@@ -15,7 +15,7 @@
 | Backend#BulkMetrics              | In progress                                                         |
 | Container#Handle                 | Implemented                                                         |
 | Container#Stop                   | (the `kill` flag is ignored, kill is the default)                   |
-| Container#Info                   | (Only `MappedPorts`, `Properties` and `ExternalIP`                  |
+| Container#Info                   | (Only `MappedPorts`, `Properties` and `ExternalIP` are returned)    |
 | Container#StreamIn               | Implemented                                                         |
 | Container#StreamOut              | Implemented                                                         |
 | Container#LimitBandwidth         | Not Implemented                                                     |
