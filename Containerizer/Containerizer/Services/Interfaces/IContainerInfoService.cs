@@ -10,5 +10,6 @@ namespace Containerizer.Services.Interfaces
     public interface IContainerInfoService
     {
         ContainerInfoApiModel GetInfoByHandle(string handle);
+        ContainerMetricsApiModel GetMetricsByHandle(string handle);
     }
 }

@@ -752,6 +752,43 @@ var _ = Describe("container", func() {
 		})
 	})
 
+	Describe("Metrics", func() {
+		Context("success", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/containers/containerhandle/metrics"),
+						ghttp.RespondWith(200, `{"MemoryStat":{"Cache":34}}`),
+					),
+				)
+			})
+
+			It("makes a call out to an external service", func() {
+				metrics, err := container.Metrics()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(server.ReceivedRequests()).Should(HaveLen(1))
+
+				Expect(metrics.MemoryStat.Cache).Should(Equal(uint64(34)))
+			})
+		})
+
+		Context("failure", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/containers/containerhandle/metrics"),
+						ghttp.RespondWith(500, `{}`),
+					),
+				)
+			})
+
+			It("makes a call out to an external service", func() {
+				_, err := container.Metrics()
+				Expect(err).To(HaveOccurred())
+			})
+		})
+	})
+
 	Describe("Property", func() {
 		BeforeEach(func() {
 			server.AppendHandlers(

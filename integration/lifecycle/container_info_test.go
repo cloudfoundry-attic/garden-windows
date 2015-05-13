@@ -40,6 +40,22 @@ var _ = Describe("Container information", func() {
 				}
 			})
 		})
+
+		Describe(".BulkMetrics", func() {
+			It("returns container metrics for the specified handles", func() {
+				containers, err := client.Containers(nil)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(containers).To(HaveLen(2))
+
+				bulkMetrics, err := client.BulkMetrics(handles)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(bulkMetrics).To(HaveLen(2))
+				for _, containerMetricsEntry := range bulkMetrics {
+					Expect(containerMetricsEntry.Err).ToNot(HaveOccurred())
+					Expect(containerMetricsEntry.Metrics.MemoryStat.TotalRss).To(BeNumerically(">", 0))
+				}
+			})
+		})
 	})
 
 	Describe("for a single container", func() {

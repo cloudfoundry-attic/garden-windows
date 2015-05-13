@@ -89,5 +89,7 @@ func (dotNetBackend *dotNetBackend) BulkInfo(handles []string) (map[string]garde
 }
 
 func (dotNetBackend *dotNetBackend) BulkMetrics(handles []string) (map[string]garden.ContainerMetricsEntry, error) {
-	return nil, nil
+	containersMetrics := make(map[string]garden.ContainerMetricsEntry)
+	err := dotNetBackend.client.Post("/api/bulkcontainermetrics", handles, &containersMetrics)
+	return containersMetrics, err
 }

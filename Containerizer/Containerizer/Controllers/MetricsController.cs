@@ -1,76 +1,39 @@
-﻿using IronFrame;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
+﻿#region
+
 using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
 using System.Web.Http;
-using Containerizer.Models;
 using Containerizer.Services.Interfaces;
-using System.IO;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using IronFrame;
+using System.Collections.Generic;
+using System.Diagnostics;
+
+#endregion
 
 namespace Containerizer.Controllers
 {
     public class MetricsController : ApiController
     {
-        private readonly IContainerService containerService;
+        private readonly IContainerInfoService containerInfoService;
 
-
-        public MetricsController(IContainerService containerService)
+        public MetricsController(IContainerInfoService containerInfoService)
         {
-            this.containerService = containerService;
+            this.containerInfoService = containerInfoService;
         }
 
         [Route("api/containers/{handle}/metrics")]
-        public IHttpActionResult Get(string handle)
+        [HttpGet]
+        public IHttpActionResult Show(string handle)
         {
-            var container = containerService.GetContainerByHandle(handle);
-            if (container == null)
+            var info = containerInfoService.GetMetricsByHandle(handle);
+            if (info == null)
             {
-                return NotFound();
+                return ResponseMessage(Request.CreateResponse(System.Net.HttpStatusCode.NotFound, string.Format("container does not exist: {0}", handle)));
             }
-
-            var info = container.GetInfo();
-            var metrics = new Metrics
-            {
-                CPUStat = new Metrics.CCPUStat
-                {
-                    Usage = Convert.ToUInt64(info.CpuStat.TotalProcessorTime.TotalMilliseconds)
-                },
-                MemoryStat = new Metrics.CMemoryStat
-                {
-                    TotalBytesUsed = Convert.ToUInt64(info.MemoryStat.PrivateBytes)
-                },
-                DiskStat = new Metrics.CDiskStat()
-                {
-                    BytesUsed = 0 // FIXME
-                }
-            };
-
-            return Json(metrics);
-        }
-    }
-
-
-    public class Metrics
-    {
-        public CMemoryStat MemoryStat;
-        public CDiskStat DiskStat;
-        public CCPUStat CPUStat;
-
-        public class CMemoryStat
-        {
-            [JsonProperty("TotalRss")]
-            public ulong TotalBytesUsed;
-        }
-        public class CDiskStat
-        {
-            public ulong BytesUsed;
-        }
-        public class CCPUStat
-        {
-            public ulong Usage;
+            return Json(info);
         }
     }
 }

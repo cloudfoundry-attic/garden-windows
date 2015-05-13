@@ -1,91 +1,79 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Moq;
-using NLog.LayoutRenderers;
-using NSpec;
+﻿#region
+
 using Containerizer.Controllers;
-using System.Web.Http;
 using Containerizer.Models;
-using System.Web.Http.Results;
-using IronFrame;
 using Containerizer.Services.Interfaces;
-using Containerizer.Services.Implementations;
+using Moq;
+using NSpec;
+using System;
+using System.Net;
+using System.Net.Http;
+using System.Web.Http;
+using System.Web.Http.Results;
+
+#endregion
 
 namespace Containerizer.Tests.Specs.Controllers
 {
-    class MetricsControllerSpec : nspec
+    internal class MetricsControllerSpec : nspec
     {
         private void describe_()
         {
-            describe[Controller.Index] = () =>
+            Mock<IContainerInfoService> mockContainerInfoService = null;
+            MetricsController metricsController = null;
+            string containerHandle = null;
+            const ulong privateBytes = 28;
+            ContainerMetricsApiModel containerMetrics = null;
+            before = () =>
             {
-
-                Mock<IContainerService> mockContainerService = null;
-                string handle = "container-handle";
-                MetricsController controller = null;
-                IHttpActionResult result = null;
-
-                before = () =>
+                mockContainerInfoService = new Mock<IContainerInfoService>();
+                metricsController = new MetricsController(mockContainerInfoService.Object)
                 {
-                    mockContainerService = new Mock<IContainerService>();
-                    controller = new MetricsController(mockContainerService.Object);
+                    Configuration = new HttpConfiguration(),
+                    Request = new HttpRequestMessage()
+                };
+                containerHandle = Guid.NewGuid().ToString();
+                containerMetrics = new ContainerMetricsApiModel
+                {
+                    MemoryStat = new ContainerMemoryStatApiModel
+                    {
+                        TotalBytesUsed = privateBytes
+                    }
                 };
 
-                act = () => result = controller.Get(handle);
+                mockContainerInfoService.Setup(x => x.GetMetricsByHandle(containerHandle))
+                    .Returns(() => containerMetrics);
+            };
 
+            describe[Controller.Show] = () =>
+            {
+                IHttpActionResult result = null;
 
-                context["when the container exists"] = () =>
+                act = () => result = metricsController.Show(containerHandle);
+
+                it["returns a successful status code"] = () =>
                 {
-                    Mock<IContainer> container = null;
+                    result.VerifiesSuccessfulStatusCode();
+                };
 
-                    before = () =>
-                    {
-                        container = new Mock<IContainer>();
-                        container.Setup(x => x.GetInfo()).Returns(new ContainerInfo
-                        {
-                            CpuStat = new ContainerCpuStat { TotalProcessorTime = new TimeSpan(0, 0, 0, 1, 2) },
-                            MemoryStat = new ContainerMemoryStat { PrivateBytes = 5678 },
-                        });
-                        mockContainerService.Setup(x => x.GetContainerByHandle(handle)).Returns(container.Object);
-                    };
-
-                    it["returns metrics about the container"] = () =>
-                    {
-                        result.should_cast_to<JsonResult<Metrics>>();
-                    };
-
-                    it["returns cpu metrics"] = () =>
-                    {
-                        var metrics = result.should_cast_to<JsonResult<Metrics>>().Content;
-                        metrics.CPUStat.Usage.should_be(1002);
-                    };
-
-                    it["returns memory metrics"] = () =>
-                    {
-                        var metrics = result.should_cast_to<JsonResult<Metrics>>().Content;
-                        metrics.MemoryStat.TotalBytesUsed.should_be(5678);
-                    };
-
-                    xit["returns disk metrics"] = () =>
-                    {
-                        var metrics = result.should_cast_to<JsonResult<Metrics>>().Content;
-                        metrics.DiskStat.BytesUsed.should_be(2345); // FIXME
-                    };
+                it["returns the container metrics as a json"] = () =>
+                {
+                    var message = result.should_cast_to<JsonResult<ContainerMetricsApiModel>>();
+                    message.Content.should_be(containerMetrics);
                 };
 
                 context["when the container does not exist"] = () =>
                 {
-                    before = () => mockContainerService.Setup(x => x.GetContainerByHandle(handle)).Returns(null as IContainer);
+                    before = () => containerMetrics = null;
 
-                    it["returns not found"] = () =>
+                    it["returns a 404"] = () =>
                     {
-                        result.should_cast_to<NotFoundResult>();
+                        var message = result.should_cast_to<ResponseMessageResult>();
+                        message.Response.StatusCode.should_be(HttpStatusCode.NotFound);
                     };
                 };
             };
+
         }
     }
 }

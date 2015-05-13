@@ -19,12 +19,23 @@ namespace Containerizer.Tests.Specs.Services
     {
         private void describe_()
         {
-            describe[Controller.Index] = () =>
+            Mock<IContainerService> mockContainerService = null;
+            Mock<IContainer> mockContainer = null;
+            string handle = "container-handle";
+            ContainerInfoService service = null;
+            Mock<IExternalIP> mockExternalIP = null;
+
+            before = () =>
             {
-                Mock<IContainerService> mockContainerService = null;
-                Mock<IExternalIP> mockExternalIP = null;
-                string handle = "container-handle";
-                ContainerInfoService service = null;
+                mockContainer = new Mock<IContainer>();
+                mockContainerService = new Mock<IContainerService>();
+                mockContainerService.Setup(x => x.GetContainerByHandle(handle)).Returns(mockContainer.Object);
+                mockExternalIP = new Mock<IExternalIP>();
+                service = new ContainerInfoService(mockContainerService.Object, mockExternalIP.Object);
+            };
+
+            describe["GetInfoByHandle"] = () =>
+            {
                 ContainerInfoApiModel result = null;
                 int expectedHttpPort = 1234;
                 int expectedSsshPort = 4567;
@@ -32,7 +43,6 @@ namespace Containerizer.Tests.Specs.Services
 
                 before = () =>
                 {
-                    var mockContainer = new Mock<IContainer>();
                     mockContainer.Setup(x => x.GetInfo()).Returns(
                         new ContainerInfo
                         {
@@ -44,14 +54,7 @@ namespace Containerizer.Tests.Specs.Services
                             }
                         });
 
-                    mockContainerService = new Mock<IContainerService>();
-                    mockContainerService.Setup(x => x.GetContainerByHandle(handle))
-                        .Returns(mockContainer.Object);
-
-                    mockExternalIP = new Mock<IExternalIP>();
                     mockExternalIP.Setup(x => x.ExternalIP()).Returns(expectedExternalIP);
-
-                    service = new ContainerInfoService(mockContainerService.Object, mockExternalIP.Object);
                 };
 
                 act = () =>
@@ -88,6 +91,47 @@ namespace Containerizer.Tests.Specs.Services
                         mockContainerService.Setup(x => x.GetContainerByHandle(handle))
                        .Returns((IContainer)null);
                     };
+
+                    it["returns not found"] = () =>
+                    {
+                        result.should_be_null();
+                    };
+                };
+            };
+
+            describe["GetMetricsByHandle"] = () =>
+            {
+                ContainerMetricsApiModel result = null;
+                const ulong privateBytes = 7654;
+                const ulong cpuUsage = 4321;
+
+                before = () => mockContainer.Setup(x => x.GetInfo()).Returns(new ContainerInfo
+                {
+                    MemoryStat = new ContainerMemoryStat
+                    {
+                        PrivateBytes = privateBytes
+                    },
+                    CpuStat = new ContainerCpuStat
+                    {
+                        TotalProcessorTime = new TimeSpan(0, 0, 0, 0, (int)cpuUsage)
+                    }
+                });
+
+                act = () => result = service.GetMetricsByHandle(handle);
+
+                it["returns memory metrics about the container"] = () =>
+                {
+                    result.MemoryStat.TotalBytesUsed.should_be(privateBytes);
+                };
+
+                it["returns cpu usage metrics about the container"] = () =>
+                {
+                    result.CPUStat.Usage.should_be(cpuUsage);
+                };
+
+                context["when the container does not exist"] = () =>
+                {
+                    before = () => mockContainerService.Setup(x => x.GetContainerByHandle(handle)).Returns(null as IContainer);
 
                     it["returns not found"] = () =>
                     {

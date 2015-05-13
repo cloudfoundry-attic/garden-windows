@@ -29,17 +29,41 @@ namespace Containerizer.Services.Implementations
             }
 
             var rawInfo = container.GetInfo();
-            var portMappings = rawInfo.Properties.Where(x => x.Key.Contains("ContainerPort:")).                Select(x => new PortMappingApiModel
-            {
-                ContainerPort = int.Parse(x.Key.Split(':')[1]),
-                HostPort = int.Parse(x.Value),
-            });
+            var portMappings = rawInfo.Properties.Where(x => x.Key.Contains("ContainerPort:")).
+                Select(x => new PortMappingApiModel
+                {
+                    ContainerPort = int.Parse(x.Key.Split(':')[1]),
+                    HostPort = int.Parse(x.Value),
+                });
 
             return new ContainerInfoApiModel
             {
                 MappedPorts = portMappings.ToList(),
                 Properties = rawInfo.Properties,
                 ExternalIP = externalIP.ExternalIP(),
+            };
+        }
+
+        public ContainerMetricsApiModel GetMetricsByHandle(string handle)
+        {
+            var container = containerService.GetContainerByHandle(handle);
+            if (container == null)
+            {
+                return null;
+            }
+
+            var info = container.GetInfo();
+
+            return new ContainerMetricsApiModel
+            {
+                MemoryStat = new ContainerMemoryStatApiModel
+                {
+                   TotalBytesUsed = info.MemoryStat.PrivateBytes
+                },
+                CPUStat = new ContainerCPUStatApiModel
+                {
+                    Usage = (ulong)info.CpuStat.TotalProcessorTime.TotalMilliseconds
+                }
             };
         }
     }

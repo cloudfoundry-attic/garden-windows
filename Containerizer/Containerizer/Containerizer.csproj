@@ -152,6 +152,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\DependencyResolver.cs" />
+    <Compile Include="Controllers\BulkMetricsController.cs" />
     <Compile Include="Controllers\CapacityController.cs" />
     <Compile Include="Controllers\ContainerProcessHandler.cs" />
     <Compile Include="Controllers\ContainerProcessController .cs" />

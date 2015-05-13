@@ -202,6 +202,45 @@ var _ = Describe("backend", func() {
 		})
 	})
 
+	Describe("BulkMetrics", func() {
+		BeforeEach(func() {
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("POST", "/api/bulkcontainermetrics"),
+					ghttp.VerifyJSONRepresenting([]string{"handle1", "handle2"}),
+					ghttp.RespondWith(200, `{
+						"handle1": { "Metrics": { "MemoryStat": { "TotalRss": 1234 }}},
+						"handle2": { "Metrics": { "MemoryStat": { "TotalRss": 5678 }}}
+					}`),
+				),
+			)
+		})
+
+		It("makes a call out to an external service", func() {
+			_, err := dotNetBackend.BulkMetrics([]string{"handle1", "handle2"})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+
+		It("returns the containers metrics", func() {
+			metrics, err := dotNetBackend.BulkMetrics([]string{"handle1", "handle2"})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(metrics["handle1"].Metrics.MemoryStat.TotalRss).Should(Equal(uint64(1234)))
+			Expect(metrics["handle1"].Err).ShouldNot(HaveOccurred())
+
+			Expect(metrics["handle2"].Metrics.MemoryStat.TotalRss).Should(Equal(uint64(5678)))
+			Expect(metrics["handle2"].Err).ShouldNot(HaveOccurred())
+		})
+
+		Context("when there is an error making the http connection", func() {
+			It("returns an error", func() {
+				server.Close()
+				_, err := dotNetBackend.BulkMetrics([]string{"hande1", "handle2"})
+				Expect(err).To(HaveOccurred())
+			})
+		})
+	})
+
 	Describe("Destroy", func() {
 		BeforeEach(func() {
 			server.AppendHandlers(
