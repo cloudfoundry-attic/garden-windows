@@ -1,9 +1,12 @@
 ﻿#region
 
+using System;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
+using System.Web.Http.Results;
 using Containerizer.Services.Interfaces;
 
 #endregion
@@ -36,9 +39,23 @@ namespace Containerizer.Controllers
         [HttpPut]
         public async Task<IHttpActionResult> Update(string handle, string destination)
         {
-            Stream stream = await Request.Content.ReadAsStreamAsync();
-            streamInService.StreamInFile(stream, handle, destination);
-            return Ok();
+            try
+            {
+                Stream stream = await Request.Content.ReadAsStreamAsync();
+                streamInService.StreamInFile(stream, handle, destination);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("EntryStream has not been fully consumed"))
+                {
+                    return new StatusCodeResult(HttpStatusCode.RequestEntityTooLarge, this);
+                }
+                else
+                {
+                    throw;
+                }
+            }
         }
     }
 }

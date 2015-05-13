@@ -60,6 +60,7 @@ namespace Containerizer.Tests.Specs.Services
 
                 mockITarStreamService.Verify(x => x.WriteTarStreamToPath(
                     It.Is((Stream y) => verifyStream(y)),
+                    mockIContainer.Object,
                     It.Is((String y) => verifyPath(y))
                     ));
             };

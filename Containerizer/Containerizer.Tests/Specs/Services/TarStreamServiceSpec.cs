@@ -1,8 +1,13 @@
 ﻿#region
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using Containerizer.Services.Implementations;
+using IronFrame;
+using Moq;
 using NSpec;
 using SharpCompress.Reader;
 
@@ -15,11 +20,24 @@ namespace Containerizer.Tests.Specs.Services
         private Stream tarStream;
         private TarStreamService tarStreamService;
         private string tmpDir;
+        private string inputDir;
+        private string tarFile;
+        private string outputDir;
 
         private void before_each()
         {
-            tmpDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            tmpDir = Path.Combine(@"C:\", Path.GetRandomFileName());
+            inputDir = Path.Combine(tmpDir, "input");
+            outputDir = Path.Combine(tmpDir, "output");
+            tarFile = Path.Combine(tmpDir, "output.tgz");
+
             Directory.CreateDirectory(tmpDir);
+            Directory.CreateDirectory(inputDir);
+            Directory.CreateDirectory(outputDir);
+
+            var proc = Process.Start("icacls", tmpDir + " /grant \"everyone\":(OI)(CI)M");
+            proc.WaitForExit();
+            proc.ExitCode.should_be(0);
             tarStreamService = new TarStreamService();
         }
 
@@ -31,34 +49,44 @@ namespace Containerizer.Tests.Specs.Services
         private void describe_WriteTarStreamToPath()
         {
             string destinationArchiveFileName = null;
+            Mock<IContainer> containerMock = null;
+            LocalPrincipalManager userManager = null;
+            string username = null;
 
             before = () =>
             {
                 Helpers.AssertAdministratorPrivileges();
 
-                destinationArchiveFileName = Path.GetRandomFileName();
-                Directory.CreateDirectory(tmpDir);
-                Directory.CreateDirectory(Path.Combine(tmpDir, "fooDir"));
-                File.WriteAllText(Path.Combine(tmpDir, "content.txt"), "content");
-                File.WriteAllText(Path.Combine(tmpDir, "fooDir", "content.txt"), "MOAR content");
-                new TarStreamService().CreateTarFromDirectory(tmpDir, destinationArchiveFileName);
-                tarStream = new FileStream(destinationArchiveFileName, FileMode.Open);
+                userManager = new LocalPrincipalManager();
+                var guid = System.Guid.NewGuid().ToString("N");
+                username = "if" + guid.Substring(0, 6);
+                var credentials = userManager.CreateUser(username);
+                containerMock = new Mock<IContainer>();
+                containerMock.Setup(x => x.ImpersonateContainerUser(It.IsAny<Action>())).Callback((Action x) => x());
+
+                Directory.CreateDirectory(Path.Combine(inputDir, "fooDir"));
+                File.WriteAllText(Path.Combine(inputDir, "content.txt"), "content");
+                File.WriteAllText(Path.Combine(inputDir, "fooDir", "content.txt"), "MOAR content");
+                new TarStreamService().CreateTarFromDirectory(inputDir, tarFile);
+                tarStream = new FileStream(tarFile, FileMode.Open);
             };
 
             context["when the tar stream contains files and directories"] = () =>
             {
+                act = () => tarStreamService.WriteTarStreamToPath(tarStream, containerMock.Object, outputDir);
+
                 it["writes the file to disk"] = () =>
                 {
-                    tarStreamService.WriteTarStreamToPath(tarStream, "output");
-                    File.ReadAllLines(Path.Combine("output", "content.txt")).should_be("content");
-                    File.ReadAllLines(Path.Combine("output", "fooDir", "content.txt")).should_be("MOAR content");
+                    File.ReadAllLines(Path.Combine(outputDir, "content.txt")).should_be("content");
+                    File.ReadAllLines(Path.Combine(outputDir, "fooDir", "content.txt")).should_be("MOAR content");
                 };
             };
 
             after = () =>
             {
                 tarStream.Close();
-                File.Delete(destinationArchiveFileName);
+                File.Delete(tarFile);
+                userManager.DeleteUser(username);
             };
         }
 
