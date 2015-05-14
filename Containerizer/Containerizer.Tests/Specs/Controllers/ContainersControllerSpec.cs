@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -125,6 +126,12 @@ namespace Containerizer.Tests.Specs.Controllers
                     {
                         containersController.Create(new ContainerSpecApiModel {Handle = "thisHandle"});
                         mockContainer.Verify(x => x.SetActiveProcessLimit(5));
+                    };
+
+                    it["sets PriorityClass on the Container"] = () =>
+                    {
+                        containersController.Create(new ContainerSpecApiModel { Handle = "thisHandle" });
+                        mockContainer.Verify(x => x.SetPriorityClass(ProcessPriorityClass.BelowNormal));
                     };
                 };
 

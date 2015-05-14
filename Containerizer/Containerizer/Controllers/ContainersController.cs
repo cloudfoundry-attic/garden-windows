@@ -1,6 +1,7 @@
 ﻿#region
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -83,6 +84,8 @@ namespace Containerizer.Controllers
             {
                 var container = containerService.CreateContainer(containerSpec);
                 container.SetActiveProcessLimit(CONTAINER_ACTIVE_PROCESS_LIMIT);
+                container.SetPriorityClass(ProcessPriorityClass.BelowNormal);
+
                 return new CreateResponse
                 {
                     Handle = container.Handle
@@ -95,8 +98,7 @@ namespace Containerizer.Controllers
             }
             catch (Exception ex)
             {
-                throw new HttpResponseException(Request.CreateResponse(HttpStatusCode.InternalServerError,
-    ex.Message));
+                throw new HttpResponseException(Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message));
             }
         }
 
