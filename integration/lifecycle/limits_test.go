@@ -80,12 +80,12 @@ var _ = Describe("Process limits", func() {
 				}
 			})
 
-			XIt("is enforced", func() {
+			It("is enforced", func() {
 				setCPU := func(container garden.Container, limit uint64) error {
 					return container.LimitCPU(garden.CPULimits{LimitInShares: limit})
 				}
-				Expect(setCPU(containers[0], 1)).Should(Succeed())
-				Expect(setCPU(containers[1], 9)).Should(Succeed())
+				Expect(setCPU(containers[0], 2500)).Should(Succeed())
+				Expect(setCPU(containers[1], 7500)).Should(Succeed())
 
 				var processes [2]garden.Process
 				var stdouts [2]*bytes.Buffer
@@ -115,8 +115,7 @@ var _ = Describe("Process limits", func() {
 					Expect(err).ToNot(HaveOccurred())
 				}
 				ratio := float64(userTimes[0]) / float64(userTimes[1])
-				Expect(ratio).To(BeNumerically(">=", 0.05))
-				Expect(ratio).To(BeNumerically("<=", 0.7))
+				Expect(ratio).To(BeNumerically("~", 0.25, 0.1))
 			})
 		})
 	})
