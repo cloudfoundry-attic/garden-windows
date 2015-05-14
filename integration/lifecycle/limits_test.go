@@ -117,6 +117,21 @@ var _ = Describe("Process limits", func() {
 				ratio := float64(userTimes[0]) / float64(userTimes[1])
 				Expect(ratio).To(BeNumerically("~", 0.25, 0.1))
 			})
+
+			It("forkbombs are killed", func(done Done) {
+				buf := make([]byte, 0, 1024*1024)
+				stdout := bytes.NewBuffer(buf)
+				p, err := containers[0].Run(garden.ProcessSpec{
+					Path: "bin/consume.exe",
+					Args: []string{"forkbomb"},
+				}, garden.ProcessIO{Stdout: stdout})
+				Expect(err).ShouldNot(HaveOccurred())
+
+				exitCode, err := p.Wait()
+				Expect(err).ToNot(HaveOccurred())
+				Expect(exitCode).ToNot(Equal(0))
+				close(done)
+			}, 10.0)
 		})
 	})
 })

@@ -106,6 +106,40 @@ namespace Containerizer.Tests.Specs.Controllers
                 };
             };
 
+            describe["#Create"] = () =>
+            {
+                Mock<IContainer> mockContainer = null;
+                before = () => mockContainer = mockContainerWithHandle("thisHandle");
+
+                context["on success"] = () =>
+                {
+                    before = () => mockContainerService.Setup(x => x.CreateContainer(It.IsAny<ContainerSpec>())).Returns(mockContainer.Object);
+
+                    it["returns a handle"] = () =>
+                    {
+                        var result = containersController.Create(new ContainerSpecApiModel {Handle = "thisHandle"});
+                        result.Handle.should_be("thisHandle");
+                    };
+
+                    it["sets ActiveProcessLimit on the Container"] = () =>
+                    {
+                        containersController.Create(new ContainerSpecApiModel {Handle = "thisHandle"});
+                        mockContainer.Verify(x => x.SetActiveProcessLimit(5));
+                    };
+                };
+
+                context["on failure"] = () =>
+                {
+                    before = () => mockContainerService.Setup(x => x.CreateContainer(It.IsAny<ContainerSpec>())).Throws(new Exception());
+
+                    it["throws HttpResponseException"] = () =>
+                    {
+                        expect<HttpResponseException>(
+                            () => containersController.Create(new ContainerSpecApiModel {Handle = "thisHandle"}));
+                    };
+                };
+            };
+
             describe["#NetIn"] = () =>
             {
                 string containerHandle = null;

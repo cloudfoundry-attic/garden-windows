@@ -23,7 +23,7 @@ func bigBytes() ArrayBytes {
 
 func main() {
 	if len(os.Args) == 1 {
-		fmt.Println("Usage: consume [fork] [cpu [duration]|memory [megabytes]]")
+		fmt.Println("Usage: consume [fork] [forkbomb|cpu [duration]|memory [megabytes]]")
 		os.Exit(1)
 	}
 
@@ -31,9 +31,32 @@ func main() {
 		fork(os.Args[2:])
 	} else if os.Args[1] == "memory" {
 		generateMemoryLoad(os.Args[2])
+	} else if os.Args[1] == "forkbomb" {
+		forkbomb()
 	} else {
 		generateCPULoad(os.Args[2])
 	}
+}
+
+func forkbomb() {
+	filename, err := osext.Executable()
+	if err != nil {
+		panic(err)
+	}
+	done := make(chan interface{})
+	runOne := func() {
+		cmd := exec.Command(filename, "forkbomb")
+		err = cmd.Run()
+		if err != nil {
+			panic(err)
+		}
+		close(done)
+	}
+	go runOne()
+	go runOne()
+
+	<-done
+	os.Exit(0)
 }
 
 func fork(args []string) {

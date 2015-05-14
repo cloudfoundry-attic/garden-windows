@@ -30,6 +30,7 @@ namespace Containerizer.Controllers
     {
         private readonly IContainerService containerService;
         private readonly ILogger logger;
+        private const uint CONTAINER_ACTIVE_PROCESS_LIMIT = 5;
 
         public ContainersController(IContainerService containerService, ILogger logger)
         {
@@ -81,6 +82,7 @@ namespace Containerizer.Controllers
             try
             {
                 var container = containerService.CreateContainer(containerSpec);
+                container.SetActiveProcessLimit(CONTAINER_ACTIVE_PROCESS_LIMIT);
                 return new CreateResponse
                 {
                     Handle = container.Handle
