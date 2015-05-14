@@ -8,11 +8,7 @@ using Containerizer.Controllers;
 using Containerizer.Services.Implementations;
 using Containerizer.Services.Interfaces;
 using IronFrame;
-using IronFrame.Utilities;
-using System.IO;
-using System.Runtime.InteropServices;
 using Containerizer.Factories;
-using Microsoft.Owin.Hosting.Services;
 using Microsoft.Practices.ServiceLocation;
 using Logger;
 

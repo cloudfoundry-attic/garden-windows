@@ -7,7 +7,6 @@ import (
 	"path"
 	"syscall"
 	"testing"
-	"time"
 
 	"github.com/cloudfoundry-incubator/garden"
 	"github.com/cloudfoundry/loggregator/src/bitbucket.org/kardianos/osext"
@@ -15,7 +14,6 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
 	"github.com/tedsuo/ifrit"
-	"github.com/tedsuo/ifrit/ginkgomon"
 	"github.com/tedsuo/ifrit/grouper"
 
 	garden_runner "github.com/cloudfoundry-incubator/garden-windows/integration/runner"
@@ -37,18 +35,18 @@ func startGarden(argv ...string) garden.Client {
 	// If below fails, try
 	// netsh advfirewall firewall add rule name="Open Port 48080"  dir=in action=allow protocol=TCP localport=48080
 
-	gardenRunner = garden_runner.New("tcp4", gardenAddr, tmpDir, gardenBin, "http://127.0.0.1:48081")
-	containerizerRunner = ginkgomon.New(ginkgomon.Config{
-		Name:              "containerizer",
-		Command:           exec.Command(containerizerBin, "127.0.0.1", "48081"),
-		AnsiColorCode:     "",
-		StartCheck:        "Control-C to quit.",
-		StartCheckTimeout: 10 * time.Second,
-		Cleanup:           func() {},
-	})
+	gardenRunner = garden_runner.New("tcp4", gardenAddr, tmpDir, gardenBin, "http://127.0.0.1:8081")
+	// containerizerRunner = ginkgomon.New(ginkgomon.Config{
+	// 	Name:              "containerizer",
+	// 	Command:           exec.Command(containerizerBin, "127.0.0.1", "48081"),
+	// 	AnsiColorCode:     "",
+	// 	StartCheck:        "Control-C to quit.",
+	// 	StartCheckTimeout: 10 * time.Second,
+	// 	Cleanup:           func() {},
+	// })
 
 	group := grouper.NewOrdered(syscall.SIGTERM, []grouper.Member{
-		{Name: "containerizer", Runner: containerizerRunner},
+		// {Name: "containerizer", Runner: containerizerRunner},
 		{Name: "garden", Runner: gardenRunner},
 	})
 
@@ -78,11 +76,11 @@ func TestLifecycle(t *testing.T) {
 		currentDir, err := osext.ExecutableFolder()
 		Expect(err).ShouldNot(HaveOccurred())
 		containerizerDir := path.Join(currentDir, "..", "..", "..", "Containerizer", "Containerizer")
-		windir := os.Getenv("WINDIR")
-		msbuild := path.Join(windir, "Microsoft.NET", "Framework64", "v4.0.30319", "MSBuild")
-		cmd := exec.Command(msbuild, `Containerizer.csproj`)
-		cmd.Dir = containerizerDir
-		Expect(cmd.Run()).To(Succeed(), "Cannot build containerizer. Make sure there are no compilation errors")
+		// windir := os.Getenv("WINDIR")
+		// msbuild := path.Join(windir, "Microsoft.NET", "Framework64", "v4.0.30319", "MSBuild")
+		// cmd := exec.Command(msbuild, `Containerizer.csproj`)
+		// cmd.Dir = containerizerDir
+		// Expect(cmd.Run()).To(Succeed(), "Cannot build containerizer. Make sure there are no compilation errors")
 		containerizerBin = path.Join(containerizerDir, "bin", "Containerizer.exe")
 		Expect(containerizerBin).To(BeAnExistingFile())
 		gardenPath, err := gexec.Build("github.com/cloudfoundry-incubator/garden-windows", "-a", "-race", "-tags", "daemon")

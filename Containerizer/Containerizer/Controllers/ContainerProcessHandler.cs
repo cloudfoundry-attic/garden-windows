@@ -75,9 +75,14 @@ namespace Containerizer.Controllers
 
             if (streamEvent.MessageType == "run" && streamEvent.ApiProcessSpec != null)
             {
-                runService.Run(this, streamEvent.ApiProcessSpec);
+                var task = new Task(() => runService.Run(this, streamEvent.ApiProcessSpec));
+                task.Start();
+                return task;
             }
-            return null;
+            else
+            {
+                return Task.FromResult(false);
+            }
         }
     }
 }
