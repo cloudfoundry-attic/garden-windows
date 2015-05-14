@@ -28,7 +28,7 @@ namespace Containerizer.Tests.Specs.Controllers
                 it["returns positive capacity for MaxContainers"] = () =>
                 {
                     Capacity capacity = controller.Index();
-                    capacity.MaxContainers.should_be(256);
+                    capacity.MaxContainers.should_be(100);
                 };
             };
         }

@@ -17,7 +17,7 @@ namespace Containerizer.Controllers
 
     public class CapacityController : ApiController
     {
-        private const ulong MaxContainers = 256;
+        private const ulong MaxContainers = 100;
 
         [Route("api/capacity")]
         [HttpGet]
