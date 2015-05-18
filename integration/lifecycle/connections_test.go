@@ -46,7 +46,7 @@ var _ = Describe("Websocket connections", func() {
 		Expect(err).ShouldNot(HaveOccurred())
 	})
 
-	FIt("aren't leaked when the process exits without errors", func() {
+	It("aren't leaked when the process exits without errors", func() {
 		tarFile, err := os.Open("../bin/connect_to_remote_url.tgz")
 		Expect(err).ShouldNot(HaveOccurred())
 		defer tarFile.Close()
