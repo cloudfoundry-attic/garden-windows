@@ -671,7 +671,7 @@ var _ = Describe("container", func() {
 				Expect(err).Should(HaveOccurred())
 
 				close(done)
-			}, 1)
+			}, 10)
 		})
 	})
 
