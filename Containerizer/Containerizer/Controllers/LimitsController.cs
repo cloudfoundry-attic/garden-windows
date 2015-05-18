@@ -26,6 +26,12 @@ namespace Containerizer.Controllers
         public int Weight { get; set; }
     }
 
+    public class DiskLimits
+    {
+        [JsonProperty("byte_hard")]
+        public ulong ByteHard { get; set; }
+    }
+
     public class LimitsController : ApiController
     {
         private readonly IContainerService containerService;
@@ -88,6 +94,34 @@ namespace Containerizer.Controllers
             }
 
             return Json(container.CurrentCpuLimit());
+        }
+
+        [Route("api/containers/{handle}/disk_limit")]
+        [HttpPost]
+        public IHttpActionResult LimitDisk(string handle, DiskLimits limits)
+        {
+            var container = containerService.GetContainerByHandle(handle);
+            if (container == null)
+            {
+                return NotFound();
+            }
+
+            container.LimitDisk(limits.ByteHard);
+            return Ok();
+        }
+
+        [Route("api/containers/{handle}/disk_limit")]
+        [HttpGet]
+        public IHttpActionResult CurrentDiskLimit(string handle)
+        {
+            var container = containerService.GetContainerByHandle(handle);
+            if (container == null)
+            {
+                return NotFound();
+            }
+
+            var limit = container.CurrentDiskLimit();
+            return Json(new DiskLimits() { ByteHard = limit });
         }
     }
 }

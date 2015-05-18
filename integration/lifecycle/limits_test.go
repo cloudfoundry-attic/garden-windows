@@ -13,17 +13,26 @@ import (
 	uuid "github.com/nu7hatch/gouuid"
 )
 
-func createContainer() garden.Container {
+func createContainerWithoutConsume() garden.Container {
 	handle, err := uuid.NewV4()
 	Expect(err).ShouldNot(HaveOccurred())
 	container, err := client.Create(garden.ContainerSpec{Handle: handle.String()})
 	Expect(err).ShouldNot(HaveOccurred())
+	return container
+}
+
+func createContainer() garden.Container {
+	c := createContainerWithoutConsume()
+	err := streamIn(c)
+	Expect(err).ShouldNot(HaveOccurred())
+	return c
+}
+
+func streamIn(c garden.Container) error {
 	tarFile, err := os.Open("../bin/consume.tgz")
 	Expect(err).ShouldNot(HaveOccurred())
 	defer tarFile.Close()
-	err = container.StreamIn("bin", tarFile)
-	Expect(err).ShouldNot(HaveOccurred())
-	return container
+	return c.StreamIn("bin", tarFile)
 }
 
 var _ = Describe("Process limits", func() {
@@ -132,6 +141,53 @@ var _ = Describe("Process limits", func() {
 				Expect(exitCode).ToNot(Equal(0))
 				close(done)
 			}, 10.0)
+		})
+
+		Describe("disk limits", func() {
+			var container garden.Container
+
+			AfterEach(func() {
+				err := client.Destroy(container.Handle())
+				Expect(err).ShouldNot(HaveOccurred())
+			})
+
+			It("generated data is enforced", func() {
+				container = createContainer()
+				limitInBytes := uint64(15 * 1024 * 1024)
+				err := container.LimitDisk(garden.DiskLimits{ByteHard: limitInBytes})
+				Expect(err).ShouldNot(HaveOccurred())
+
+				buf := make([]byte, 0, 1024*1024)
+				stdout := bytes.NewBuffer(buf)
+
+				process, err := container.Run(garden.ProcessSpec{
+					Path: "bin/consume.exe",
+					Args: []string{"disk", "10"},
+				}, garden.ProcessIO{Stdout: stdout})
+				Expect(err).ShouldNot(HaveOccurred())
+
+				exitCode, err := process.Wait()
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(stdout.String()).To(ContainSubstring("Consumed:  3 mb"))
+				Expect(stdout.String()).NotTo(ContainSubstring("Consumed:  10 mb"))
+				Expect(stdout.String()).NotTo(ContainSubstring("Disk Consumed Successfully"))
+				Expect(exitCode).NotTo(Equal(42), "process did not get killed")
+
+				limits, err := container.CurrentDiskLimits()
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(limits.ByteHard).To(Equal(limitInBytes))
+			})
+
+			It("streamed in data is enforced", func() {
+				container = createContainerWithoutConsume()
+				limit := uint64(1024 * 1024)
+				err := container.LimitDisk(garden.DiskLimits{ByteHard: limit})
+				err = streamIn(container)
+				Expect(err).Should(HaveOccurred())
+				metrics, err := container.Metrics()
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(metrics.DiskStat.BytesUsed).Should(BeNumerically("<", limit))
+			})
 		})
 	})
 })

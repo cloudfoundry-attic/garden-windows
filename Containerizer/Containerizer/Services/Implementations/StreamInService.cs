@@ -1,8 +1,9 @@
 ﻿#region
 
-using System.IO;
+using System;
 using Containerizer.Services.Interfaces;
 using IronFrame;
+using System.IO;
 
 #endregion
 
@@ -23,7 +24,7 @@ namespace Containerizer.Services.Implementations
         {
             IContainer container = containerService.GetContainerByHandle(handle);
             var path = container.Directory.MapUserPath(destination);
-            tarStreamService.WriteTarStreamToPath(stream, path);
+            tarStreamService.WriteTarStreamToPath(stream, container, path);
         }
     }
 }

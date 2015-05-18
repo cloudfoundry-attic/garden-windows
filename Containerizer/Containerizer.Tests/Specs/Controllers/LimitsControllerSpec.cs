@@ -148,6 +148,60 @@ namespace Containerizer.Tests.Specs.Controllers
                 };
             };
 
+            describe["#LimitDisk"] = () =>
+            {
+                IHttpActionResult result = null;
+                const ulong bytes = 5;
+                act = () =>
+                {
+                    var limits = new DiskLimits { ByteHard = bytes };
+                    result = LimitsController.LimitDisk(handle, limits);
+                };
+
+                it["sets limits on the container"] = () =>
+                {
+                    mockContainer.Verify(x => x.LimitDisk(bytes));
+                };
+
+                context["when the container does not exist"] = () =>
+                {
+                    before = () =>
+                    {
+                        mockContainerService.Setup(x => x.GetContainerByHandle(It.IsAny<string>())).Returns(null as IContainer);
+                    };
+
+                    it["Returns not found"] = () =>
+                    {
+                        result.should_cast_to<NotFoundResult>();
+                    };
+                };
+            };
+
+            describe["#CurrentDiskLimit"] = () =>
+            {
+                it["returns the current limit on the container"] = () =>
+                {
+                    mockContainer.Setup(x => x.CurrentDiskLimit()).Returns(6);
+                    var result = LimitsController.CurrentDiskLimit(handle);
+                    var jsonResult = result.should_cast_to<JsonResult<DiskLimits>>();
+                    jsonResult.Content.ByteHard.should_be(6);
+                };
+
+                context["when the container does not exist"] = () =>
+                {
+                    before = () =>
+                    {
+                        mockContainerService.Setup(x => x.GetContainerByHandle(It.IsAny<string>()))
+                            .Returns(null as IContainer);
+                    };
+
+                    it["Returns not found"] = () =>
+                    {
+                        var result = LimitsController.CurrentDiskLimit(handle);
+                        result.should_cast_to<NotFoundResult>();
+                    };
+                };
+            };
         }
     }
 }

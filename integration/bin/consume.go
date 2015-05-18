@@ -23,7 +23,7 @@ func bigBytes() ArrayBytes {
 
 func main() {
 	if len(os.Args) == 1 {
-		fmt.Println("Usage: consume [fork] [forkbomb|cpu [duration]|memory [megabytes]]")
+		fmt.Println("Usage: consume [fork] [forkbomb|cpu [duration]|memory [megabytes]|disk [megabytes]]")
 		os.Exit(1)
 	}
 
@@ -33,6 +33,8 @@ func main() {
 		generateMemoryLoad(os.Args[2])
 	} else if os.Args[1] == "forkbomb" {
 		forkbomb()
+	} else if os.Args[1] == "disk" {
+		generateDiskLoad(os.Args[2])
 	} else {
 		generateCPULoad(os.Args[2])
 	}
@@ -118,5 +120,34 @@ func generateMemoryLoad(limit string) {
 	}
 
 	fmt.Println("Memory Consumed Successfully")
+	os.Exit(42)
+}
+
+func generateDiskLoad(limit string) {
+	numMb, err := strconv.ParseInt(limit, 10, 64)
+	if err != nil {
+		fmt.Println("Usage: consume.exe disk [Num Megabytes to consume]")
+		os.Exit(1)
+	}
+
+	onemb := make([]byte, 1024*1024)
+	fh, err := os.Create("largefile.txt")
+	if err != nil {
+		panic(err)
+	}
+	defer fh.Close()
+	for i := 0; i < int(numMb); i++ {
+		_, err := fh.Write(onemb)
+		if err != nil {
+			panic(err)
+		}
+		fi, err := fh.Stat()
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println("Consumed: ", fi.Size()/1024/1024, "mb")
+	}
+
+	fmt.Println("Disk Consumed Successfully")
 	os.Exit(42)
 }

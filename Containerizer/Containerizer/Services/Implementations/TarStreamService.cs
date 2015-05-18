@@ -2,6 +2,7 @@
 
 using System.IO;
 using Containerizer.Services.Interfaces;
+using IronFrame;
 using SharpCompress.Common;
 using SharpCompress.Reader;
 using SharpCompress.Writer;
@@ -18,18 +19,20 @@ namespace Containerizer.Services.Implementations
             CreateTarFromDirectory(filePath, tarPath);
             Stream stream = File.OpenRead(tarPath);
             var buffer = new byte[stream.Length];
-            stream.Read(buffer, 0, (int) stream.Length);
+            stream.Read(buffer, 0, (int)stream.Length);
             var memStream = new MemoryStream(buffer);
             stream.Close();
             File.Delete(tarPath);
             return memStream;
         }
 
-
-        public void WriteTarStreamToPath(Stream stream, string filePath)
+        public void WriteTarStreamToPath(Stream stream, IContainer container, string filePath)
         {
+            // This line must be outside the lambda in order to load the SharpCompress DLL as 
+            // the Containerizer user rather than the container user, who does not have access 
+            // to the DLL files
             IReader reader = ReaderFactory.Open(new BufferedStream(stream));
-            reader.WriteAllToDirectory(filePath, ExtractOptions.ExtractFullPath | ExtractOptions.Overwrite);
+            container.ImpersonateContainerUser(() => reader.WriteAllToDirectory(filePath, ExtractOptions.ExtractFullPath | ExtractOptions.Overwrite));
         }
 
         public void CreateTarFromDirectory(string sourceDirectoryName, string destinationArchiveFileName)
