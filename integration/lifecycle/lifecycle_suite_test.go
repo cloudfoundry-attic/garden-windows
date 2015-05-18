@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"strconv"
 	"syscall"
 	"testing"
 	"time"
@@ -26,7 +27,7 @@ var gardenBin, containerizerBin string
 var containerizerRunner ifrit.Runner
 var gardenRunner *garden_runner.Runner
 var gardenProcess ifrit.Process
-
+var containerizerPort int
 var client garden.Client
 
 func startGarden(argv ...string) garden.Client {
@@ -37,10 +38,11 @@ func startGarden(argv ...string) garden.Client {
 	// If below fails, try
 	// netsh advfirewall firewall add rule name="Open Port 48080"  dir=in action=allow protocol=TCP localport=48080
 
-	gardenRunner = garden_runner.New("tcp4", gardenAddr, tmpDir, gardenBin, "http://127.0.0.1:48081")
+	containerizerPort = 48081
+	gardenRunner = garden_runner.New("tcp4", gardenAddr, tmpDir, gardenBin, fmt.Sprintf("http://127.0.0.1:%d", containerizerPort))
 	containerizerRunner = ginkgomon.New(ginkgomon.Config{
 		Name:              "containerizer",
-		Command:           exec.Command(containerizerBin, "127.0.0.1", "48081"),
+		Command:           exec.Command(containerizerBin, "127.0.0.1", strconv.Itoa(containerizerPort)),
 		AnsiColorCode:     "",
 		StartCheck:        "Control-C to quit.",
 		StartCheckTimeout: 10 * time.Second,
