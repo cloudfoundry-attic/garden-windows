@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"time"
 
 	"github.com/cloudfoundry-incubator/garden"
 	. "github.com/onsi/ginkgo"
@@ -146,7 +147,7 @@ var _ = Describe("NetOut", func() {
 	})
 
 	Describe("outbound udp traffic", func() {
-		It("can be allowed by whitelisting udp ports", func() {
+		FIt("can be allowed by whitelisting udp ports", func() {
 			openPort(garden.ProtocolUDP, 53, "")
 			openPort(garden.ProtocolTCP, 9090, "")
 
@@ -158,6 +159,8 @@ var _ = Describe("NetOut", func() {
 			exitCode, err := process.Wait()
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(exitCode).To(Equal(0))
+			fmt.Println("Sleeping for 60 minutes")
+			time.Sleep(60 * time.Minute)
 		})
 	})
 })
