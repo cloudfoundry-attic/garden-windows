@@ -299,6 +299,23 @@ var _ = Describe("container", func() {
 		})
 	})
 
+	Describe("CurrentCPULimits", func() {
+		BeforeEach(func() {
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("GET", "/api/containers/containerhandle/cpu_limit"),
+					ghttp.RespondWith(200, `{"limit_in_shares": 765}`),
+				),
+			)
+		})
+
+		It("returns the limit", func() {
+			limit, err := container.CurrentCPULimits()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(limit.LimitInShares).To(Equal(uint64(765)))
+		})
+	})
+
 	Describe("CurrentMemoryLimits", func() {
 		BeforeEach(func() {
 			server.AppendHandlers(

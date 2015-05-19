@@ -129,8 +129,8 @@ namespace Containerizer.Tests.Specs.Controllers
                 {
                     mockContainer.Setup(x => x.CurrentCpuLimit()).Returns(6);
                     var result = LimitsController.CurrentCpuLimit(handle);
-                    var jsonResult = result.should_cast_to<JsonResult<int>>();
-                    jsonResult.Content.should_be(6);
+                    var jsonResult = result.should_cast_to<JsonResult<CpuLimits>>();
+                    jsonResult.Content.Weight.should_be(6);
                 };
 
                 context["when the container does not exist"] = () =>

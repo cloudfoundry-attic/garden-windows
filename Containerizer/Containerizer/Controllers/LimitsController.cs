@@ -93,7 +93,8 @@ namespace Containerizer.Controllers
                 return NotFound();
             }
 
-            return Json(container.CurrentCpuLimit());
+            var limit = container.CurrentCpuLimit();
+            return Json(new CpuLimits() { Weight = limit });
         }
 
         [Route("api/containers/{handle}/disk_limit")]

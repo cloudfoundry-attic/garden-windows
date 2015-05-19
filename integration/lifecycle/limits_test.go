@@ -96,9 +96,12 @@ var _ = Describe("Process limits", func() {
 				Expect(setCPU(containers[0], 2500)).Should(Succeed())
 				Expect(setCPU(containers[1], 7500)).Should(Succeed())
 
+				cpuLimit, err := containers[0].CurrentCPULimits()
+				Expect(err).ToNot(HaveOccurred())
+				Expect(cpuLimit.LimitInShares).To(Equal(uint64(2500)))
+
 				var processes [2]garden.Process
 				var stdouts [2]*bytes.Buffer
-				var err error
 				for i, c := range containers {
 					buf := make([]byte, 0, 1024*1024)
 					stdout := bytes.NewBuffer(buf)

@@ -103,7 +103,10 @@ func (container *container) LimitCPU(limits garden.CPULimits) error {
 }
 
 func (container *container) CurrentCPULimits() (garden.CPULimits, error) {
-	return garden.CPULimits{}, nil
+	url := fmt.Sprintf("/api/containers/%s/cpu_limit", container.Handle())
+	limits := garden.CPULimits{}
+	err := container.client.Get(url, &limits)
+	return limits, err
 }
 
 func (container *container) LimitDisk(limits garden.DiskLimits) error {
