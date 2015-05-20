@@ -104,18 +104,24 @@ namespace Containerizer.Tests.Specs.Services
                 ContainerMetricsApiModel result = null;
                 const ulong privateBytes = 7654;
                 const ulong cpuUsage = 4321;
+                const ulong diskUsage = 9641;
 
-                before = () => mockContainer.Setup(x => x.GetInfo()).Returns(new ContainerInfo
+                before = () =>
                 {
-                    MemoryStat = new ContainerMemoryStat
+                    mockContainer.Setup(x => x.GetInfo()).Returns(new ContainerInfo
                     {
-                        PrivateBytes = privateBytes
-                    },
-                    CpuStat = new ContainerCpuStat
-                    {
-                        TotalProcessorTime = new TimeSpan(0, 0, 0, 0, (int)cpuUsage)
-                    }
-                });
+                        MemoryStat = new ContainerMemoryStat
+                        {
+                            PrivateBytes = privateBytes
+                        },
+                        CpuStat = new ContainerCpuStat
+                        {
+                            TotalProcessorTime = new TimeSpan(0, 0, 0, 0, (int) cpuUsage)
+                        }
+                    });
+
+                    mockContainer.Setup(x => x.CurrentDiskUsage()).Returns(diskUsage);
+                };
 
                 act = () => result = service.GetMetricsByHandle(handle);
 
@@ -127,6 +133,11 @@ namespace Containerizer.Tests.Specs.Services
                 it["returns cpu usage metrics about the container"] = () =>
                 {
                     result.CPUStat.Usage.should_be(cpuUsage);
+                };
+
+                it["returns disk usage metrics about the container"] = () =>
+                {
+                    result.DiskStat.BytesUsed.should_be(diskUsage);
                 };
 
                 context["when the container does not exist"] = () =>

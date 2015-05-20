@@ -22,6 +22,7 @@ var _ = Describe("Container Metrics", func() {
 			var err error
 			container, err = client.Create(garden.ContainerSpec{})
 			Expect(err).ToNot(HaveOccurred())
+			StreamIn(container)
 		})
 
 		AfterEach(func() {
@@ -32,16 +33,9 @@ var _ = Describe("Container Metrics", func() {
 			metrics, err := container.Metrics()
 			Expect(err).ToNot(HaveOccurred())
 
-			Expect(metrics.MemoryStat.TotalRss).To(BeNumerically(">", 0))
-			Expect(metrics.CPUStat.Usage).To(BeNumerically(">", 0))
-			// Expect(metrics.DiskStat.BytesUsed).To(BeNumerically(">", 0))
-		})
-
-		XIt("returns disk metrics", func() {
-			metrics, err := container.Metrics()
-			Expect(err).ToNot(HaveOccurred())
-
-			Expect(metrics.DiskStat.BytesUsed).To(BeNumerically(">", 0))
+			Expect(metrics.MemoryStat.TotalRss).To(BeNumerically(">", 0), "Expected Memory Usage to be > 0")
+			Expect(metrics.CPUStat.Usage).To(BeNumerically(">", 0), "Expected CPU Usage to be > 0")
+			Expect(metrics.DiskStat.BytesUsed).To(BeNumerically(">", 0), "Expected Disk Usage to be > 0")
 		})
 	})
 })

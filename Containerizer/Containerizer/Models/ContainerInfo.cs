@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using IronFrame;
+using Newtonsoft.Json;
 
 namespace Containerizer.Models
 {
@@ -52,10 +53,17 @@ namespace Containerizer.Models
     {
         public ContainerMemoryStatApiModel MemoryStat { get; set; }
         public ContainerCPUStatApiModel CPUStat { get; set; }
+        public ContainerDiskApiModel DiskStat { get; set; }
+    }
+
+    public class ContainerDiskApiModel
+    {
+        public ulong BytesUsed;
     }
 
     public class ContainerMemoryStatApiModel
     {
+        [JsonProperty("TotalRss")]
         public ulong TotalBytesUsed;
     }
 

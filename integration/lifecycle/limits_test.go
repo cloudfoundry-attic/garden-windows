@@ -23,12 +23,12 @@ func createContainerWithoutConsume() garden.Container {
 
 func createContainer() garden.Container {
 	c := createContainerWithoutConsume()
-	err := streamIn(c)
+	err := StreamIn(c)
 	Expect(err).ShouldNot(HaveOccurred())
 	return c
 }
 
-func streamIn(c garden.Container) error {
+func StreamIn(c garden.Container) error {
 	tarFile, err := os.Open("../bin/consume.tgz")
 	Expect(err).ShouldNot(HaveOccurred())
 	defer tarFile.Close()
@@ -185,7 +185,7 @@ var _ = Describe("Process limits", func() {
 				container = createContainerWithoutConsume()
 				limit := uint64(1024 * 1024)
 				err := container.LimitDisk(garden.DiskLimits{ByteHard: limit})
-				err = streamIn(container)
+				err = StreamIn(container)
 				Expect(err).Should(HaveOccurred())
 				metrics, err := container.Metrics()
 				Expect(err).ShouldNot(HaveOccurred())

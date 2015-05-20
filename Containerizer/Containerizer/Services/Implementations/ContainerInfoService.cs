@@ -63,6 +63,10 @@ namespace Containerizer.Services.Implementations
                 CPUStat = new ContainerCPUStatApiModel
                 {
                     Usage = (ulong)info.CpuStat.TotalProcessorTime.TotalMilliseconds
+                },
+                DiskStat = new ContainerDiskApiModel
+                {
+                    BytesUsed = container.CurrentDiskUsage()
                 }
             };
         }

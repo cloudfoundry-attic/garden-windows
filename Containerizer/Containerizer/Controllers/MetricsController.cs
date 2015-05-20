@@ -28,12 +28,12 @@ namespace Containerizer.Controllers
         [HttpGet]
         public IHttpActionResult Show(string handle)
         {
-            var info = containerInfoService.GetMetricsByHandle(handle);
-            if (info == null)
+            var metrics = containerInfoService.GetMetricsByHandle(handle);
+            if (metrics == null)
             {
                 return ResponseMessage(Request.CreateResponse(System.Net.HttpStatusCode.NotFound, string.Format("container does not exist: {0}", handle)));
             }
-            return Json(info);
+            return Json(metrics);
         }
     }
 }
