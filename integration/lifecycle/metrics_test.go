@@ -38,4 +38,35 @@ var _ = Describe("Container Metrics", func() {
 			Expect(metrics.DiskStat.BytesUsed).To(BeNumerically(">", 0), "Expected Disk Usage to be > 0")
 		})
 	})
+
+	Describe("for many containers", func() {
+		var handles []string
+		BeforeEach(func() {
+			container1, err := client.Create(garden.ContainerSpec{})
+			Expect(err).ToNot(HaveOccurred())
+			StreamIn(container1)
+			container2, err := client.Create(garden.ContainerSpec{})
+			Expect(err).ToNot(HaveOccurred())
+			StreamIn(container2)
+			handles = []string{container1.Handle(), container2.Handle()}
+		})
+
+		Describe(".BulkMetrics", func() {
+			It("returns container metrics for the specified handles", func() {
+				containers, err := client.Containers(nil)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(containers).To(HaveLen(2))
+
+				bulkMetrics, err := client.BulkMetrics(handles)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(bulkMetrics).To(HaveLen(2))
+				for _, containerMetricsEntry := range bulkMetrics {
+					Expect(containerMetricsEntry.Err).ToNot(HaveOccurred())
+					Expect(containerMetricsEntry.Metrics.MemoryStat.TotalRss).To(BeNumerically(">", 0))
+					Expect(containerMetricsEntry.Metrics.CPUStat.Usage).To(BeNumerically(">", 0))
+					Expect(containerMetricsEntry.Metrics.DiskStat.BytesUsed).To(BeNumerically(">", 0))
+				}
+			})
+		})
+	})
 })
