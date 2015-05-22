@@ -75,7 +75,7 @@ var _ = Describe("Process limits", func() {
 			})
 		})
 
-		Describe("a cpu limit", func() {
+		XDescribe("a cpu limit", func() {
 			var containers [2]garden.Container
 
 			BeforeEach(func() {
