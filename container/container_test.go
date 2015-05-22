@@ -664,7 +664,7 @@ var _ = Describe("container", func() {
 				Expect(exitStatus.Err.Error()).To(Equal("An Error Message"))
 
 				close(done)
-			}, 0.2)
+			}, 10)
 
 			It("closes the WebSocketOpen channel on the proc", func() {
 				proc, err := container.Run(garden.ProcessSpec{}, garden.ProcessIO{})
