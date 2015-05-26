@@ -5,10 +5,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
+using System.Threading;
 using Microsoft.Web.Administration;
 using Newtonsoft.Json.Linq;
 using IronFrame;
@@ -99,7 +101,7 @@ namespace Containerizer.Tests.Specs
                 process.StartInfo.CreateNoWindow = true;
                 process.StartInfo.FileName = Path.Combine(Helpers.AssemblyDirectory, "..", "..", "..", "Containerizer", "bin", "Containerizer.exe");
                 process.StartInfo.Arguments = ExternalIP + " " + Port.ToString();
-                process.Start();
+                Retry.Do(() => process.Start(), TimeSpan.FromSeconds(1), 5);
                 job.AddProcess(process.Handle);
                 process.StandardOutput.ReadLine().should_start_with("SUCCESS");
             }
@@ -149,6 +151,44 @@ namespace Containerizer.Tests.Specs
                 isAdmin = false;
             }
             if (!isAdmin) { throw new Exception("You will need to run the tests with Administrator Privileges"); }
+        }
+
+        public static class Retry
+        {
+            public static void Do(
+                Action action,
+                TimeSpan retryInterval,
+                int retryCount = 3)
+            {
+                Do<object>(() =>
+                {
+                    action();
+                    return null;
+                }, retryInterval, retryCount);
+            }
+
+            public static T Do<T>(
+                Func<T> action,
+                TimeSpan retryInterval,
+                int retryCount = 3)
+            {
+                var exceptions = new List<Exception>();
+
+                for (int retry = 0; retry < retryCount; retry++)
+                {
+                    try
+                    {
+                        return action();
+                    }
+                    catch (Exception ex)
+                    {
+                        exceptions.Add(ex);
+                        Thread.Sleep(retryInterval);
+                    }
+                }
+
+                throw new AggregateException(exceptions);
+            }
         }
     }
 }
