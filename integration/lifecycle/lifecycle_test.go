@@ -49,15 +49,18 @@ var _ = Describe("Lifecycle", func() {
 		})
 
 		It("can be signaled", func(done Done) {
-			tarFile, err := os.Open("../bin/loop.tgz")
-			Expect(err).ShouldNot(HaveOccurred())
-			defer tarFile.Close()
+			for _, f := range []string{"../bin/loop.tgz", "../bin/launcher.tgz"} {
+				tarFile, err := os.Open(f)
+				Expect(err).ShouldNot(HaveOccurred())
+				defer tarFile.Close()
 
-			err = c.StreamIn("bin", tarFile)
-			Expect(err).ShouldNot(HaveOccurred())
+				err = c.StreamIn("bin", tarFile)
+				Expect(err).ShouldNot(HaveOccurred())
+			}
 
 			process, err := c.Run(garden.ProcessSpec{
-				Path: "bin/loop.exe",
+				Path: "bin/launcher.exe",
+				Args: []string{"bin/loop.exe"},
 			}, garden.ProcessIO{})
 			Expect(err).ShouldNot(HaveOccurred())
 			go func() {
