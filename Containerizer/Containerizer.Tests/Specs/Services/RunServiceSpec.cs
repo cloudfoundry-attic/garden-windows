@@ -163,6 +163,14 @@ namespace Containerizer.Tests.Specs.Services
 
                 };
 
+                it["sets ENV[USERPROFILE]"] = () =>
+                {
+                    containerMock.Setup(x => x.Directory.UserPath).Returns(@"E:\Fred");
+
+                    runService.Run(websocketMock.Object, new ApiProcessSpec());
+                    containerMock.Verify(x => x.Run(It.Is((ProcessSpec p) => p.Environment["USERPROFILE"] == @"E:\Fred"), It.IsAny<IProcessIO>()));
+                };
+
                 context["when no container port is in the request"] = () =>
                 {
                     it["ENV[PORT] remains unset"] = () =>

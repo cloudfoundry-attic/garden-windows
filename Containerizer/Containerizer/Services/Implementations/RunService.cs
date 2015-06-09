@@ -92,6 +92,7 @@ namespace Containerizer.Services.Implementations
                 ExecutablePath = apiProcessSpec.Path,
                 Environment = new Dictionary<string, string>
                     {
+                        { "USERPROFILE", container.Directory.UserPath },
                         { "ARGJSON", JsonConvert.SerializeObject(apiProcessSpec.Args) }
                     },
                 Arguments = apiProcessSpec.Args
