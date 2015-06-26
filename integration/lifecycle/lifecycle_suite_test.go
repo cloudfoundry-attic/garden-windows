@@ -4,14 +4,12 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path"
 	"strconv"
 	"syscall"
 	"testing"
 	"time"
 
 	"github.com/cloudfoundry-incubator/garden"
-	"github.com/cloudfoundry/loggregator/src/bitbucket.org/kardianos/osext"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
@@ -19,6 +17,7 @@ import (
 	"github.com/tedsuo/ifrit/ginkgomon"
 	"github.com/tedsuo/ifrit/grouper"
 
+	"github.com/cloudfoundry-incubator/garden-windows/integration/helpers"
 	garden_runner "github.com/cloudfoundry-incubator/garden-windows/integration/runner"
 )
 
@@ -67,35 +66,17 @@ func restartGarden(argv ...string) {
 	startGarden(argv...)
 }
 
-func ensureGardenRunning() {
-	if err := client.Ping(); err != nil {
-		client = startGarden()
-	}
-	Expect(client.Ping()).ShouldNot(HaveOccurred())
-}
-
 func TestLifecycle(t *testing.T) {
 
 	SynchronizedBeforeSuite(func() []byte {
-		currentDir, err := osext.ExecutableFolder()
-		Expect(err).ShouldNot(HaveOccurred())
-		containerizerDir := path.Join(currentDir, "..", "..", "..", "Containerizer", "Containerizer")
-		windir := os.Getenv("WINDIR")
-		msbuild := path.Join(windir, "Microsoft.NET", "Framework64", "v4.0.30319", "MSBuild")
-		cmd := exec.Command(msbuild, `Containerizer.csproj`)
-		cmd.Dir = containerizerDir
-		Expect(cmd.Run()).To(Succeed(), "Cannot build containerizer. Make sure there are no compilation errors")
-		containerizerBin = path.Join(containerizerDir, "bin", "Containerizer.exe")
-		Expect(containerizerBin).To(BeAnExistingFile())
-		gardenPath, err := gexec.Build("github.com/cloudfoundry-incubator/garden-windows", "-a", "-race", "-tags", "daemon")
-		Expect(err).ShouldNot(HaveOccurred())
+		containerizerBin = helpers.BuildContainerizer()
+		gardenPath := helpers.BuildGarden()
 		return []byte(gardenPath)
 	}, func(gardenPath []byte) {
 		gardenBin = string(gardenPath)
 	})
 
 	AfterEach(func() {
-		ensureGardenRunning()
 		gardenProcess.Signal(syscall.SIGKILL)
 		Eventually(gardenProcess.Wait(), 10).Should(Receive())
 	})
