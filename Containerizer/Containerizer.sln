@@ -17,10 +17,15 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Logger", "Logger\Logger.csproj", "{642C3C03-E002-4A16-8117-5EBAE8ACB9A4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IronFrame", "IronFrame\IronFrame\IronFrame.csproj", "{5DE07F79-B758-4A04-B908-626E7577313E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{61B46A01-4911-4E32-9065-C1ECD7650AFA} = {61B46A01-4911-4E32-9065-C1ECD7650AFA}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IronFrame.Shared", "IronFrame\IronFrame.Shared\IronFrame.Shared.csproj", "{CB7BA555-21FD-4C57-A629-A925B6A83A31}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IronFrame.Host", "IronFrame\IronFrame.Host\IronFrame.Host.csproj", "{6E4DD8FC-91E8-4C70-946D-4C37DF84C8CF}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Guard", "IronFrame\Guard\Guard.vcxproj", "{61B46A01-4911-4E32-9065-C1ECD7650AFA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -120,6 +125,20 @@ Global
 		{6E4DD8FC-91E8-4C70-946D-4C37DF84C8CF}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{6E4DD8FC-91E8-4C70-946D-4C37DF84C8CF}.Release|x64.ActiveCfg = Release|Any CPU
 		{6E4DD8FC-91E8-4C70-946D-4C37DF84C8CF}.Release|x86.ActiveCfg = Release|Any CPU
+		{61B46A01-4911-4E32-9065-C1ECD7650AFA}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{61B46A01-4911-4E32-9065-C1ECD7650AFA}.Debug|ARM.ActiveCfg = Debug|x64
+		{61B46A01-4911-4E32-9065-C1ECD7650AFA}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
+		{61B46A01-4911-4E32-9065-C1ECD7650AFA}.Debug|Mixed Platforms.Build.0 = Debug|x64
+		{61B46A01-4911-4E32-9065-C1ECD7650AFA}.Debug|x64.ActiveCfg = Debug|x64
+		{61B46A01-4911-4E32-9065-C1ECD7650AFA}.Debug|x64.Build.0 = Debug|x64
+		{61B46A01-4911-4E32-9065-C1ECD7650AFA}.Debug|x86.ActiveCfg = Debug|x64
+		{61B46A01-4911-4E32-9065-C1ECD7650AFA}.Release|Any CPU.ActiveCfg = Release|x64
+		{61B46A01-4911-4E32-9065-C1ECD7650AFA}.Release|ARM.ActiveCfg = Release|x64
+		{61B46A01-4911-4E32-9065-C1ECD7650AFA}.Release|Mixed Platforms.ActiveCfg = Release|x64
+		{61B46A01-4911-4E32-9065-C1ECD7650AFA}.Release|Mixed Platforms.Build.0 = Release|x64
+		{61B46A01-4911-4E32-9065-C1ECD7650AFA}.Release|x64.ActiveCfg = Release|x64
+		{61B46A01-4911-4E32-9065-C1ECD7650AFA}.Release|x64.Build.0 = Release|x64
+		{61B46A01-4911-4E32-9065-C1ECD7650AFA}.Release|x86.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

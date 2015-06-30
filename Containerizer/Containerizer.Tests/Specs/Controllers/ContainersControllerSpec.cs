@@ -125,7 +125,7 @@ namespace Containerizer.Tests.Specs.Controllers
                     it["sets ActiveProcessLimit on the Container"] = () =>
                     {
                         containersController.Create(new ContainerSpecApiModel {Handle = "thisHandle"});
-                        mockContainer.Verify(x => x.SetActiveProcessLimit(5));
+                        mockContainer.Verify(x => x.SetActiveProcessLimit(10));
                     };
 
                     it["sets PriorityClass on the Container"] = () =>

@@ -31,7 +31,7 @@ namespace Containerizer.Controllers
     {
         private readonly IContainerService containerService;
         private readonly ILogger logger;
-        private const uint CONTAINER_ACTIVE_PROCESS_LIMIT = 5;
+        private const uint CONTAINER_ACTIVE_PROCESS_LIMIT = 10;
 
         public ContainersController(IContainerService containerService, ILogger logger)
         {
