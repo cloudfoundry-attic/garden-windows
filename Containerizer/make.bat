@@ -13,6 +13,7 @@ popd
 
 rmdir /S /Q packages
 bin\nuget restore || exit /b 1
+MSBuild IronFrame\Guard\Guard.vcxproj /t:Rebuild /p:Platform=x64 /p:Configuration=Release
 MSBuild Containerizer\Containerizer.csproj /t:Rebuild /p:Configuration=Release || exit /b 1
 MSBuild Containerizer.Tests\Containerizer.Tests.csproj /t:Rebuild /p:Configuration=Release || exit /b 1
 packages\nspec.0.9.68\tools\NSpecRunner.exe Containerizer.Tests\bin\Release\Containerizer.Tests.dll || exit /b 1

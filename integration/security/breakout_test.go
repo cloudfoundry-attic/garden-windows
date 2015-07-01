@@ -54,7 +54,7 @@ var _ = Describe("Breakout", func() {
 				}
 			})
 
-			XIt("is not allowed", func() {
+			It("is not allowed", func() {
 				// TODO: make the executable name unique so to avoid test pollution
 				_, err := container.Run(garden.ProcessSpec{
 					Path: "bin/JobBreakoutTest.exe",
