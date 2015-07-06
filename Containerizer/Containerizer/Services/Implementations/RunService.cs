@@ -15,7 +15,7 @@ namespace Containerizer.Services.Implementations
 
         public void Run(Controllers.IWebSocketEventSender websocket, Models.ApiProcessSpec apiProcessSpec)
         {
-            container.StartGuard();
+            //container.StartGuard();
 
             var processSpec = NewProcessSpec(apiProcessSpec);
             var info = container.GetInfo();
