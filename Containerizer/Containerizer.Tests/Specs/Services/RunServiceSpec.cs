@@ -47,7 +47,7 @@ namespace Containerizer.Tests.Specs.Services
                     websocketMock.Verify(x => x.SendEvent("pid", "5432"));
                 };
 
-                xit["calls startGuard on the container"] = () =>
+                it["calls startGuard on the container"] = () =>
                 {
                     containerMock.Verify(x => x.StartGuard());
                 };
