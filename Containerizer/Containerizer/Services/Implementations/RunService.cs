@@ -21,7 +21,6 @@ namespace Containerizer.Services.Implementations
             var info = container.GetInfo();
             if (info != null)
             {
-                CopyExecutorEnvVariables(processSpec, info);
                 CopyProcessSpecEnvVariables(processSpec, apiProcessSpec.Env);
                 OverrideEnvPort(processSpec, info);
             }
@@ -108,19 +107,6 @@ namespace Containerizer.Services.Implementations
             {
                 string[] arr = kv.Split(new Char[] { '=' }, 2);
                 processSpec.Environment[arr[0]] = arr[1];
-            }
-        }
-
-        private static void CopyExecutorEnvVariables(ProcessSpec processSpec, ContainerInfo info)
-        {
-            string varsJson = "";
-            if (info.Properties.TryGetValue("executor:env", out varsJson))
-            {
-                var environmentVariables = JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(varsJson);
-                foreach (var dict in environmentVariables)
-                {
-                    processSpec.Environment[dict["name"]] = dict["value"];
-                }
             }
         }
 

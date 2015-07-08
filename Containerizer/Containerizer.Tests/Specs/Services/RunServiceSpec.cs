@@ -121,16 +121,6 @@ namespace Containerizer.Tests.Specs.Services
 
             describe["environment variables"] = () =>
             {
-                it["passes executor:env environment variables to the process"] = () =>
-                {
-                    containerMock.Setup(x => x.GetInfo()).Returns(new ContainerInfo
-                    {
-                        Properties = new System.Collections.Generic.Dictionary<string, string> { { "executor:env", "[{\"name\":\"INSTANCE_GUID\",\"value\":\"ExcitingGuid\"},{\"name\":\"INSTANCE_INDEX\",\"value\":\"12\"}]" } }
-                    });
-                    runService.Run(websocketMock.Object, new ApiProcessSpec());
-                    containerMock.Verify(x => x.Run(It.Is((ProcessSpec p) => p.Environment["INSTANCE_GUID"] == "ExcitingGuid"), It.IsAny<IProcessIO>()));
-                };
-
                 it["passes processSpec.Env environment variables to the process"] = () =>
                 {
                     containerMock.Setup(x => x.GetInfo()).Returns(new ContainerInfo());
@@ -152,20 +142,6 @@ namespace Containerizer.Tests.Specs.Services
                         Env = new string[] { "FOO=Baz" },
                     });
                     containerMock.Verify(x => x.Run(It.Is((ProcessSpec p) => p.Environment["FOO"] == "Baz"), It.IsAny<IProcessIO>()));
-                };
-
-                it["overrides ENV[PORT] with the hostport matching the requested container port"] = () =>
-                {
-                    containerMock.Setup(x => x.GetInfo()).Returns(new ContainerInfo
-                    {
-                        Properties = new System.Collections.Generic.Dictionary<string, string> { { "executor:env", "[{\"name\":\"PORT\",\"value\":\"8080\"}]" } },
-                    });
-                    containerMock.Setup(x => x.GetProperty("ContainerPort:8080")).Returns("1234");
-
-
-                    runService.Run(websocketMock.Object, new ApiProcessSpec());
-                    containerMock.Verify(x => x.Run(It.Is((ProcessSpec p) => p.Environment["PORT"] == "1234"), It.IsAny<IProcessIO>()));
-
                 };
 
                 it["sets ENV[USERPROFILE]"] = () =>

@@ -47,7 +47,7 @@ namespace Containerizer.Tests.Specs.Features
                     client = process.GetClient();
                 };
 
-                context["when I post a request"] = () =>
+                context["when I post a request without env vars"] = () =>
                 {
                     string handle = null;
                     string propertyKey = "awesome";

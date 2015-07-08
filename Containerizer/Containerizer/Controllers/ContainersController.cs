@@ -74,10 +74,16 @@ namespace Containerizer.Controllers
         [HttpPost]
         public CreateResponse Create(ContainerSpecApiModel spec)
         {
+            if (spec.Env == null)
+            {
+                spec.Env = new List<string>();
+            }
+
             var containerSpec = new ContainerSpec
             {
                 Handle = spec.Handle,
                 Properties = spec.Properties,
+                Environment = ContainerService.EnvsFromList(spec.Env)
             };
 
             try

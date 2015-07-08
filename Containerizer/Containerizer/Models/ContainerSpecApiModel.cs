@@ -17,5 +17,7 @@ namespace Containerizer.Models
             get;
             set;
         }
+
+        public List<String> Env { get; set; } 
     }
 }

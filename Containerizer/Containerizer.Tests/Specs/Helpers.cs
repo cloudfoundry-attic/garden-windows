@@ -55,7 +55,20 @@ namespace Containerizer.Tests.Specs
         public static string CreateContainer(HttpClient client)
         {
             var handle = Guid.NewGuid().ToString();
-            var postTask = client.PostAsync("/api/Containers", new StringContent("{Handle: \"" + handle + "\"}", Encoding.UTF8, "application/json"));
+            var postTask = client.PostAsync("/api/Containers", new StringContent("{Handle: \"" + handle + "\", Env: []}", Encoding.UTF8, "application/json"));
+            postTask.Wait();
+            var postResult = postTask.Result;
+            var readTask = postResult.Content.ReadAsStringAsync();
+            readTask.Wait();
+            var response = readTask.Result;
+            var json = JObject.Parse(response);
+            return json["handle"].ToString();
+        }
+
+        public static string CreateContainerWithGUID(HttpClient client)
+        {
+            var handle = Guid.NewGuid().ToString();
+            var postTask = client.PostAsync("/api/Containers", new StringContent("{Handle: \"" + handle + "\", Env: [\"INSTANCE_GUID=ExcitingGuid\"]}", Encoding.UTF8, "application/json"));
             postTask.Wait();
             var postResult = postTask.Result;
             var readTask = postResult.Content.ReadAsStringAsync();

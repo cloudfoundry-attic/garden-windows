@@ -28,7 +28,7 @@ namespace Containerizer.Tests.Specs.Features
             {
                 process = Helpers.CreateContainerizerProcess();
                 httpClient = process.GetClient();
-                handle = Helpers.CreateContainer(httpClient);
+                handle = Helpers.CreateContainerWithGUID(httpClient);
             };
             after = () =>
             {
