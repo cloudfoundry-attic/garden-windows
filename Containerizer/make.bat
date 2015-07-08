@@ -4,7 +4,6 @@ SET PATH=%PATH%;%DEVENV_PATH%;%WINDIR%\Microsoft.NET\Framework64\v4.0.30319
 where msbuild
 if errorLevel 1 ( echo "msbuild was not found on PATH" && exit /b 1 )
 
-git submodule update --init --recursive
 pushd IronFrame || exit /b 1
   ..\bin\nuget restore || exit /b 1
   devenv IronFrame.sln /build "Release" || exit /b 1
