@@ -117,7 +117,7 @@ var _ = Describe("container", func() {
 			})
 
 			It("makes a call out to an external service", func() {
-				err := container.StreamIn("a/path", strings.NewReader("stuff"))
+				err := container.StreamIn(garden.StreamInSpec{Path: "a/path", TarStream: strings.NewReader("stuff")})
 				Expect(err).NotTo(HaveOccurred())
 				Expect(server.ReceivedRequests()).Should(HaveLen(1))
 			})
@@ -136,7 +136,7 @@ var _ = Describe("container", func() {
 			})
 
 			It("makes a call out to an external service", func() {
-				err := container.StreamIn("a/path", strings.NewReader("stuff"))
+				err := container.StreamIn(garden.StreamInSpec{Path: "a/path", TarStream: strings.NewReader("stuff")})
 				Expect(err).To(HaveOccurred())
 			})
 		})
@@ -345,7 +345,7 @@ var _ = Describe("container", func() {
 			})
 
 			It("makes a call out to an external service", func() {
-				stream, err := container.StreamOut("a/path")
+				stream, err := container.StreamOut(garden.StreamOutSpec{Path: "a/path"})
 				Expect(err).NotTo(HaveOccurred())
 				defer stream.Close()
 				Expect(server.ReceivedRequests()).Should(HaveLen(1))
@@ -367,7 +367,7 @@ var _ = Describe("container", func() {
 			})
 
 			It("returns an error", func() {
-				_, err := container.StreamOut("a/path")
+				_, err := container.StreamOut(garden.StreamOutSpec{Path: "a/path"})
 				Expect(err).To(HaveOccurred())
 			})
 		})

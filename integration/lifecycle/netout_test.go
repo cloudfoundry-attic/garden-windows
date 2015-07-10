@@ -22,7 +22,7 @@ var _ = Describe("NetOut", func() {
 		tarFile, err := os.Open("../bin/connect_to_remote_url.tgz")
 		Expect(err).ShouldNot(HaveOccurred())
 		defer tarFile.Close()
-		err = c.StreamIn("bin", tarFile)
+		err = c.StreamIn(garden.StreamInSpec{Path: "bin", TarStream: tarFile})
 		Expect(err).ShouldNot(HaveOccurred())
 	})
 

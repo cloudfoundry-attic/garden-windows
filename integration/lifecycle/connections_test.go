@@ -50,7 +50,7 @@ var _ = Describe("Websocket connections", func() {
 		tarFile, err := os.Open("../bin/connect_to_remote_url.tgz")
 		Expect(err).ShouldNot(HaveOccurred())
 		defer tarFile.Close()
-		err = c.StreamIn("bin", tarFile)
+		err = c.StreamIn(garden.StreamInSpec{Path: "bin", TarStream: tarFile})
 		Expect(err).ShouldNot(HaveOccurred())
 		process, err := c.Run(garden.ProcessSpec{
 			Path: "bin/connect_to_remote_url.exe",

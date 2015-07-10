@@ -31,7 +31,7 @@ func StreamIn(c garden.Container) error {
 	tarFile, err := os.Open("../../greenhouse-security-fixtures/output/SecurityFixtures.tgz")
 	Expect(err).ShouldNot(HaveOccurred())
 	defer tarFile.Close()
-	return c.StreamIn("bin", tarFile)
+	return c.StreamIn(garden.StreamInSpec{Path: "bin", TarStream: tarFile})
 }
 
 var _ = XDescribe("Breakout", func() {

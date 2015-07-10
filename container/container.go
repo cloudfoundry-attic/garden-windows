@@ -79,13 +79,13 @@ func (container *container) streamUrl(paramName, fileName string) string {
 	return base.String()
 }
 
-func (container *container) StreamIn(dstPath string, tarStream io.Reader) error {
-	url := container.streamUrl("destination", dstPath)
-	return container.client.Put(url, tarStream, "application/octet-stream")
+func (container *container) StreamIn(spec garden.StreamInSpec) error {
+	url := container.streamUrl("destination", spec.Path)
+	return container.client.Put(url, spec.TarStream, "application/octet-stream")
 }
 
-func (container *container) StreamOut(srcPath string) (io.ReadCloser, error) {
-	url := container.streamUrl("source", srcPath)
+func (container *container) StreamOut(spec garden.StreamOutSpec) (io.ReadCloser, error) {
+	url := container.streamUrl("source", spec.Path)
 	return container.client.ReadBody(url)
 }
 

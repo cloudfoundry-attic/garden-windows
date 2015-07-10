@@ -31,7 +31,7 @@ var _ = Describe("Lifecycle", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			defer tarFile.Close()
 
-			err = c.StreamIn("bin", tarFile)
+			err = c.StreamIn(garden.StreamInSpec{Path: "bin", TarStream: tarFile})
 			Expect(err).ShouldNot(HaveOccurred())
 
 			buf := make([]byte, 0, 1024*1024)
@@ -54,7 +54,7 @@ var _ = Describe("Lifecycle", func() {
 				Expect(err).ShouldNot(HaveOccurred())
 				defer tarFile.Close()
 
-				err = c.StreamIn("bin", tarFile)
+				err = c.StreamIn(garden.StreamInSpec{Path: "bin", TarStream: tarFile})
 				Expect(err).ShouldNot(HaveOccurred())
 			}
 
