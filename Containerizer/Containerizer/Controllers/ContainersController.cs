@@ -61,7 +61,7 @@ namespace Containerizer.Controllers
                             return exists && propValue == p.Value;
                         });
                     }
-                    catch (InvalidOperationException ex)
+                    catch (InvalidOperationException)
                     {
                         return false;
                     }
@@ -97,7 +97,7 @@ namespace Containerizer.Controllers
                     Handle = container.Handle
                 };
             }
-            catch (PrincipalExistsException ex)
+            catch (PrincipalExistsException)
             {
                 throw new HttpResponseException(Request.CreateResponse(HttpStatusCode.Conflict,
                     string.Format("handle already exists: {0}", spec.Handle)));

@@ -132,7 +132,7 @@ namespace Containerizer.Tests.Specs.Features
                     messages.Add(message);
                 }
             }
-            catch (Exception e) { }
+            catch (Exception) { }
         }
     }
 }
