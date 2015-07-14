@@ -2,18 +2,41 @@ package main
 
 import (
 	"fmt"
-	"net/http"
+	"net"
 	"os"
-	"time"
+
+	"github.com/miekg/dns"
 )
 
 func main() {
-	client := http.Client{
-		Timeout: time.Duration(1 * time.Second),
+	address := os.Getenv("ADDRESS")
+	fmt.Println("requesting", address)
+	if os.Getenv("PROTOCOL") == "udp" {
+		udp(address)
+	} else {
+		tcp(address)
 	}
-	response, err := client.Get(os.Getenv("URL"))
-	if err != nil || response.StatusCode != 200 {
+}
+
+func tcp(address string) {
+	_, err := net.Dial("tcp", address)
+	if err != nil {
+		fmt.Println(err)
 		os.Exit(1)
 	}
-	fmt.Printf("Connected successfully to %s", os.Getenv("URL"))
+	fmt.Printf("Connected successfully to %s", address)
+}
+
+func udp(address string) {
+	m := new(dns.Msg)
+	m.SetQuestion("google.com.", dns.TypeA)
+	ret, err := dns.Exchange(m, address)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	if t, ok := ret.Answer[0].(*dns.A); ok {
+		fmt.Println(t)
+		fmt.Printf("Connected successfully to %s", address)
+	}
 }

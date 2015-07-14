@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/cloudfoundry-incubator/garden"
+	"github.com/cloudfoundry-incubator/garden-windows/integration/helpers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -13,6 +14,10 @@ import (
 var _ = Describe("NetOut", func() {
 	var c garden.Container
 	var err error
+	var udpPort uint16 = 53
+	var tcpPort uint16 = 80
+	googleIPAddress := "74.125.226.164"
+	googleDNSServer := "8.8.8.8"
 
 	JustBeforeEach(func() {
 		client = startGarden()
@@ -30,6 +35,16 @@ var _ = Describe("NetOut", func() {
 		err := client.Destroy(c.Handle())
 		Expect(err).ShouldNot(HaveOccurred())
 	})
+
+	testConnection := func(protocol, address string, port uint16) (garden.Process, error) {
+		return c.Run(garden.ProcessSpec{
+			Path: "bin/connect_to_remote_url.exe",
+			Env: []string{
+				fmt.Sprintf("PROTOCOL=%v", protocol),
+				fmt.Sprintf("ADDRESS=%v:%v", address, port),
+			},
+		}, garden.ProcessIO{})
+	}
 
 	openPort := func(proto garden.Protocol, port uint16, ip string) {
 		rule := garden.NetOutRule{
@@ -60,104 +75,112 @@ var _ = Describe("NetOut", func() {
 	Describe("netout", func() {
 		Describe("when the All protocol is used", func() {
 			It("allow both tcp and udp connections", func() {
-				var dnsAndHttpPort uint16 = 53
 
-				openPort(garden.ProtocolAll, dnsAndHttpPort, "")
+				helpers.AssertProcessExitsWith(1, func() (garden.Process, error) {
+					return testConnection("tcp", googleIPAddress, tcpPort)
+				})
+				openPort(garden.ProtocolAll, tcpPort, "")
+				helpers.AssertProcessExitsWith(0, func() (garden.Process, error) {
+					return testConnection("tcp", googleIPAddress, tcpPort)
+				})
 
-				process, err := c.Run(garden.ProcessSpec{
-					Path: "bin/connect_to_remote_url.exe",
-					Env:  []string{fmt.Sprintf("URL=%v", "http://portquiz.net:53")},
-				}, garden.ProcessIO{})
-				Expect(err).ShouldNot(HaveOccurred())
-				exitCode, err := process.Wait()
-				Expect(err).ShouldNot(HaveOccurred())
-				Expect(exitCode).To(Equal(0))
+				helpers.AssertProcessExitsWith(1, func() (garden.Process, error) {
+					return testConnection("udp", googleDNSServer, udpPort)
+				})
+				openPort(garden.ProtocolAll, udpPort, "")
+				helpers.AssertEventuallyProcessExitsWith(0, func() (garden.Process, error) {
+					return testConnection("udp", googleDNSServer, udpPort)
+				})
 			})
-		})
 
-		It("propogates errors", func() {
-			err := c.NetOut(garden.NetOutRule{
-				Protocol: garden.ProtocolTCP,
-				Networks: []garden.IPRange{
-					{
-						Start: net.ParseIP("1.2.3.4"),
-						End:   net.ParseIP("1.2.3.1"),
+			It("propogates errors", func() {
+				err := c.NetOut(garden.NetOutRule{
+					Protocol: garden.ProtocolTCP,
+					Networks: []garden.IPRange{
+						{
+							Start: net.ParseIP("1.2.3.4"),
+							End:   net.ParseIP("1.2.3.1"),
+						},
 					},
-				},
+				})
+				Expect(err).To(HaveOccurred())
 			})
-			Expect(err).To(HaveOccurred())
-		})
-	})
-
-	Describe("outbound tcp traffic", func() {
-		hostaddr := "178.33.250.62"
-		var port uint16 = 9090
-		httpUrl := fmt.Sprintf("http://%s:%d", hostaddr, port)
-
-		It("is disabled by default", func() {
-			process, err := c.Run(garden.ProcessSpec{
-				Path: "bin/connect_to_remote_url.exe",
-				Env:  []string{fmt.Sprintf("URL=%v", httpUrl)},
-			}, garden.ProcessIO{})
-			Expect(err).ShouldNot(HaveOccurred())
-			exitCode, err := process.Wait()
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(exitCode).ToNot(Equal(0))
 		})
 
-		It("can be allowed by whitelisting ip addresses", func() {
-			openPort(garden.ProtocolTCP, 0, hostaddr)
+		Describe("outbound tcp traffic", func() {
+			blockedGoogleIPAddress := "74.125.226.168"
 
-			process, err := c.Run(garden.ProcessSpec{
-				Path: "bin/connect_to_remote_url.exe",
-				Env:  []string{fmt.Sprintf("URL=%v", httpUrl)},
-			}, garden.ProcessIO{})
-			Expect(err).ShouldNot(HaveOccurred())
-			exitCode, err := process.Wait()
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(exitCode).To(Equal(0))
+			It("is disabled by default", func() {
+				helpers.AssertProcessExitsWith(1, func() (garden.Process, error) {
+					return testConnection("tcp", googleIPAddress, tcpPort)
+				})
+			})
+
+			It("can be allowed by whitelisting ip addresses", func() {
+				helpers.AssertProcessExitsWith(1, func() (garden.Process, error) {
+					return testConnection("tcp", googleIPAddress, tcpPort)
+				})
+
+				openPort(garden.ProtocolTCP, 0, googleIPAddress)
+
+				helpers.AssertProcessExitsWith(0, func() (garden.Process, error) {
+					return testConnection("tcp", googleIPAddress, tcpPort)
+				})
+
+				helpers.AssertProcessExitsWith(1, func() (garden.Process, error) {
+					return testConnection("tcp", blockedGoogleIPAddress, tcpPort)
+				})
+			})
+
+			It("can be allowed by whitelisting ports", func() {
+
+				helpers.AssertProcessExitsWith(1, func() (garden.Process, error) {
+					return testConnection("tcp", googleIPAddress, tcpPort)
+				})
+
+				openPort(garden.ProtocolTCP, tcpPort, "")
+
+				helpers.AssertProcessExitsWith(0, func() (garden.Process, error) {
+					return testConnection("tcp", googleIPAddress, tcpPort)
+				})
+
+			})
+
+			It("can be allowed by whitelisting both ip and port", func() {
+				var blockedTCPPort uint16 = 443
+
+				helpers.AssertProcessExitsWith(1, func() (garden.Process, error) {
+					return testConnection("tcp", googleIPAddress, tcpPort)
+				})
+
+				openPort(garden.ProtocolTCP, tcpPort, googleIPAddress)
+
+				helpers.AssertProcessExitsWith(0, func() (garden.Process, error) {
+					return testConnection("tcp", googleIPAddress, tcpPort)
+				})
+
+				helpers.AssertProcessExitsWith(1, func() (garden.Process, error) {
+					return testConnection("tcp", blockedGoogleIPAddress, tcpPort)
+				})
+
+				helpers.AssertProcessExitsWith(1, func() (garden.Process, error) {
+					return testConnection("tcp", googleIPAddress, blockedTCPPort)
+				})
+			})
 		})
 
-		It("can be allowed by whitelisting ports", func() {
-			openPort(garden.ProtocolTCP, port, "")
+		Describe("outbound udp traffic", func() {
+			It("can be allowed by whitelisting udp ports", func() {
 
-			process, err := c.Run(garden.ProcessSpec{
-				Path: "bin/connect_to_remote_url.exe",
-				Env:  []string{fmt.Sprintf("URL=%v", httpUrl)},
-			}, garden.ProcessIO{})
-			Expect(err).ShouldNot(HaveOccurred())
-			exitCode, err := process.Wait()
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(exitCode).To(Equal(0))
-		})
+				helpers.AssertProcessExitsWith(1, func() (garden.Process, error) {
+					return testConnection("udp", googleDNSServer, udpPort)
+				})
+				openPort(garden.ProtocolUDP, udpPort, "")
 
-		It("can be allowed by whitelisting both ip and port", func() {
-			openPort(garden.ProtocolTCP, port, hostaddr)
-
-			process, err := c.Run(garden.ProcessSpec{
-				Path: "bin/connect_to_remote_url.exe",
-				Env:  []string{fmt.Sprintf("URL=%v", httpUrl)},
-			}, garden.ProcessIO{})
-			Expect(err).ShouldNot(HaveOccurred())
-			exitCode, err := process.Wait()
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(exitCode).To(Equal(0))
-		})
-	})
-
-	Describe("outbound udp traffic", func() {
-		It("can be allowed by whitelisting udp ports", func() {
-			openPort(garden.ProtocolUDP, 53, "")
-			openPort(garden.ProtocolTCP, 9090, "")
-
-			process, err := c.Run(garden.ProcessSpec{
-				Path: "bin/connect_to_remote_url.exe",
-				Env:  []string{fmt.Sprintf("URL=%v", "http://portquiz.net:9090")},
-			}, garden.ProcessIO{})
-			Expect(err).ShouldNot(HaveOccurred())
-			exitCode, err := process.Wait()
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(exitCode).To(Equal(0))
+				helpers.AssertEventuallyProcessExitsWith(0, func() (garden.Process, error) {
+					return testConnection("udp", googleDNSServer, udpPort)
+				})
+			})
 		})
 	})
 })
