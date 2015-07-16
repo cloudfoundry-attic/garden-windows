@@ -78,7 +78,7 @@ namespace Containerizer.Controllers
                 return NotFound();
             }
 
-            container.LimitCpu(limits.Weight);
+            //container.LimitCpu(limits.Weight);
             return Ok();
         }
 
