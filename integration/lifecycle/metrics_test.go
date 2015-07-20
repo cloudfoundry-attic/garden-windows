@@ -33,7 +33,7 @@ var _ = Describe("Container Metrics", func() {
 			metrics, err := container.Metrics()
 			Expect(err).ToNot(HaveOccurred())
 
-			Expect(metrics.MemoryStat.TotalRss).To(BeNumerically(">", 0), "Expected Memory Usage to be > 0")
+			Expect(metrics.MemoryStat.TotalUsageTowardLimit).To(BeNumerically(">", 0), "Expected Memory Usage to be > 0")
 			Expect(metrics.CPUStat.Usage).To(BeNumerically(">", 0), "Expected CPU Usage to be > 0")
 			Expect(metrics.DiskStat.BytesUsed).To(BeNumerically(">", 0), "Expected Disk Usage to be > 0")
 		})
@@ -62,7 +62,7 @@ var _ = Describe("Container Metrics", func() {
 				Expect(bulkMetrics).To(HaveLen(2))
 				for _, containerMetricsEntry := range bulkMetrics {
 					Expect(containerMetricsEntry.Err).ToNot(HaveOccurred())
-					Expect(containerMetricsEntry.Metrics.MemoryStat.TotalRss).To(BeNumerically(">", 0))
+					Expect(containerMetricsEntry.Metrics.MemoryStat.TotalUsageTowardLimit).To(BeNumerically(">", 0))
 					Expect(containerMetricsEntry.Metrics.CPUStat.Usage).To(BeNumerically(">", 0))
 					Expect(containerMetricsEntry.Metrics.DiskStat.BytesUsed).To(BeNumerically(">", 0))
 				}

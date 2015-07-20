@@ -63,7 +63,7 @@ namespace Containerizer.Models
 
     public class ContainerMemoryStatApiModel
     {
-        [JsonProperty("TotalRss")]
+        [JsonProperty("TotalUsageTowardLimit")]
         public ulong TotalBytesUsed;
     }
 

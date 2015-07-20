@@ -209,8 +209,8 @@ var _ = Describe("backend", func() {
 					ghttp.VerifyRequest("POST", "/api/bulkcontainermetrics"),
 					ghttp.VerifyJSONRepresenting([]string{"handle1", "handle2"}),
 					ghttp.RespondWith(200, `{
-						"handle1": { "Metrics": { "MemoryStat": { "TotalRss": 1234 }}},
-						"handle2": { "Metrics": { "MemoryStat": { "TotalRss": 5678 }}}
+						"handle1": { "Metrics": { "MemoryStat": { "TotalUsageTowardLimit": 1234 }}},
+						"handle2": { "Metrics": { "MemoryStat": { "TotalUsageTowardLimit": 5678 }}}
 					}`),
 				),
 			)
@@ -225,10 +225,10 @@ var _ = Describe("backend", func() {
 		It("returns the containers metrics", func() {
 			metrics, err := dotNetBackend.BulkMetrics([]string{"handle1", "handle2"})
 			Expect(err).NotTo(HaveOccurred())
-			Expect(metrics["handle1"].Metrics.MemoryStat.TotalRss).Should(Equal(uint64(1234)))
+			Expect(metrics["handle1"].Metrics.MemoryStat.TotalUsageTowardLimit).Should(Equal(uint64(1234)))
 			Expect(metrics["handle1"].Err).ShouldNot(HaveOccurred())
 
-			Expect(metrics["handle2"].Metrics.MemoryStat.TotalRss).Should(Equal(uint64(5678)))
+			Expect(metrics["handle2"].Metrics.MemoryStat.TotalUsageTowardLimit).Should(Equal(uint64(5678)))
 			Expect(metrics["handle2"].Err).ShouldNot(HaveOccurred())
 		})
 

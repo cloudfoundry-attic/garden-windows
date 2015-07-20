@@ -904,7 +904,7 @@ var _ = Describe("container", func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("GET", "/api/containers/containerhandle/metrics"),
-						ghttp.RespondWith(200, `{"MemoryStat":{"TotalRss": 1234}, "DiskStat":{"BytesUsed":3456}, "CPUStat":{"Usage":5678}}`),
+						ghttp.RespondWith(200, `{"MemoryStat":{"TotalUsageTowardLimit": 1234}, "DiskStat":{"BytesUsed":3456}, "CPUStat":{"Usage":5678}}`),
 						func(w http.ResponseWriter, req *http.Request) {
 							req.Body.Close()
 						},
@@ -914,7 +914,7 @@ var _ = Describe("container", func() {
 			It("returns metrics for the container", func() {
 				metrics, err := container.Metrics()
 				Expect(err).NotTo(HaveOccurred())
-				Expect(metrics.MemoryStat.TotalRss).Should(Equal(uint64(1234)))
+				Expect(metrics.MemoryStat.TotalUsageTowardLimit).Should(Equal(uint64(1234)))
 				Expect(metrics.DiskStat.BytesUsed).Should(Equal(uint64(3456)))
 				Expect(metrics.CPUStat.Usage).Should(Equal(uint64(5678)))
 			})
