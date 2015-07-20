@@ -6,10 +6,12 @@ import (
 	"os/exec"
 	"path"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
 	"github.com/cloudfoundry-incubator/garden"
+	"github.com/mitchellh/go-ps"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
 	"github.com/tedsuo/ifrit"
@@ -78,6 +80,34 @@ func StartGarden(gardenBin, containerizerBin string, argv ...string) (ifrit.Proc
 func StopGarden(process ifrit.Process, client garden.Client) {
 	process.Signal(syscall.SIGKILL)
 	Eventually(process.Wait(), 10).Should(Receive())
+}
+
+func KillAllGarden() {
+	processes, err := ps.Processes()
+	Expect(err).ShouldNot(HaveOccurred())
+
+	for _, proc := range processes {
+		if strings.Contains(proc.Executable(), "Garden.exe") {
+			goProc, err := os.FindProcess(proc.Pid())
+			if err == nil {
+				goProc.Kill()
+			}
+		}
+	}
+}
+
+func KillAllContainerizer() {
+	processes, err := ps.Processes()
+	Expect(err).ShouldNot(HaveOccurred())
+
+	for _, proc := range processes {
+		if strings.Contains(proc.Executable(), "Containerizer.exe") {
+			goProc, err := os.FindProcess(proc.Pid())
+			if err == nil {
+				goProc.Kill()
+			}
+		}
+	}
 }
 
 func AssertProcessExitsWith(expectedExitCode int, f func() (garden.Process, error)) {

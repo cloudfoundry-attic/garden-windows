@@ -632,7 +632,7 @@ var _ = Describe("container", func() {
 				MessageType: "close",
 			})
 
-			Eventually(proc.(process.DotNetProcess).StreamOpen).Should(BeClosed())
+			Eventually(proc.(process.DotNetProcess).StreamOpen).Should(BeClosed(), "10s", "0.1s")
 		})
 
 		It("returns the close message as the exit code", func() {

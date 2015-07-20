@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -134,6 +135,22 @@ namespace Containerizer.Tests.Specs
 
         public static ContainerizerProcess CreateContainerizerProcess()
         {
+            foreach (Process p in System.Diagnostics.Process.GetProcessesByName("Containerizer.exe"))
+            {
+                try
+                {
+                    p.Kill();
+                    p.WaitForExit(); // possibly with a timeout
+                }
+                catch (Win32Exception winException)
+                {
+                    // process was terminating or can't be terminated - deal with it
+                }
+                catch (InvalidOperationException invalidException)
+                {
+                    // process has already exited - might be able to let this one go
+                }
+            }
             var port = 48080;
             var process = new ContainerizerProcess(port);
             process.Start();

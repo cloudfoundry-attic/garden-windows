@@ -76,15 +76,15 @@ var _ = Describe("NetOut", func() {
 		Describe("when the All protocol is used", func() {
 			It("allow both tcp and udp connections", func() {
 
-				helpers.AssertProcessExitsWith(1, func() (garden.Process, error) {
+				helpers.AssertEventuallyProcessExitsWith(1, func() (garden.Process, error) {
 					return testConnection("tcp", googleIPAddress, tcpPort)
 				})
 				openPort(garden.ProtocolAll, tcpPort, "")
-				helpers.AssertProcessExitsWith(0, func() (garden.Process, error) {
+				helpers.AssertEventuallyProcessExitsWith(0, func() (garden.Process, error) {
 					return testConnection("tcp", googleIPAddress, tcpPort)
 				})
 
-				helpers.AssertProcessExitsWith(1, func() (garden.Process, error) {
+				helpers.AssertEventuallyProcessExitsWith(1, func() (garden.Process, error) {
 					return testConnection("udp", googleDNSServer, udpPort)
 				})
 				openPort(garden.ProtocolAll, udpPort, "")
@@ -111,36 +111,36 @@ var _ = Describe("NetOut", func() {
 			blockedGoogleIPAddress := "74.125.226.168"
 
 			It("is disabled by default", func() {
-				helpers.AssertProcessExitsWith(1, func() (garden.Process, error) {
+				helpers.AssertEventuallyProcessExitsWith(1, func() (garden.Process, error) {
 					return testConnection("tcp", googleIPAddress, tcpPort)
 				})
 			})
 
 			It("can be allowed by whitelisting ip addresses", func() {
-				helpers.AssertProcessExitsWith(1, func() (garden.Process, error) {
+				helpers.AssertEventuallyProcessExitsWith(1, func() (garden.Process, error) {
 					return testConnection("tcp", googleIPAddress, tcpPort)
 				})
 
 				openPort(garden.ProtocolTCP, 0, googleIPAddress)
 
-				helpers.AssertProcessExitsWith(0, func() (garden.Process, error) {
+				helpers.AssertEventuallyProcessExitsWith(0, func() (garden.Process, error) {
 					return testConnection("tcp", googleIPAddress, tcpPort)
 				})
 
-				helpers.AssertProcessExitsWith(1, func() (garden.Process, error) {
+				helpers.AssertEventuallyProcessExitsWith(1, func() (garden.Process, error) {
 					return testConnection("tcp", blockedGoogleIPAddress, tcpPort)
 				})
 			})
 
 			It("can be allowed by whitelisting ports", func() {
 
-				helpers.AssertProcessExitsWith(1, func() (garden.Process, error) {
+				helpers.AssertEventuallyProcessExitsWith(1, func() (garden.Process, error) {
 					return testConnection("tcp", googleIPAddress, tcpPort)
 				})
 
 				openPort(garden.ProtocolTCP, tcpPort, "")
 
-				helpers.AssertProcessExitsWith(0, func() (garden.Process, error) {
+				helpers.AssertEventuallyProcessExitsWith(0, func() (garden.Process, error) {
 					return testConnection("tcp", googleIPAddress, tcpPort)
 				})
 
@@ -149,21 +149,21 @@ var _ = Describe("NetOut", func() {
 			It("can be allowed by whitelisting both ip and port", func() {
 				var blockedTCPPort uint16 = 443
 
-				helpers.AssertProcessExitsWith(1, func() (garden.Process, error) {
+				helpers.AssertEventuallyProcessExitsWith(1, func() (garden.Process, error) {
 					return testConnection("tcp", googleIPAddress, tcpPort)
 				})
 
 				openPort(garden.ProtocolTCP, tcpPort, googleIPAddress)
 
-				helpers.AssertProcessExitsWith(0, func() (garden.Process, error) {
+				helpers.AssertEventuallyProcessExitsWith(0, func() (garden.Process, error) {
 					return testConnection("tcp", googleIPAddress, tcpPort)
 				})
 
-				helpers.AssertProcessExitsWith(1, func() (garden.Process, error) {
+				helpers.AssertEventuallyProcessExitsWith(1, func() (garden.Process, error) {
 					return testConnection("tcp", blockedGoogleIPAddress, tcpPort)
 				})
 
-				helpers.AssertProcessExitsWith(1, func() (garden.Process, error) {
+				helpers.AssertEventuallyProcessExitsWith(1, func() (garden.Process, error) {
 					return testConnection("tcp", googleIPAddress, blockedTCPPort)
 				})
 			})
@@ -172,7 +172,7 @@ var _ = Describe("NetOut", func() {
 		Describe("outbound udp traffic", func() {
 			It("can be allowed by whitelisting udp ports", func() {
 
-				helpers.AssertProcessExitsWith(1, func() (garden.Process, error) {
+				helpers.AssertEventuallyProcessExitsWith(1, func() (garden.Process, error) {
 					return testConnection("udp", googleDNSServer, udpPort)
 				})
 				openPort(garden.ProtocolUDP, udpPort, "")
