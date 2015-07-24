@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net.WebSockets;
 using System.Text;
@@ -70,13 +71,17 @@ namespace Containerizer.Controllers
 
         public override Task OnMessageReceived(ArraySegment<byte> message, WebSocketMessageType type)
         {
-            var bytes = new UTF8Encoding(true).GetString(message.Array, 0, message.Count);
-            var streamEvent = JsonConvert.DeserializeObject<ProcessStreamEvent>(bytes);
-
-            if (streamEvent.MessageType == "run" && streamEvent.ApiProcessSpec != null)
+            if (message.Count > 0)
             {
-                runService.Run(this, streamEvent.ApiProcessSpec);
+                var bytes = new UTF8Encoding(true).GetString(message.Array, 0, message.Count);
+                var streamEvent = JsonConvert.DeserializeObject<ProcessStreamEvent>(bytes);
+
+                if (streamEvent.MessageType == "run" && streamEvent.ApiProcessSpec != null)
+                {
+                    runService.Run(this, streamEvent.ApiProcessSpec);
+                }
             }
+
             return null;
         }
     }
