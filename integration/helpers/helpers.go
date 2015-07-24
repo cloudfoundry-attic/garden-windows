@@ -83,31 +83,37 @@ func StopGarden(process ifrit.Process, client garden.Client) {
 }
 
 func KillAllGarden() {
-	processes, err := ps.Processes()
-	Expect(err).ShouldNot(HaveOccurred())
+	killAllProcs("garden-windows.exe")
+}
 
-	for _, proc := range processes {
-		if strings.Contains(proc.Executable(), "Garden.exe") {
-			goProc, err := os.FindProcess(proc.Pid())
-			if err == nil {
-				goProc.Kill()
+func killAllProcs(predicateProcName string) {
+	predicateProcName = strings.ToUpper(predicateProcName)
+	for {
+		processes, err := ps.Processes()
+		Expect(err).ShouldNot(HaveOccurred())
+
+		matchingProcExists := false
+
+		for _, proc := range processes {
+			procName := strings.ToUpper(proc.Executable())
+
+			if strings.Contains(procName, predicateProcName) {
+				matchingProcExists = true
+				goProc, err := os.FindProcess(proc.Pid())
+				if err == nil {
+					goProc.Kill()
+				}
 			}
+		}
+
+		if !matchingProcExists {
+			break
 		}
 	}
 }
 
 func KillAllContainerizer() {
-	processes, err := ps.Processes()
-	Expect(err).ShouldNot(HaveOccurred())
-
-	for _, proc := range processes {
-		if strings.Contains(proc.Executable(), "Containerizer.exe") {
-			goProc, err := os.FindProcess(proc.Pid())
-			if err == nil {
-				goProc.Kill()
-			}
-		}
-	}
+	killAllProcs("Containerizer.exe")
 }
 
 func AssertProcessExitsWith(expectedExitCode int, f func() (garden.Process, error)) {
