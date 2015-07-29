@@ -41,7 +41,7 @@ namespace Containerizer.Controllers
 
         public void SendEvent(string messageType, string message)
         {
-            logger.Info("SendEvent: {0} :: {1}", messageType, message);
+            // logger.Info("SendEvent: {0} :: {1}", messageType, message);
             var jsonString = JsonConvert.SerializeObject(new ProcessStreamEvent
             {
                 MessageType = messageType,
