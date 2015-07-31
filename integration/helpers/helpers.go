@@ -6,14 +6,13 @@ import (
 	"os/exec"
 	"path"
 	"strconv"
-	"strings"
 	"syscall"
 	"time"
 
 	"github.com/cloudfoundry-incubator/garden"
-	"github.com/mitchellh/go-ps"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
+	"github.com/pivotal-golang/localip"
 	"github.com/tedsuo/ifrit"
 	"github.com/tedsuo/ifrit/ginkgomon"
 	"github.com/tedsuo/ifrit/grouper"
@@ -49,18 +48,21 @@ func BuildGarden() string {
 }
 
 func StartGarden(gardenBin, containerizerBin string, argv ...string) (ifrit.Process, garden.Client) {
-	gardenAddr := fmt.Sprintf("127.0.0.1:45607")
+	gardenPort, err := localip.LocalPort()
+	Expect(err).NotTo(HaveOccurred())
+	gardenAddr := fmt.Sprintf("127.0.0.1:%d", gardenPort)
 
 	tmpDir := os.TempDir()
 
 	// If below fails, try
 	// netsh advfirewall firewall add rule name="Open Port 48080"  dir=in action=allow protocol=TCP localport=48080
 
-	containerizerPort := 48081
+	containerizerPort, err := localip.LocalPort()
+	Expect(err).NotTo(HaveOccurred())
 	gardenRunner := garden_runner.New("tcp4", gardenAddr, tmpDir, gardenBin, fmt.Sprintf("http://127.0.0.1:%d", containerizerPort))
 	containerizerRunner := ginkgomon.New(ginkgomon.Config{
 		Name:              "containerizer",
-		Command:           exec.Command(containerizerBin, "127.0.0.1", strconv.Itoa(containerizerPort)),
+		Command:           exec.Command(containerizerBin, "127.0.0.1", strconv.Itoa(int(containerizerPort))),
 		AnsiColorCode:     "",
 		StartCheck:        "Control-C to quit.",
 		StartCheckTimeout: 10 * time.Second,
@@ -80,40 +82,6 @@ func StartGarden(gardenBin, containerizerBin string, argv ...string) (ifrit.Proc
 func StopGarden(process ifrit.Process, client garden.Client) {
 	process.Signal(syscall.SIGKILL)
 	Eventually(process.Wait(), 10).Should(Receive())
-}
-
-func KillAllGarden() {
-	killAllProcs("garden-windows.exe")
-}
-
-func killAllProcs(predicateProcName string) {
-	predicateProcName = strings.ToUpper(predicateProcName)
-	for {
-		processes, err := ps.Processes()
-		Expect(err).ShouldNot(HaveOccurred())
-
-		matchingProcExists := false
-
-		for _, proc := range processes {
-			procName := strings.ToUpper(proc.Executable())
-
-			if strings.Contains(procName, predicateProcName) {
-				matchingProcExists = true
-				goProc, err := os.FindProcess(proc.Pid())
-				if err == nil {
-					goProc.Kill()
-				}
-			}
-		}
-
-		if !matchingProcExists {
-			break
-		}
-	}
-}
-
-func KillAllContainerizer() {
-	killAllProcs("Containerizer.exe")
 }
 
 func AssertProcessExitsWith(expectedExitCode int, f func() (garden.Process, error)) {

@@ -33,11 +33,6 @@ func TestLifecycle(t *testing.T) {
 		gardenBin = helpers.BuildGarden()
 	})
 
-	BeforeEach(func() {
-		helpers.KillAllGarden()
-		helpers.KillAllContainerizer()
-	})
-
 	AfterEach(func() {
 		helpers.StopGarden(gardenProcess, client)
 	})
