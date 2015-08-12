@@ -54,6 +54,7 @@ namespace Containerizer.Services.Implementations
 
             var info = container.GetInfo();
 
+            var diskUsage = container.CurrentDiskUsage();
             return new ContainerMetricsApiModel
             {
                 MemoryStat = new ContainerMemoryStatApiModel
@@ -66,7 +67,8 @@ namespace Containerizer.Services.Implementations
                 },
                 DiskStat = new ContainerDiskApiModel
                 {
-                    BytesUsed = container.CurrentDiskUsage()
+                    TotalBytesUsed = diskUsage,
+                    ExclusiveBytesUsed = diskUsage
                 }
             };
         }

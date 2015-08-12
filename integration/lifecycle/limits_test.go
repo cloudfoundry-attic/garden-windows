@@ -189,7 +189,7 @@ var _ = Describe("Process limits", func() {
 				Expect(err).Should(HaveOccurred())
 				metrics, err := container.Metrics()
 				Expect(err).ShouldNot(HaveOccurred())
-				Expect(metrics.DiskStat.BytesUsed).Should(BeNumerically("<", limit))
+				Expect(metrics.DiskStat.TotalBytesUsed).Should(BeNumerically("<", limit))
 			})
 		})
 	})

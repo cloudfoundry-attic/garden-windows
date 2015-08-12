@@ -35,7 +35,8 @@ var _ = Describe("Container Metrics", func() {
 
 			Expect(metrics.MemoryStat.TotalUsageTowardLimit).To(BeNumerically(">", 0), "Expected Memory Usage to be > 0")
 			Expect(metrics.CPUStat.Usage).To(BeNumerically(">", 0), "Expected CPU Usage to be > 0")
-			Expect(metrics.DiskStat.BytesUsed).To(BeNumerically(">", 0), "Expected Disk Usage to be > 0")
+			Expect(metrics.DiskStat.TotalBytesUsed).To(BeNumerically(">", 0), "Expected TotalBytesUsed to be > 0")
+			Expect(metrics.DiskStat.ExclusiveBytesUsed).To(BeNumerically(">", 0), "Expected ExclusiveBytesUsed to be > 0")
 		})
 	})
 
@@ -64,7 +65,8 @@ var _ = Describe("Container Metrics", func() {
 					Expect(containerMetricsEntry.Err).ToNot(HaveOccurred())
 					Expect(containerMetricsEntry.Metrics.MemoryStat.TotalUsageTowardLimit).To(BeNumerically(">", 0))
 					Expect(containerMetricsEntry.Metrics.CPUStat.Usage).To(BeNumerically(">", 0))
-					Expect(containerMetricsEntry.Metrics.DiskStat.BytesUsed).To(BeNumerically(">", 0))
+					Expect(containerMetricsEntry.Metrics.DiskStat.TotalBytesUsed).To(BeNumerically(">", 0))
+					Expect(containerMetricsEntry.Metrics.DiskStat.ExclusiveBytesUsed).To(BeNumerically(">", 0))
 				}
 			})
 		})

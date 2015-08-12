@@ -137,7 +137,8 @@ namespace Containerizer.Tests.Specs.Services
 
                 it["returns disk usage metrics about the container"] = () =>
                 {
-                    result.DiskStat.BytesUsed.should_be(diskUsage);
+                    result.DiskStat.ExclusiveBytesUsed.should_be(diskUsage);
+                    result.DiskStat.TotalBytesUsed.should_be(diskUsage);
                 };
 
                 context["when the container does not exist"] = () =>

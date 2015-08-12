@@ -58,7 +58,8 @@ namespace Containerizer.Models
 
     public class ContainerDiskApiModel
     {
-        public ulong BytesUsed;
+        public ulong TotalBytesUsed;
+        public ulong ExclusiveBytesUsed;
     }
 
     public class ContainerMemoryStatApiModel
