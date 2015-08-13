@@ -6,10 +6,12 @@ import (
 	"os/exec"
 	"path"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
 	"github.com/cloudfoundry-incubator/garden"
+	"github.com/mitchellh/go-ps"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
 	"github.com/pivotal-golang/localip"
@@ -82,6 +84,53 @@ func StartGarden(gardenBin, containerizerBin string, argv ...string) (ifrit.Proc
 func StopGarden(process ifrit.Process, client garden.Client) {
 	process.Signal(syscall.SIGKILL)
 	Eventually(process.Wait(), 10).Should(Receive())
+}
+
+func KillAllGarden() {
+	killAllProcs("garden-windows", "test")
+}
+
+func KillAllContainerizer() {
+	killAllProcs("containerizer", "test")
+}
+
+func killAllProcs(matchingProcName string, matchingParentProcName string) {
+	matchingProcName = strings.ToUpper(matchingProcName)
+	matchingParentProcName = strings.ToUpper(matchingParentProcName)
+	killCount := 0
+
+	for {
+		processes, err := ps.Processes()
+		Expect(err).ShouldNot(HaveOccurred())
+
+		matchingProcExists := false
+
+		for _, proc := range processes {
+			killCount++
+			procName := strings.ToUpper(proc.Executable())
+
+			if strings.Contains(procName, matchingProcName) {
+				parent, err := ps.FindProcess(proc.PPid())
+				Expect(err).ShouldNot(HaveOccurred())
+				parentProcName := strings.ToUpper(parent.Executable())
+				if strings.Contains(parentProcName, matchingParentProcName) {
+					matchingProcExists = true
+					goProc, err := os.FindProcess(proc.Pid())
+					if err == nil {
+						goProc.Kill()
+					}
+				}
+			}
+		}
+
+		if !matchingProcExists {
+			break
+		}
+
+		if killCount > 100 {
+			panic("killAllProcs stuck in a loop, exiting")
+		}
+	}
 }
 
 func AssertProcessExitsWith(expectedExitCode int, f func() (garden.Process, error)) {
