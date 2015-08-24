@@ -9,7 +9,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Containerizer.Models;
 using IronFrame;
-using Microsoft.Web.WebSockets;
 using Newtonsoft.Json;
 using Owin.WebSocket;
 using Containerizer.Services.Interfaces;
