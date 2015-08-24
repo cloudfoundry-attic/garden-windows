@@ -52,6 +52,11 @@ var _ = Describe("Container Metrics", func() {
 			handles = []string{container1.Handle(), container2.Handle()}
 		})
 
+		AfterEach(func() {
+			client.Destroy(handles[0])
+			client.Destroy(handles[1])
+		})
+
 		Describe(".BulkMetrics", func() {
 			It("returns container metrics for the specified handles", func() {
 				containers, err := client.Containers(nil)

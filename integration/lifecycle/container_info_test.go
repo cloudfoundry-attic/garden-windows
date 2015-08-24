@@ -26,6 +26,11 @@ var _ = Describe("Container information", func() {
 			handles = []string{container1.Handle(), container2.Handle()}
 		})
 
+		AfterEach(func() {
+			client.Destroy(handles[0])
+			client.Destroy(handles[1])
+		})
+
 		Describe(".BulkInfo", func() {
 			It("returns container info for the specified handles", func() {
 				containers, err := client.Containers(nil)
