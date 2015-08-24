@@ -23,6 +23,8 @@ namespace Containerizer.Controllers
     {
         void SendEvent(string messageType, string message);
 
+        void Flush();
+
         Task Close(WebSocketCloseStatus status, string reason);
     }
 
@@ -49,6 +51,11 @@ namespace Containerizer.Controllers
             }, Formatting.None);
             var data = new UTF8Encoding(true).GetBytes(jsonString);
             SendText(data, true);
+        }
+
+        public void Flush()
+        {
+            QueueSend.Drain();
         }
 
         public override void OnOpen()

@@ -661,7 +661,7 @@ var _ = Describe("container", func() {
 
 				exitStatus := <-proc.(process.DotNetProcess).StreamOpen
 				Expect(exitStatus.ExitCode).ToNot(Equal(0))
-				Expect(exitStatus.Err.Error()).To(Equal("An Error Message"))
+				Expect(exitStatus.Err.Error()).To(ContainSubstring("An Error Message"))
 
 				close(done)
 			}, 10)
