@@ -73,6 +73,11 @@ var _ = Describe("Process limits", func() {
 				Expect(exitCode).ToNot(Equal(42), "process did not get OOM killed")
 				Expect(stdout.String()).To(ContainSubstring("Consumed:  3 mb"))
 			})
+
+			It("handles large limits", func() {
+				err := container.LimitMemory(garden.MemoryLimits{4 * 1024 * 1024 * 1024})
+				Expect(err).ShouldNot(HaveOccurred())
+			})
 		})
 
 		XDescribe("a cpu limit", func() {
