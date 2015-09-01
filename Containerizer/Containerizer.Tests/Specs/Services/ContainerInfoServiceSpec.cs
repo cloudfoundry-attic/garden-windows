@@ -130,9 +130,9 @@ namespace Containerizer.Tests.Specs.Services
                     result.MemoryStat.TotalBytesUsed.should_be(privateBytes);
                 };
 
-                it["returns cpu usage metrics about the container"] = () =>
+                it["returns cpu usage metrics in nanoseconds"] = () =>
                 {
-                    result.CPUStat.Usage.should_be(cpuUsage);
+                    result.CPUStat.Usage.should_be(cpuUsage*1000000);
                 };
 
                 it["returns disk usage metrics about the container"] = () =>

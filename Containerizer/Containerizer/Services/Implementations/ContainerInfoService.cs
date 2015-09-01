@@ -63,7 +63,7 @@ namespace Containerizer.Services.Implementations
                 },
                 CPUStat = new ContainerCPUStatApiModel
                 {
-                    Usage = (ulong)info.CpuStat.TotalProcessorTime.TotalMilliseconds
+                    Usage = (ulong)info.CpuStat.TotalProcessorTime.Ticks * 100
                 },
                 DiskStat = new ContainerDiskApiModel
                 {
