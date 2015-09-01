@@ -1,21 +1,17 @@
 ﻿#region
 
+using Containerizer.Models;
+using IronFrame;
+using Logger;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
+using System.DirectoryServices.AccountManagement;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Threading.Tasks;
 using System.Web.Http;
-using Containerizer.Services.Interfaces;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using IronFrame;
-using Containerizer.Models;
-using System;
-using System.DirectoryServices.AccountManagement;
-using Logger;
 
 #endregion
 
@@ -91,6 +87,12 @@ namespace Containerizer.Controllers
                 var container = containerService.CreateContainer(containerSpec);
                 container.SetActiveProcessLimit(CONTAINER_ACTIVE_PROCESS_LIMIT);
                 container.SetPriorityClass(ProcessPriorityClass.BelowNormal);
+                if (spec.Limits.MemoryLimits.LimitInBytes != null)
+                    container.LimitMemory(spec.Limits.MemoryLimits.LimitInBytes.Value);
+                if (spec.Limits.CpuLimits.Weight != null)
+                    container.LimitCpu(spec.Limits.CpuLimits.Weight.Value);
+                if (spec.Limits.DiskLimits.ByteHard != null)
+                    container.LimitDisk(spec.Limits.DiskLimits.ByteHard.Value);
 
                 return new CreateResponse
                 {

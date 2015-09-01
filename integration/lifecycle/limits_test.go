@@ -70,6 +70,7 @@ var _ = Describe("Process limits", func() {
 
 				exitCode, err := process.Wait()
 				Expect(err).ShouldNot(HaveOccurred())
+				// consume script will exit 42 if it is not killed
 				Expect(exitCode).ToNot(Equal(42), "process did not get OOM killed")
 				Expect(stdout.String()).To(ContainSubstring("Consumed:  3 mb"))
 			})

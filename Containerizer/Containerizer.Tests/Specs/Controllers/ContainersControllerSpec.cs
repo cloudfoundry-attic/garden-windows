@@ -1,23 +1,19 @@
 ﻿#region
 
+using Containerizer.Controllers;
+using Containerizer.Models;
+using IronFrame;
+using Logger;
+using Moq;
+using NSpec;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.DirectoryServices.AccountManagement;
+using System.IO;
 using System.Net;
 using System.Net.Http;
-using System.Threading;
 using System.Web.Http;
-using System.Xml.Schema;
-using Containerizer.Controllers;
-using Containerizer.Services.Interfaces;
-using Moq;
-using Newtonsoft.Json;
-using NSpec;
-using IronFrame;
-using Containerizer.Models;
-using System.IO;
-using Logger;
-using System.DirectoryServices.AccountManagement;
 
 #endregion
 
@@ -66,8 +62,8 @@ namespace Containerizer.Tests.Specs.Controllers
                     mockContainerService.Setup(x => x.GetContainers())
                         .Returns(new List<IContainer>
                         {
-                            mockContainer1.Object, 
-                            mockContainer2.Object, 
+                            mockContainer1.Object,
+                            mockContainer2.Object,
                             mockContainer3.Object
                         });
 
@@ -110,28 +106,67 @@ namespace Containerizer.Tests.Specs.Controllers
             describe["#Create"] = () =>
             {
                 Mock<IContainer> mockContainer = null;
-                before = () => mockContainer = mockContainerWithHandle("thisHandle");
+                ContainerSpecApiModel containerSpec = null;
+                before = () =>
+                {
+                    mockContainer = mockContainerWithHandle("thisHandle");
+                    containerSpec = new ContainerSpecApiModel
+                    {
+                        Limits = new Limits
+                        {
+                            MemoryLimits = new MemoryLimits {LimitInBytes = 500},
+                            CpuLimits = new CpuLimits {Weight = 5},
+                            DiskLimits = new DiskLimits {ByteHard = 999}
+                        }
+                    };
+                };
 
                 context["on success"] = () =>
                 {
-                    before = () => mockContainerService.Setup(x => x.CreateContainer(It.IsAny<ContainerSpec>())).Returns(mockContainer.Object);
+                    before = () =>
+                    {
+                        mockContainerService.Setup(x => x.CreateContainer(It.IsAny<ContainerSpec>()))
+                            .Returns(mockContainer.Object);
+                    };
 
                     it["returns a handle"] = () =>
                     {
-                        var result = containersController.Create(new ContainerSpecApiModel {Handle = "thisHandle"});
+                        var result = containersController.Create(containerSpec);
                         result.Handle.should_be("thisHandle");
                     };
 
                     it["sets ActiveProcessLimit on the Container"] = () =>
                     {
-                        containersController.Create(new ContainerSpecApiModel {Handle = "thisHandle"});
+                        containersController.Create(containerSpec);
                         mockContainer.Verify(x => x.SetActiveProcessLimit(10));
                     };
 
                     it["sets PriorityClass on the Container"] = () =>
                     {
-                        containersController.Create(new ContainerSpecApiModel { Handle = "thisHandle" });
+                        containersController.Create(containerSpec);
                         mockContainer.Verify(x => x.SetPriorityClass(ProcessPriorityClass.BelowNormal));
+                    };
+
+                    it["sets limits on the container"] = () =>
+                    {
+                        containersController.Create(containerSpec);
+                        mockContainer.Verify(x => x.LimitMemory(500));
+                        mockContainer.Verify(x => x.LimitCpu(5));
+                        mockContainer.Verify(x => x.LimitDisk(999));
+                    };
+
+                    it["doesn't set limits when the values are null"] = () =>
+                    {
+
+                        containerSpec.Limits.MemoryLimits.LimitInBytes = null;
+                        containerSpec.Limits.CpuLimits.Weight = null;
+                        containerSpec.Limits.DiskLimits.ByteHard = null;
+
+                        containersController.Create(containerSpec);
+
+                        mockContainer.Verify(x => x.LimitMemory(It.IsAny<ulong>()), Times.Never());
+                        mockContainer.Verify(x => x.LimitCpu(It.IsAny<int>()), Times.Never());
+                        mockContainer.Verify(x => x.LimitDisk(It.IsAny<ulong>()), Times.Never());
                     };
                 };
 
@@ -141,8 +176,7 @@ namespace Containerizer.Tests.Specs.Controllers
 
                     it["throws HttpResponseException"] = () =>
                     {
-                        expect<HttpResponseException>(
-                            () => containersController.Create(new ContainerSpecApiModel {Handle = "thisHandle"}));
+                        expect<HttpResponseException>(() => containersController.Create(containerSpec));
                     };
                 };
             };
@@ -180,7 +214,7 @@ namespace Containerizer.Tests.Specs.Controllers
                             Properties = new Dictionary<string, string>
                             {
                                 {key, value}
-                            },
+                            }
                         };
                     };
 

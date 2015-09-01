@@ -1,13 +1,9 @@
 ﻿#region
 
-using System.Collections.Specialized;
-using System.Net.Http;
-using System.Threading.Tasks;
-using System.Web.Http;
-using Containerizer.Services.Interfaces;
-using Newtonsoft.Json;
 using IronFrame;
-using System;
+using Newtonsoft.Json;
+using System.Web.Http;
+
 
 #endregion
 
@@ -17,19 +13,19 @@ namespace Containerizer.Controllers
     public class MemoryLimits
     {
         [JsonProperty("limit_in_bytes")]
-        public ulong LimitInBytes { get; set; }
+        public ulong? LimitInBytes { get; set; }
     }
 
     public class CpuLimits
     {
         [JsonProperty("limit_in_shares")]
-        public int Weight { get; set; }
+        public int? Weight { get; set; }
     }
 
     public class DiskLimits
     {
         [JsonProperty("byte_hard")]
-        public ulong ByteHard { get; set; }
+        public ulong? ByteHard { get; set; }
     }
 
     public class LimitsController : ApiController
@@ -51,7 +47,7 @@ namespace Containerizer.Controllers
                 return NotFound();
             }
 
-            container.LimitMemory(limits.LimitInBytes);
+            if (limits.LimitInBytes != null) container.LimitMemory(limits.LimitInBytes.Value);
             return Ok();
         }
 
@@ -78,7 +74,7 @@ namespace Containerizer.Controllers
                 return NotFound();
             }
 
-            container.LimitCpu(limits.Weight);
+            if (limits.Weight != null) container.LimitCpu(limits.Weight.Value);
             return Ok();
         }
 
@@ -107,7 +103,7 @@ namespace Containerizer.Controllers
                 return NotFound();
             }
 
-            container.LimitDisk(limits.ByteHard);
+            if (limits.ByteHard != null) container.LimitDisk(limits.ByteHard.Value);
             return Ok();
         }
 
