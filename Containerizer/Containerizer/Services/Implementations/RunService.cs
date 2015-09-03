@@ -71,7 +71,7 @@ namespace Containerizer.Services.Implementations
                 var hostport = container.GetProperty("ContainerPort:" + processSpec.Environment["PORT"]);
                 processSpec.Environment["PORT"] = hostport;
             }
-            else if (processSpec.Arguments != null)
+            if (processSpec.Arguments != null)
             {
                 // TODO: Remove this. This case is for Healthcheck ; when nsync sends port as env variable we can remove this. (https://github.com/cloudfoundry-incubator/nsync/pull/1)
                 var portArg = Array.Find(processSpec.Arguments, s => s.StartsWith("-port="));
@@ -80,6 +80,16 @@ namespace Containerizer.Services.Implementations
                     var containerPort = portArg.Split(new Char[] {'='})[1];
                     var hostport = container.GetProperty("ContainerPort:" + containerPort);
                     processSpec.Environment["PORT"] = hostport;
+                }
+                // TODO: Remove this. This case is for the ssh daemon
+                var addressArgIdx = Array.FindIndex(processSpec.Arguments, s => s.StartsWith("-address="));
+                if (addressArgIdx != -1)
+                {
+                    var containerAddr = processSpec.Arguments[addressArgIdx].Split(new Char[] { '=' })[1];
+                    var containerHostAndPort = containerAddr.Split(new Char[] { ':' });
+                    var containerPort = containerHostAndPort[1];
+                    var hostport = container.GetProperty("ContainerPort:" + containerPort);
+                    processSpec.Arguments[addressArgIdx] = "-address=" + containerHostAndPort[0] + ":" + hostport;
                 }
             }
         }
