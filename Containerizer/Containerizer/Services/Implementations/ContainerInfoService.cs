@@ -1,4 +1,5 @@
-﻿using Containerizer.Models;
+﻿using Containerizer.Controllers;
+using Containerizer.Models;
 using Containerizer.Services.Interfaces;
 using IronFrame;
 using System;
@@ -6,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ContainerInfo = Containerizer.Models.ContainerInfo;
 
 namespace Containerizer.Services.Implementations
 {
@@ -20,7 +22,7 @@ namespace Containerizer.Services.Implementations
             this.externalIP = externalIP;
         }
 
-        public ContainerInfoApiModel GetInfoByHandle(string handle)
+        public ContainerInfo GetInfoByHandle(string handle)
         {
             var container = containerService.GetContainerByHandle(handle);
             if (container == null)
@@ -36,7 +38,7 @@ namespace Containerizer.Services.Implementations
                     HostPort = int.Parse(x.Value),
                 });
 
-            return new ContainerInfoApiModel
+            return new ContainerInfo
             {
                 MappedPorts = portMappings.ToList(),
                 Properties = rawInfo.Properties,

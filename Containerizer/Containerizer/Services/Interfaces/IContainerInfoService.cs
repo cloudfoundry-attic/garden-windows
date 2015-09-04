@@ -9,7 +9,7 @@ namespace Containerizer.Services.Interfaces
 {
     public interface IContainerInfoService
     {
-        ContainerInfoApiModel GetInfoByHandle(string handle);
+        ContainerInfo GetInfoByHandle(string handle);
         ContainerMetricsApiModel GetMetricsByHandle(string handle);
     }
 }

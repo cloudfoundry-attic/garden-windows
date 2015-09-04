@@ -8,12 +8,14 @@ using System.Web.Http;
 using Containerizer.Models;
 using Containerizer.Services.Interfaces;
 using System.IO;
+using ContainerInfo = Containerizer.Models.ContainerInfo;
 
 namespace Containerizer.Controllers
 {
-    public struct BulkInfoResponse
+    public struct ContainerInfoEntry
     {
-        public ContainerInfoApiModel Info;
+        public ContainerInfo Info;
+        public Error Err;
     }
 
     public class BulkInfoController : ApiController
@@ -27,18 +29,29 @@ namespace Containerizer.Controllers
 
         [Route("api/bulkcontainerinfo")]
         [HttpPost]
-        public Dictionary<string, BulkInfoResponse> BulkInfo(string[] handles)
+        public Dictionary<string, ContainerInfoEntry> BulkInfo(string[] handles)
         {
-            var response = new Dictionary<string, BulkInfoResponse>();
-            foreach (var handle in handles) {
-                var info = containerInfoService.GetInfoByHandle(handle);
-                if (info != null)
+            var response = new Dictionary<string, ContainerInfoEntry>();
+            foreach (var handle in handles)
+            {
+                ContainerInfoEntry infoEntry = new ContainerInfoEntry();
+                try
                 {
-                    response[handle] = new BulkInfoResponse
+                    var info = containerInfoService.GetInfoByHandle(handle);
+                    if (info == null)
                     {
-                        Info = info,
+                        throw new Exception("container " + handle + " does not exist");
+                    }
+                    infoEntry.Info = info;
+                }
+                catch (Exception e)
+                {
+                    infoEntry.Err = new Error()
+                    {
+                        ErrorMsg = "cannot get info for container " + handle + ". Error: " + e.Message,
                     };
                 }
+                response[handle] = infoEntry;
             }
             return response;
         }

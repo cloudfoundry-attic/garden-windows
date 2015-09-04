@@ -11,6 +11,8 @@ using Containerizer.Models;
 using System.Web.Http.Results;
 using IronFrame;
 using Containerizer.Services.Interfaces;
+using ContainerInfo = Containerizer.Models.ContainerInfo;
+using ContainerInfoEntry = Containerizer.Controllers.ContainerInfoEntry;
 
 namespace Containerizer.Tests.Specs.Controllers
 {
@@ -20,16 +22,16 @@ namespace Containerizer.Tests.Specs.Controllers
         {
             describe["#BulkInfo"] = () =>
             {
-                List<ContainerInfoApiModel> info = null;
+                List<ContainerInfo> info = null;
 
                 Mock<IContainerInfoService> mockContainerService = null;
                 var handles = new string[] { "handle1", "handle2" };
                 BulkInfoController controller = null;
-                Dictionary<string, BulkInfoResponse> result = null;
+                Dictionary<string, ContainerInfoEntry> result = null;
 
                 before = () =>
                 {
-                    info = new List<ContainerInfoApiModel> { new ContainerInfoApiModel(), new ContainerInfoApiModel() };
+                    info = new List<ContainerInfo> { new ContainerInfo(), new ContainerInfo() };
                     mockContainerService = new Mock<IContainerInfoService>();
                     controller = new BulkInfoController(mockContainerService.Object);
                 };
@@ -54,19 +56,40 @@ namespace Containerizer.Tests.Specs.Controllers
                     };
                 };
 
+                context["when GetInfoByHandle throws an exception"] = () =>
+                {
+                    before = () =>
+                    {
+                        mockContainerService.Setup(x => x.GetInfoByHandle(handles[0]))
+                            .Throws(new Exception("BOOOOM"));
+                        mockContainerService.Setup(x => x.GetInfoByHandle(handles[1]))
+                            .Returns((ContainerInfo)info[1]);
+                    };
+
+                    it["returns each container with an error for the ones that error"] = () =>
+                    {
+                        result.Count.should_be(2);
+                        result[handles[0]].Info.should_be_null();
+                        result[handles[0]].Err.ErrorMsg.should_contain("BOOOOM");
+                        result[handles[1]].Info.should_be(info[1]);
+                        result[handles[1]].Err.should_be_null();
+                    };
+                };
+
                 context["when the container does not exist"] = () =>
                 {
                     before = () =>
                     {
                         mockContainerService.Setup(x => x.GetInfoByHandle(handles[0]))
-                            .Returns((ContainerInfoApiModel)null);
+                            .Returns((ContainerInfo)null);
                         mockContainerService.Setup(x => x.GetInfoByHandle(handles[1]))
-                            .Returns((ContainerInfoApiModel)info[1]);
+                            .Returns((ContainerInfo)info[1]);
                     };
 
-                    it["is not returned"] = () =>
+                    it["returns a not exist error for handle1"] = () =>
                     {
-                        result.Count.should_be(1);
+                        result.Count.should_be(2);
+                        result[handles[0]].Err.ErrorMsg.should_contain("not exist");
                         result[handles[1]].Info.should_be(info[1]);
                     };
                 };

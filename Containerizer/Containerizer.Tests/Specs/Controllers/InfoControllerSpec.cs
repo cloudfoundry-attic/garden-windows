@@ -12,6 +12,7 @@ using System.Web.Http.Results;
 using IronFrame;
 using Containerizer.Services.Interfaces;
 using Containerizer.Services.Implementations;
+using ContainerInfo = Containerizer.Models.ContainerInfo;
 
 namespace Containerizer.Tests.Specs.Controllers
 {
@@ -38,18 +39,18 @@ namespace Containerizer.Tests.Specs.Controllers
 
                 context["when the container exists"] = () =>
                 {
-                    ContainerInfoApiModel info = null;
+                    ContainerInfo info = null;
 
                     before = () =>
                     {
-                        info = new ContainerInfoApiModel();
+                        info = new ContainerInfo();
                         mockContainerService.Setup(x => x.GetInfoByHandle(handle))
                             .Returns(info);
                     };
 
                     it["returns info about the container"] = () =>
                     {
-                        var jsonResult = result.should_cast_to<JsonResult<ContainerInfoApiModel>>();
+                        var jsonResult = result.should_cast_to<JsonResult<ContainerInfo>>();
                         jsonResult.Content.should_be(info);
                     };
                 };
@@ -59,7 +60,7 @@ namespace Containerizer.Tests.Specs.Controllers
                     before = () =>
                     {
                         mockContainerService.Setup(x => x.GetInfoByHandle(handle))
-                            .Returns((ContainerInfoApiModel)null);
+                            .Returns((ContainerInfo)null);
                     };
 
                     it["returns not found"] = () =>

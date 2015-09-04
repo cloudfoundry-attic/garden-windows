@@ -7,6 +7,7 @@ using IronFrame;
 using Moq;
 using Containerizer.Controllers;
 using Containerizer.Models;
+using ContainerInfo = IronFrame.ContainerInfo;
 
 #endregion
 

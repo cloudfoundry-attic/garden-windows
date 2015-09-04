@@ -12,6 +12,7 @@ using System.Web.Http.Results;
 using IronFrame;
 using Containerizer.Services.Interfaces;
 using Containerizer.Services.Implementations;
+using ContainerInfo = Containerizer.Models.ContainerInfo;
 
 namespace Containerizer.Tests.Specs.Services
 {
@@ -36,7 +37,7 @@ namespace Containerizer.Tests.Specs.Services
 
             describe["GetInfoByHandle"] = () =>
             {
-                ContainerInfoApiModel result = null;
+                ContainerInfo result = null;
                 int expectedHttpPort = 1234;
                 int expectedSsshPort = 4567;
                 string expectedExternalIP = "10.11.12.13";
@@ -44,7 +45,7 @@ namespace Containerizer.Tests.Specs.Services
                 before = () =>
                 {
                     mockContainer.Setup(x => x.GetInfo()).Returns(
-                        new ContainerInfo
+                        new IronFrame.ContainerInfo
                         {
                             Properties = new Dictionary<string, string>
                             {
@@ -108,7 +109,7 @@ namespace Containerizer.Tests.Specs.Services
 
                 before = () =>
                 {
-                    mockContainer.Setup(x => x.GetInfo()).Returns(new ContainerInfo
+                    mockContainer.Setup(x => x.GetInfo()).Returns(new IronFrame.ContainerInfo
                     {
                         MemoryStat = new ContainerMemoryStat
                         {

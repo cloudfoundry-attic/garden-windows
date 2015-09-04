@@ -35,9 +35,15 @@ namespace Containerizer.Models
         public int ContainerPort;
     }
 
-    public class ContainerInfoApiModel
+    public class Error
     {
-        public ContainerInfoApiModel()
+        [JsonProperty("error_msg")]
+        public string ErrorMsg;
+    }
+
+    public class ContainerInfo
+    {
+        public ContainerInfo()
         {
             MappedPorts = new List<PortMappingApiModel>();
             Properties = new Dictionary<string, string>();
