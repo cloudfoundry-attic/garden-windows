@@ -76,7 +76,7 @@ func main() {
 		})
 	}
 	client := dotnet.NewClient(logger, url)
-	netBackend, err := backend.NewDotNetBackend(client, logger)
+	netBackend, err := backend.NewDotNetBackend(client, logger, *containerGraceTime)
 	if err != nil {
 		logger.Fatal("Server Failed to Start", err)
 		os.Exit(1)

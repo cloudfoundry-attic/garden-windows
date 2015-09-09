@@ -29,7 +29,8 @@ var _ = Describe("backend", func() {
 		logger = lagertest.NewTestLogger("backend")
 		serverUri, _ = url.Parse(server.URL())
 		client = dotnet.NewClient(logger, serverUri)
-		dotNetBackend, _ = backend.NewDotNetBackend(client, logger)
+		graceTime := time.Minute
+		dotNetBackend, _ = backend.NewDotNetBackend(client, logger, graceTime)
 	})
 
 	AfterEach(func() {

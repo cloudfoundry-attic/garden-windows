@@ -13,14 +13,20 @@ import (
 )
 
 type dotNetBackend struct {
-	logger lager.Logger
-	client *dotnet.Client
+	logger    lager.Logger
+	client    *dotnet.Client
+	graceTime time.Duration
 }
 
-func NewDotNetBackend(client *dotnet.Client, logger lager.Logger) (*dotNetBackend, error) {
+func NewDotNetBackend(
+	client *dotnet.Client,
+	logger lager.Logger,
+	graceTime time.Duration,
+) (*dotNetBackend, error) {
 	return &dotNetBackend{
-		logger: logger,
-		client: client,
+		logger:    logger,
+		client:    client,
+		graceTime: graceTime,
 	}, nil
 }
 
@@ -30,9 +36,8 @@ func (dotNetBackend *dotNetBackend) Start() error {
 
 func (dotNetBackend *dotNetBackend) Stop() {}
 
-func (dotNetBackend *dotNetBackend) GraceTime(garden.Container) time.Duration {
-	// FIXME -- what should this do.
-	return time.Hour
+func (dotNetBackend *dotNetBackend) GraceTime(container garden.Container) time.Duration {
+	return dotNetBackend.graceTime
 }
 
 func (dotNetBackend *dotNetBackend) Ping() error {
