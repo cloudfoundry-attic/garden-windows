@@ -1,4 +1,5 @@
-﻿using Containerizer.Services.Implementations;
+﻿using System.Collections.Generic;
+using Containerizer.Services.Implementations;
 using Microsoft.Owin.Hosting;
 using System;
 using System.Threading;
@@ -15,7 +16,7 @@ namespace Containerizer
 
             if (args.Length != 2)
             {
-                logger.Error("Usage: {0} [ExternalIP] [Port]", "Containerizer.exe");
+                Console.Error.WriteLine("Usage: {0} [ExternalIP] [Port]", "Containerizer.exe");
                 return;
             }
 
@@ -32,8 +33,7 @@ namespace Containerizer
             DependencyResolver.ExternalIP = new ExternalIP(externalIP);
             using (WebApp.Start<Startup>("http://*:" + port + "/"))
             {
-                logger.Info("SUCCESS: started on {0} with externalIP {1}", port, externalIP);
-                logger.Info("Control-C to quit.");
+                logger.Info("containerizer.started", new Dictionary<string, object> {{"port", port }, {"externalIP", externalIP}});
                 ExitLatch.WaitOne();
             }
         }

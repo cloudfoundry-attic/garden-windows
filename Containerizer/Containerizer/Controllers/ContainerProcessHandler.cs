@@ -60,19 +60,19 @@ namespace Containerizer.Controllers
         public override void OnOpen()
         {
             var handle = Arguments["handle"];
-            logger.Info("onOpen: {0}", handle);
+            logger.Info("ContainerProcessHandler.OnOpen", new Dictionary<string, object> {{"handle", handle}});
 
             runService.container = containerService.GetContainerByHandle(handle);
         }
 
         public override void OnClose(WebSocketCloseStatus? closeStatus, string closeStatusDescription)
         {
-            logger.Info("OnClose: {0} :: {1}", closeStatus.ToString(), closeStatusDescription);
+            logger.Info("ContainerProcessHandler.OnClose", new Dictionary<string, object> {{"closeStatus", closeStatus.ToString()}, {"closeStatusDescription", closeStatusDescription}});
         }
 
         public override void OnReceiveError(Exception error)
         {
-            logger.Error("OnReceiveError: {0} :: {1}", error.Message, error.StackTrace);
+            logger.Error("ContainerProcessHandler.OnReceiveError", new Dictionary<string, object> {{"message", error.Message}, {"stackTrace", error.StackTrace}});
         }
 
         public override Task OnMessageReceived(ArraySegment<byte> message, WebSocketMessageType type)

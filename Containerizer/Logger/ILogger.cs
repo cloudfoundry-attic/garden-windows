@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Logger
 {
     public interface ILogger
     {
-        void Info(string msg, params Object[] args);
+        void Info(string msg, Dictionary<string, object> args);
 
-        void Error(string msg, params Object[] args);
+        void Error(string msg, Dictionary<string, object> args);
     }
 }

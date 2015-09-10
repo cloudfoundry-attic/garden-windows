@@ -118,7 +118,7 @@ namespace Containerizer.Tests.Specs
                 process.StartInfo.Arguments = ExternalIP + " " + Port.ToString();
                 Retry.Do(() => process.Start(), TimeSpan.FromSeconds(1), 5);
                 job.AddProcess(process.Handle);
-                process.StandardOutput.ReadLine().should_start_with("SUCCESS");
+                process.StandardOutput.ReadLine().should_contain("containerizer.started");
             }
 
             public HttpClient GetClient()

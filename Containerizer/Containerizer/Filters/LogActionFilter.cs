@@ -1,4 +1,5 @@
-﻿using Logger;
+﻿using System.Globalization;
+using Logger;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -22,26 +23,15 @@ namespace Containerizer.Filters
         {
             var start = System.Diagnostics.Stopwatch.GetTimestamp();
             base.OnActionExecuting(filterContext);
-            var requestData = new RequestData
+            logger.Info("containerizer.request.complete", new Dictionary<string, object>
             {
-                method = filterContext.Request.Method.Method,
-                uri = filterContext.Request.RequestUri,
-                start = start,
-                elapsed = System.Diagnostics.Stopwatch.GetTimestamp() - start,
-                routeTemplate = filterContext.RequestContext.RouteData.Route.RouteTemplate,
-                arguments = filterContext.ActionArguments,
-            };
-            logger.Info(Newtonsoft.Json.JsonConvert.SerializeObject(requestData));
-        }
-
-        private class RequestData
-        {
-            public string method;
-            public Uri uri;
-            public long start;
-            public long elapsed;
-            public string routeTemplate;
-            public IDictionary<string, object> arguments;
+                {"method", filterContext.Request.Method.Method},
+                {"uri", filterContext.Request.RequestUri.ToString()},
+                {"start", start.ToString()},
+                {"elapsed", (System.Diagnostics.Stopwatch.GetTimestamp() - start).ToString(CultureInfo.InvariantCulture)},
+                {"routeTemplate", filterContext.RequestContext.RouteData.Route.RouteTemplate},
+                {"arguments", filterContext.ActionArguments},
+            });
         }
     }
 }
