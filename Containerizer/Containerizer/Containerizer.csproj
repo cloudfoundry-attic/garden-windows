@@ -167,6 +167,7 @@
     <Compile Include="Controllers\NetController.cs" />
     <Compile Include="Controllers\PingController.cs" />
     <Compile Include="Controllers\PropertiesController.cs" />
+    <Compile Include="Filters\ExceptionLoggingFilter.cs" />
     <Compile Include="Factories\ContainerServiceFactory.cs" />
     <Compile Include="Filters\LogActionFilter.cs" />
     <Compile Include="Models\ApiProcessSpec.cs" />
