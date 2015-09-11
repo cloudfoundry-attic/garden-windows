@@ -119,6 +119,7 @@ namespace Containerizer.Tests.Specs
                 Retry.Do(() => process.Start(), TimeSpan.FromSeconds(1), 5);
                 job.AddProcess(process.Handle);
                 process.StandardOutput.ReadLine().should_contain("containerizer.started");
+                process.StandardOutput.ReadToEndAsync();
             }
 
             public HttpClient GetClient()
@@ -169,8 +170,15 @@ namespace Containerizer.Tests.Specs
 
         public static void DestroyContainer(HttpClient client, string handle)
         {
-            var response = client.DeleteAsync("/api/Containers/" + handle).GetAwaiter().GetResult();
-            response.EnsureSuccessStatusCode();
+            var response = client.DeleteAsync("/api/Containers/" + handle);
+            if (response.Wait(5000))
+            {
+                response.Result.EnsureSuccessStatusCode();
+            }
+            else
+            {
+                throw new TimeoutException("timed out destroying container");
+            }
         }
 
         public static void AssertAdministratorPrivileges()
