@@ -66,7 +66,7 @@ func StartGarden(gardenBin, containerizerBin string, argv ...string) (ifrit.Proc
 		Name:              "containerizer",
 		Command:           exec.Command(containerizerBin, "127.0.0.1", strconv.Itoa(int(containerizerPort))),
 		AnsiColorCode:     "",
-		StartCheck:        "Control-C to quit.",
+		StartCheck:        "containerizer.started",
 		StartCheckTimeout: 10 * time.Second,
 		Cleanup:           func() {},
 	})
@@ -77,6 +77,9 @@ func StartGarden(gardenBin, containerizerBin string, argv ...string) (ifrit.Proc
 	})
 
 	gardenProcess := ifrit.Invoke(group)
+
+	// wait for the processes to start before returning
+	<-gardenProcess.Ready()
 
 	return gardenProcess, gardenRunner.NewClient()
 }
