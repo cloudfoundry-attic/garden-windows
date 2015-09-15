@@ -112,7 +112,7 @@ func (r *Runner) Run(signals <-chan os.Signal, ready chan<- struct{}) error {
 }
 
 func (r *Runner) TryDial() error {
-	conn, dialErr := net.DialTimeout(r.network, r.addr, 100*time.Millisecond)
+	conn, dialErr := net.DialTimeout(r.network, r.addr, 1*time.Second)
 
 	if dialErr == nil {
 		conn.Close()
