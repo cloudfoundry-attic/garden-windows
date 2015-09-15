@@ -28,6 +28,7 @@ namespace Containerizer.Controllers
         private readonly IContainerService containerService;
         private readonly ILogger logger;
         private const uint CONTAINER_ACTIVE_PROCESS_LIMIT = 10;
+        internal const int CONTAINER_DEFAULT_CPU_WEIGHT = 5;
 
         public ContainersController(IContainerService containerService, ILogger logger)
         {
@@ -87,10 +88,9 @@ namespace Containerizer.Controllers
                 var container = containerService.CreateContainer(containerSpec);
                 container.SetActiveProcessLimit(CONTAINER_ACTIVE_PROCESS_LIMIT);
                 container.SetPriorityClass(ProcessPriorityClass.BelowNormal);
+                container.LimitCpu(CONTAINER_DEFAULT_CPU_WEIGHT);
                 if (spec.Limits.MemoryLimits.LimitInBytes != null)
                     container.LimitMemory(spec.Limits.MemoryLimits.LimitInBytes.Value);
-                if (spec.Limits.CpuLimits.Weight != null)
-                    container.LimitCpu(spec.Limits.CpuLimits.Weight.Value);
                 if (spec.Limits.DiskLimits.ByteHard != null)
                     container.LimitDisk(spec.Limits.DiskLimits.ByteHard.Value);
 

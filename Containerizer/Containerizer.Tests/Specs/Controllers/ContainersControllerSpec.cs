@@ -115,7 +115,7 @@ namespace Containerizer.Tests.Specs.Controllers
                         Limits = new Limits
                         {
                             MemoryLimits = new MemoryLimits {LimitInBytes = 500},
-                            CpuLimits = new CpuLimits {Weight = 5},
+                            CpuLimits = new CpuLimits {Weight = 9999},
                             DiskLimits = new DiskLimits {ByteHard = 999}
                         }
                     };
@@ -151,7 +151,6 @@ namespace Containerizer.Tests.Specs.Controllers
                     {
                         containersController.Create(containerSpec);
                         mockContainer.Verify(x => x.LimitMemory(500));
-                        mockContainer.Verify(x => x.LimitCpu(5));
                         mockContainer.Verify(x => x.LimitDisk(999));
                     };
 
@@ -165,8 +164,13 @@ namespace Containerizer.Tests.Specs.Controllers
                         containersController.Create(containerSpec);
 
                         mockContainer.Verify(x => x.LimitMemory(It.IsAny<ulong>()), Times.Never());
-                        mockContainer.Verify(x => x.LimitCpu(It.IsAny<int>()), Times.Never());
                         mockContainer.Verify(x => x.LimitDisk(It.IsAny<ulong>()), Times.Never());
+                    };
+
+                    it["hard-codes the CPU limits to 5"] = () =>
+                    {
+                        containersController.Create(containerSpec);
+                        mockContainer.Verify(x => x.LimitCpu(5));
                     };
                 };
 
