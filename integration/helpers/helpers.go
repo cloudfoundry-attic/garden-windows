@@ -85,53 +85,36 @@ func StartGarden(gardenBin, containerizerBin string, argv ...string) (ifrit.Proc
 }
 
 func StopGarden(process ifrit.Process, client garden.Client) {
-	process.Signal(syscall.SIGKILL)
-	Eventually(process.Wait(), 10).Should(Receive())
+	// process.Signal(syscall.SIGKILL)
+	// Eventually(process.Wait(), 10).Should(Receive())
 }
 
 func KillAllGarden() {
-	killAllProcs("garden-windows", "test")
+	killAllProcs("garden-windows")
 }
 
 func KillAllContainerizer() {
-	killAllProcs("containerizer", "test")
+	killAllProcs("containerizer")
 }
 
-func killAllProcs(matchingProcName string, matchingParentProcName string) {
+func killAllProcs(matchingProcName string) {
 	matchingProcName = strings.ToUpper(matchingProcName)
-	matchingParentProcName = strings.ToUpper(matchingParentProcName)
-	killCount := 0
 
-	for {
-		processes, err := ps.Processes()
-		Expect(err).ShouldNot(HaveOccurred())
+	processes, err := ps.Processes()
+	Expect(err).ShouldNot(HaveOccurred())
 
-		matchingProcExists := false
+	for _, proc := range processes {
+		procName := strings.ToUpper(proc.Executable())
 
-		for _, proc := range processes {
-			killCount++
-			procName := strings.ToUpper(proc.Executable())
-
-			if strings.Contains(procName, matchingProcName) {
-				parent, err := ps.FindProcess(proc.PPid())
-				Expect(err).ShouldNot(HaveOccurred())
-				parentProcName := strings.ToUpper(parent.Executable())
-				if strings.Contains(parentProcName, matchingParentProcName) {
-					matchingProcExists = true
-					goProc, err := os.FindProcess(proc.Pid())
-					if err == nil {
-						goProc.Kill()
-					}
+		if strings.Contains(procName, matchingProcName) {
+			parent, err := ps.FindProcess(proc.PPid())
+			Expect(err).ShouldNot(HaveOccurred())
+			if (parent == nil) || (strings.Contains(parent.Executable(), "test")) {
+				goProc, err := os.FindProcess(proc.Pid())
+				if err == nil {
+					goProc.Kill()
 				}
 			}
-		}
-
-		if !matchingProcExists {
-			break
-		}
-
-		if killCount > 100 {
-			panic("killAllProcs stuck in a loop, exiting")
 		}
 	}
 }
