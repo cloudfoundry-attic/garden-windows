@@ -236,7 +236,21 @@ func streamWebsocketIOToContainerizer(ws *websocket.Conn, processIO garden.Proce
 
 func streamWebsocketIOFromContainerizer(ws *websocket.Conn, pidChannel chan<- uint32, processIO garden.ProcessIO) (int, error) {
 	defer close(pidChannel)
-	defer ws.Close()
+
+	defer func() {
+		ws.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+
+		go func() {
+			for {
+				_, _, err := ws.NextReader()
+				if err != nil {
+					ws.Close()
+					break
+				}
+			}
+		}()
+
+	}()
 
 	receiveStream := ProcessStreamEvent{}
 	for {

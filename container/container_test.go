@@ -636,6 +636,19 @@ var _ = Describe("container", func() {
 			Eventually(proc.(process.DotNetProcess).StreamOpen, "10s", "0.1s").Should(BeClosed())
 		})
 
+		It("closes the WebSocket connection with CloseNormalClosure when the close event is received", func(){
+			proc, err := container.Run(garden.ProcessSpec{}, garden.ProcessIO{})
+			Expect(err).ShouldNot(HaveOccurred())
+
+			websocket.WriteJSON(testServer.handlerWS, netContainer.ProcessStreamEvent{
+				MessageType: "close",
+			})
+
+			Eventually(proc.(process.DotNetProcess).StreamOpen, "10s", "0.1s").Should(BeClosed())
+			Eventually(testServer.closeError, "10s", "0.1s").ShouldNot(BeNil())
+			Expect(testServer.closeError.Code).To(Equal(websocket.CloseNormalClosure))
+		})
+
 		It("returns the close message as the exit code", func() {
 			proc, err := container.Run(garden.ProcessSpec{}, garden.ProcessIO{})
 			Expect(err).ShouldNot(HaveOccurred())
