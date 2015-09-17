@@ -73,7 +73,12 @@ namespace Containerizer.Controllers
 
         public override void OnReceiveError(Exception error)
         {
-            logger.Error("ContainerProcessHandler.OnReceiveError", new Dictionary<string, object> {{"message", error.Message}, {"stackTrace", error.StackTrace}});
+            if (error.Message.Contains("'CloseAsync' method has already been called")) 
+                return;
+            if (error.Message.Contains("he WebSocket is in an invalid state ('Closed') for this operation.")) 
+                return;
+
+            logger.Error("ContainerProcessHandler.OnReceiveError", new Dictionary<string, object> { { "message", error.Message }, { "stackTrace", error.StackTrace } });
         }
 
         public override Task OnMessageReceived(ArraySegment<byte> message, WebSocketMessageType type)
