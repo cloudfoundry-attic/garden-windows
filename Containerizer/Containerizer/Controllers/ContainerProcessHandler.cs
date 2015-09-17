@@ -65,6 +65,7 @@ namespace Containerizer.Controllers
             runService.container = containerService.GetContainerByHandle(handle);
         }
 
+
         public override void OnClose(WebSocketCloseStatus? closeStatus, string closeStatusDescription)
         {
             logger.Info("ContainerProcessHandler.OnClose", new Dictionary<string, object> {{"closeStatus", closeStatus.ToString()}, {"closeStatusDescription", closeStatusDescription}});
@@ -88,7 +89,7 @@ namespace Containerizer.Controllers
                 }
             }
 
-            return null;
+            return Task.Delay(0);
         }
     }
 }
