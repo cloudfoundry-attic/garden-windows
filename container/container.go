@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/url"
+	"time"
 
 	"errors"
 	"strconv"
@@ -18,9 +19,10 @@ import (
 )
 
 type container struct {
-	handle string
-	logger lager.Logger
-	client *dotnet.Client
+	handle    string
+	logger    lager.Logger
+	client    *dotnet.Client
+	graceTime time.Duration
 }
 
 type ports struct {
@@ -35,12 +37,23 @@ type ProcessStreamEvent struct {
 	Data           string             `json:"data"`
 }
 
-func NewContainer(client *dotnet.Client, handle string, logger lager.Logger) *container {
+func NewContainer(
+	client *dotnet.Client,
+	handle string,
+	logger lager.Logger) *container {
 	return &container{
 		client: client,
 		handle: handle,
 		logger: logger,
 	}
+}
+
+func (container *container) GraceTime() time.Duration {
+	return container.graceTime
+}
+
+func (container *container) SetGraceTime(graceTime time.Duration) {
+	container.graceTime = graceTime
 }
 
 var ErrReadFromPath = errors.New("could not read tar path")

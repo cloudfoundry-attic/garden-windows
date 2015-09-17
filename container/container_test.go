@@ -16,6 +16,7 @@ import (
 
 	"errors"
 	"strings"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/onsi/gomega/gbytes"
@@ -941,15 +942,16 @@ var _ = Describe("container", func() {
 			})
 		})
 	})
+
+	Describe("GraceTime", func() {
+		It("exposes a getter & setter", func() {
+			container := netContainer.NewContainer(client, "containerhandle", logger)
+
+			container.SetGraceTime(time.Minute)
+			Expect(container.GraceTime()).To(Equal(time.Minute))
+			container.SetGraceTime(time.Second)
+			Expect(container.GraceTime()).To(Equal(time.Second))
+		})
+
+	})
 })
-
-// It("process.wait returns the exit status", func() {
-
-// Context("with 'privileged' true", func() {
-// 	It("runs with --user root", func() {
-// 	})
-// })
-
-// Context("when spawning fails", func() {
-// 	It("returns the error", func() {
-// })

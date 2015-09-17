@@ -18,6 +18,12 @@ type dotNetBackend struct {
 	graceTime time.Duration
 }
 
+type WindowsContainer interface {
+	garden.Container
+
+	GraceTime() time.Duration
+}
+
 func NewDotNetBackend(
 	client *dotnet.Client,
 	logger lager.Logger,
@@ -37,7 +43,7 @@ func (dotNetBackend *dotNetBackend) Start() error {
 func (dotNetBackend *dotNetBackend) Stop() {}
 
 func (dotNetBackend *dotNetBackend) GraceTime(container garden.Container) time.Duration {
-	return dotNetBackend.graceTime
+	return container.(WindowsContainer).GraceTime()
 }
 
 func (dotNetBackend *dotNetBackend) Ping() error {
@@ -50,10 +56,17 @@ func (dotNetBackend *dotNetBackend) Capacity() (garden.Capacity, error) {
 	return capacity, err
 }
 
+/*
+container = backend.Create(spec)
+bomber.Create(backend, container)
+-  backend.GraceTime(container)
+*/
+
 func (dotNetBackend *dotNetBackend) Create(containerSpec garden.ContainerSpec) (garden.Container, error) {
 	var returnedContainer createContainerResponse
 	err := dotNetBackend.client.Post("/api/containers", containerSpec, &returnedContainer)
 	netContainer := container.NewContainer(dotNetBackend.client, returnedContainer.Handle, dotNetBackend.logger)
+	netContainer.SetGraceTime(containerSpec.GraceTime)
 	return netContainer, err
 }
 
