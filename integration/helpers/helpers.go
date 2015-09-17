@@ -85,8 +85,8 @@ func StartGarden(gardenBin, containerizerBin string, argv ...string) (ifrit.Proc
 }
 
 func StopGarden(process ifrit.Process, client garden.Client) {
-	// process.Signal(syscall.SIGKILL)
-	// Eventually(process.Wait(), 10).Should(Receive())
+	process.Signal(syscall.SIGKILL)
+	Eventually(process.Wait(), 10).Should(Receive())
 }
 
 func KillAllGarden() {
