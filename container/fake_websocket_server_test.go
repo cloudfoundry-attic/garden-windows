@@ -13,12 +13,13 @@ import (
 )
 
 type TestWebSocketServer struct {
-	Url       *url.URL
-	events    []container.ProcessStreamEvent
-	handlerWS *websocket.Conn
-	listener  *stoppableListener.StoppableListener
-	wg        sync.WaitGroup
-	router    *mux.Router
+	Url        *url.URL
+	events     []container.ProcessStreamEvent
+	handlerWS  *websocket.Conn
+	listener   *stoppableListener.StoppableListener
+	wg         sync.WaitGroup
+	router     *mux.Router
+	closeError *websocket.CloseError
 }
 
 var upgrader = websocket.Upgrader{
@@ -65,6 +66,9 @@ func (server *TestWebSocketServer) createWebSocketHandler(containerId string) {
 			var streamEvent container.ProcessStreamEvent
 			err := websocket.ReadJSON(ws, &streamEvent)
 			if err != nil {
+				if websocketError, ok := err.(*websocket.CloseError); ok {
+					server.closeError = websocketError
+				}
 				continue
 			}
 			server.events = append(server.events, streamEvent)
