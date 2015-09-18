@@ -129,6 +129,10 @@ namespace Containerizer.Tests.Specs.Features
                     {
                         throw new Exception("websocket returned an error message");
                     }
+                    else if (message.Contains("close"))
+                    {
+                        client.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                    }
                     messages.Add(message);
                 }
             }

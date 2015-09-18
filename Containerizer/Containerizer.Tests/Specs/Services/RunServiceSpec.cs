@@ -68,7 +68,6 @@ namespace Containerizer.Tests.Specs.Services
                         runService.Run(websocketMock.Object, apiProcessSpec);
 
                         websocketMock.Verify(x => x.SendEvent("close", "1"));
-                        websocketMock.Verify(x => x.Close(System.Net.WebSockets.WebSocketCloseStatus.NormalClosure, "process finished"));
                     };
                 };
 
@@ -82,7 +81,6 @@ namespace Containerizer.Tests.Specs.Services
                         runService.Run(websocketMock.Object, apiProcessSpec);
 
                         websocketMock.Verify(x => x.SendEvent("close", "0"));
-                        websocketMock.Verify(x => x.Close(System.Net.WebSockets.WebSocketCloseStatus.NormalClosure, "process finished"));
                     };
                 };
             };
@@ -102,7 +100,6 @@ namespace Containerizer.Tests.Specs.Services
                     runService.Run(websocketMock.Object, apiProcessSpec);
 
                     websocketMock.Verify(x => x.SendEvent("close", "-1"));
-                    websocketMock.Verify(x => x.Close(System.Net.WebSockets.WebSocketCloseStatus.InternalServerError, "Running is hard"));
                 };
             };
 
