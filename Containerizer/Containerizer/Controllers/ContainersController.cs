@@ -134,7 +134,7 @@ namespace Containerizer.Controllers
             var container = containerService.GetContainerByHandle(handle);
             if (container != null)
             {
-                Exception ex = await RetriableDestroy.Run(() => containerService.DestroyContainer(handle), MaxRetrys, DelayInMilliseconds);
+                Exception ex = await Retry(() => containerService.DestroyContainer(handle), MaxRetrys, DelayInMilliseconds);
                 if(ex == null) return Ok();
                 return InternalServerError(ex);
             }
@@ -142,13 +142,10 @@ namespace Containerizer.Controllers
             return NotFound();
         }
 
-    }
 
-    public class RetriableDestroy
-    {
-        public static Task<Exception> Run(Action destroy, int maxRetrys, int delayInMilliseconds)
+        private Task<Exception> Retry(Action destroy, int maxRetrys, int delayInMilliseconds)
         {
-            return Task.Run(async () =>
+            return Task.Run<Exception>(async () =>
             {
                 Exception lastException = null;
                 while (maxRetrys > 0)
@@ -163,6 +160,9 @@ namespace Containerizer.Controllers
                     {
                         lastException = exception;
                         maxRetrys--;
+                        logger.Info("Retrying container deletion", new Dictionary<string,object> {
+                            {"reason", lastException},
+                        });
                     }
                     await Task.Delay(delayInMilliseconds);
                 }

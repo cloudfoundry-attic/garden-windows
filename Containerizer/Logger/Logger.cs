@@ -22,7 +22,7 @@ namespace Logger
             this.component = component;
         }
 
-        public void Info(string msg, Dictionary<string, object> args)
+        public void Info(string msg, Dictionary<string, object> args = null)
         {
             WriteLine(new LogMessage()
             {
@@ -32,7 +32,7 @@ namespace Logger
             });
         }
 
-        public void Error(string msg, Dictionary<string, object> args)
+        public void Error(string msg, Dictionary<string, object> args = null)
         {
             WriteLine(new LogMessage()
             {
