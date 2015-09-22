@@ -1,6 +1,7 @@
 package backend_test
 
 import (
+	"net/http"
 	"net/url"
 
 	. "github.com/onsi/ginkgo"
@@ -38,6 +39,30 @@ var _ = Describe("backend", func() {
 		if server.HTTPTestServer != nil {
 			server.Close()
 		}
+	})
+
+	Describe("Client", func() {
+		Context("when there is an timeout making the http connection", func() {
+			BeforeEach(func() {
+				client.SetHttpTimeout(100 * time.Millisecond)
+
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/capacity"),
+						func(http.ResponseWriter, *http.Request) {
+							time.Sleep(1 * time.Second)
+						},
+						ghttp.RespondWith(200, `{"disk_in_bytes":11111,"memory_in_bytes":22222,"max_containers":33333}`),
+					),
+				)
+			})
+
+			It("returns an error", func() {
+				_, err := dotNetBackend.Capacity()
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("use of closed network connection"))
+			})
+		})
 	})
 
 	Describe("Capacity", func() {
