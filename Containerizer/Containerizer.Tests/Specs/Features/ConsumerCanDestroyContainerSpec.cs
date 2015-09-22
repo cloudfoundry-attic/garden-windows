@@ -1,10 +1,8 @@
-﻿using System;
-using System.Linq;
+﻿using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Web.Administration;
-using Newtonsoft.Json.Linq;
 using NSpec;
 
 namespace Containerizer.Tests.Specs.Features
@@ -38,6 +36,35 @@ namespace Containerizer.Tests.Specs.Features
 
                         response = client.DeleteAsync("/api/containers/" + handle).GetAwaiter().GetResult();
                         response.StatusCode.should_be(HttpStatusCode.NotFound);
+                    };
+                };
+
+                it["deletes the container's resources"] = () =>
+                {
+                    var response = client.DeleteAsync("/api/containers/" + handle).GetAwaiter().GetResult();
+                    response.StatusCode.should_be(HttpStatusCode.OK);
+
+                    Directory.Exists(Helpers.GetContainerPath(handle)).should_be_false();
+                };
+
+                context["when one of the container's files is being held open"] = () =>
+                {
+                    it["retries deletion until it eventually succeeds"] = () =>
+                    {
+                        var tgzPath = Helpers.CreateTarFile();
+                        var response = Helpers.StreamIn(tgzPath: tgzPath, client: client, handle: handle);
+                        response.EnsureSuccessStatusCode();
+
+                        var filePath = Helpers.GetContainerPath(handle) + @"\file.txt";
+                        Task<HttpResponseMessage> task;
+                        using (File.OpenRead(filePath))
+                        {
+                            task = client.DeleteAsync("/api/containers/" + handle);
+                            Thread.Sleep(500); // ensures that controller fails at least once
+                        }
+
+                        task.Result.EnsureSuccessStatusCode();
+                        File.Exists(filePath).should_be_false();
                     };
                 };
             };

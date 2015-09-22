@@ -92,6 +92,30 @@ namespace Containerizer.Tests.Specs
         {
             return Path.Combine(ContainerServiceFactory.GetContainerRoot(), GenerateContainerId(handle), "user");
         }
+        public static string CreateTarFile()
+        {
+            var parentDir = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()));
+
+            var contentDirectory = parentDir.CreateSubdirectory("content");
+            File.WriteAllText(Path.Combine(contentDirectory.FullName, "file.txt"), "stuff!!!!");
+            var tarFile = Path.Combine(parentDir.FullName, Guid.NewGuid().ToString() + ".tgz");
+            new TarStreamService().CreateTarFromDirectory(contentDirectory.FullName, tarFile);
+            return tarFile;
+        }
+        public static HttpResponseMessage StreamIn(string tgzPath, string handle, HttpClient client)
+        {
+            HttpResponseMessage responseMessage;
+            var content = new MultipartFormDataContent();
+            var fileStream = new FileStream(tgzPath, FileMode.Open);
+            using (var streamContent = new StreamContent(fileStream))
+            {
+                streamContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+                content.Add(streamContent);
+                string path = "/api/containers/" + handle + "/files?destination=%2F";
+                responseMessage = client.PutAsync(path, streamContent).GetAwaiter().GetResult();
+            }
+            return responseMessage;
+        }
 
         public class ContainerizerProcess : IDisposable
         {

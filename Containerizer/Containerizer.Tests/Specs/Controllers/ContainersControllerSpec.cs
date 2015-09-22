@@ -1,5 +1,6 @@
 ﻿#region
 
+using System.Web.Http.Results;
 using Containerizer.Controllers;
 using Containerizer.Models;
 using IronFrame;
@@ -307,11 +308,13 @@ namespace Containerizer.Tests.Specs.Controllers
                 };
             };
 
+            string handle = "MySecondContainer";
+
             describe["#Stop"] = () =>
             {
                 IHttpActionResult result = null;
 
-                act = () => result = containersController.Stop("MySecondContainer");
+                act = () => result = containersController.Stop(handle);
 
                 context["a handle which exists"] = () =>
                 {
@@ -319,7 +322,7 @@ namespace Containerizer.Tests.Specs.Controllers
                     before = () =>
                     {
                         mockContainer = new Mock<IContainer>();
-                        mockContainerService.Setup(x => x.GetContainerByHandle("MySecondContainer")).Returns(mockContainer.Object);
+                        mockContainerService.Setup(x => x.GetContainerByHandle(handle)).Returns(mockContainer.Object);
                     };
 
                     it["returns 200"] = () =>
@@ -337,7 +340,7 @@ namespace Containerizer.Tests.Specs.Controllers
                 {
                     before = () =>
                     {
-                        mockContainerService.Setup(x => x.GetContainerByHandle("MySecondContainer")).Returns(null as IContainer);
+                        mockContainerService.Setup(x => x.GetContainerByHandle(handle)).Returns(null as IContainer);
                     };
 
                     it["returns 404"] = () =>
@@ -351,7 +354,7 @@ namespace Containerizer.Tests.Specs.Controllers
             {
                 IHttpActionResult result = null;
 
-                act = () => result = containersController.Destroy("MySecondContainer");
+                act = () => result = containersController.Destroy(handle).Result;
 
                 context["a handle which exists"] = () =>
                 {
@@ -359,7 +362,7 @@ namespace Containerizer.Tests.Specs.Controllers
                     before = () =>
                     {
                         mockContainer = new Mock<IContainer>();
-                        mockContainerService.Setup(x => x.GetContainerByHandle("MySecondContainer")).Returns(mockContainer.Object);
+                        mockContainerService.Setup(x => x.GetContainerByHandle(handle)).Returns(mockContainer.Object);
                     };
 
                     it["returns 200"] = () =>
@@ -369,7 +372,41 @@ namespace Containerizer.Tests.Specs.Controllers
 
                     it["calls delete on the containerPathService"] = () =>
                     {
-                        mockContainerService.Verify(x => x.DestroyContainer("MySecondContainer"));
+                        mockContainerService.Verify(x => x.DestroyContainer(handle));
+                    };
+
+                    var setupDestroyExceptions = new Action<int>((int errorCount) =>
+                    {
+                        var callsCount = 0;
+                        mockContainerService.Setup(x => x.DestroyContainer(handle)).Callback(() =>
+                        {
+                            if (callsCount++ < errorCount) throw new IOException("file is in use");
+                        });
+                    });
+
+                    context["when the containerService initially fails to destroy the container"] = () =>
+                    {
+                        before = () => setupDestroyExceptions(2);
+
+                        it["retries"] = () =>
+                        {
+                            mockContainerService.Verify(x => x.DestroyContainer(handle), Times.Exactly(3));
+                            result.should_cast_to<OkResult>();
+                        };
+
+                    };
+
+                    context["when the containerService fails too many times"] = () =>
+                    {
+                        before = () => setupDestroyExceptions(5);
+
+                        it["errors out"] = () =>
+                        {
+                            mockContainerService.Verify(x => x.DestroyContainer(handle), Times.Exactly(5));
+                            result.should_cast_to<ExceptionResult>();
+                            var exceptionResult = (ExceptionResult) result;
+                            expect<IOException>(exceptionResult.Exception.ToString());
+                        };
                     };
                 };
 
@@ -377,7 +414,7 @@ namespace Containerizer.Tests.Specs.Controllers
                 {
                     before = () =>
                     {
-                        mockContainerService.Setup(x => x.GetContainerByHandle("MySecondContainer")).Returns(null as IContainer);
+                        mockContainerService.Setup(x => x.GetContainerByHandle(handle)).Returns(null as IContainer);
                     };
 
                     it["returns 404"] = () =>

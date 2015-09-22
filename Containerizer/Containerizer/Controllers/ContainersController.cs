@@ -1,5 +1,6 @@
 ﻿#region
 
+using System.Threading.Tasks;
 using Containerizer.Models;
 using IronFrame;
 using Logger;
@@ -25,6 +26,8 @@ namespace Containerizer.Controllers
 
     public class ContainersController : ApiController
     {
+        private const int MaxRetrys = 5;
+        private const int DelayInMilliseconds = 1000;
         private readonly IContainerService containerService;
         private readonly ILogger logger;
         private const uint CONTAINER_ACTIVE_PROCESS_LIMIT = 10;
@@ -126,16 +129,45 @@ namespace Containerizer.Controllers
 
         [Route("api/containers/{handle}")]
         [HttpDelete]
-        public IHttpActionResult Destroy(string handle)
+        public async Task<IHttpActionResult> Destroy(string handle)
         {
             var container = containerService.GetContainerByHandle(handle);
             if (container != null)
             {
-                containerService.DestroyContainer(handle);
-                return Ok();
+                Exception ex = await RetriableDestroy.Run(() => containerService.DestroyContainer(handle), MaxRetrys, DelayInMilliseconds);
+                if(ex == null) return Ok();
+                return InternalServerError(ex);
             }
 
             return NotFound();
+        }
+
+    }
+
+    public class RetriableDestroy
+    {
+        public static Task<Exception> Run(Action destroy, int maxRetrys, int delayInMilliseconds)
+        {
+            return Task.Run(async () =>
+            {
+                Exception lastException = null;
+                while (maxRetrys > 0)
+                {
+                    try
+                    {
+                        destroy();
+                        lastException = null;
+                        break;
+                    }
+                    catch (Exception exception)
+                    {
+                        lastException = exception;
+                        maxRetrys--;
+                    }
+                    await Task.Delay(delayInMilliseconds);
+                }
+                return lastException;
+            });
         }
     }
 }

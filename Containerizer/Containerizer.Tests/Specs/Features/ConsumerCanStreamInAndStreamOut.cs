@@ -14,32 +14,20 @@ namespace Containerizer.Tests.Specs.Features
 {
     internal class ConsumerCanStreamInAndStreamOut : nspec
     {
-        private string directoryPath;
         private string handle;
-        private string tgzName;
         private Helpers.ContainerizerProcess process;
-
+        private string tgzPath;
 
         private void before_each()
         {
             process = Helpers.CreateContainerizerProcess();
-            CreateTarToSend();
-        }
-
-        private void CreateTarToSend()
-        {
-            directoryPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-
-            Directory.CreateDirectory(directoryPath);
-            File.WriteAllText(Path.Combine(directoryPath, "file.txt"), "stuff!!!!");
-            tgzName = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + "tgz");
-            new TarStreamService().CreateTarFromDirectory(directoryPath, tgzName);
+            tgzPath = Helpers.CreateTarFile();
         }
 
         private void after_each()
         {
-            Directory.Delete(directoryPath, true);
-            File.Delete(tgzName);
+            var tgzDirectory = Directory.GetParent(tgzPath);
+            tgzDirectory.Delete(true);
             process.Dispose();
         }
 
@@ -59,22 +47,10 @@ namespace Containerizer.Tests.Specs.Features
                     context["when I stream in a file into the container"] = () =>
                     {
                         HttpResponseMessage responseMessage = null;
-                        Stream fileStream = null;
 
                         before = () =>
                         {
-                            var content = new MultipartFormDataContent();
-                            fileStream = new FileStream(tgzName, FileMode.Open);
-                            var streamContent = new StreamContent(fileStream);
-                            streamContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
-                            content.Add(streamContent);
-                            string path = "/api/containers/" + handle + "/files?destination=%2F";
-                            responseMessage = client.PutAsync(path, streamContent).GetAwaiter().GetResult();
-                        };
-
-                        after = () =>
-                        {
-                            fileStream.Close();
+                            responseMessage = Helpers.StreamIn(handle: handle, tgzPath: tgzPath, client: client);
                         };
 
                         it["returns a successful status code"] = () =>
@@ -108,5 +84,6 @@ namespace Containerizer.Tests.Specs.Features
                 };
             };
         }
+
     }
 }
