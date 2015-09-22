@@ -10,17 +10,22 @@ import (
 	"net/http"
 	neturl "net/url"
 	"strings"
+	"time"
 
 	"github.com/pivotal-golang/lager"
 )
 
+const defaultHttpTimeout time.Duration = 10 * time.Second
+
+
 type Client struct {
 	logger  lager.Logger
 	baseUrl *neturl.URL
+	httpClient *http.Client
 }
 
 func NewClient(logger lager.Logger, baseUrl *neturl.URL) *Client {
-	return &Client{logger: logger, baseUrl: baseUrl}
+	return &Client{logger: logger, baseUrl: baseUrl, httpClient: &http.Client{Timeout: defaultHttpTimeout }}
 }
 
 func (client *Client) ReadBody(url string) (io.ReadCloser, error) {
@@ -28,11 +33,10 @@ func (client *Client) ReadBody(url string) (io.ReadCloser, error) {
 	if err != nil {
 		return nil, err
 	}
-	response, err := http.Get(url)
+	response, err := client.httpClient.Get(url)
 	if !isSuccessful(response) {
 		return nil, parseErrorFromResponse(response)
 	}
-
 	return response.Body, nil
 }
 
@@ -41,7 +45,7 @@ func (client *Client) Get(url string, output interface{}) error {
 	if err != nil {
 		return err
 	}
-	response, err := http.Get(url)
+	response, err := client.httpClient.Get(url)
 	return client.parseJson(url, response, err, output)
 }
 
@@ -65,7 +69,7 @@ func (client *Client) Post(url string, payload, output interface{}) error {
 			return err
 		}
 	}
-	response, err := http.Post(url, "application/json", bytes.NewBuffer(jsonPayload))
+	response, err := client.httpClient.Post(url, "application/json", bytes.NewBuffer(jsonPayload))
 	err = client.parseJson(url, response, err, output)
 	return err
 }
@@ -80,7 +84,7 @@ func (client *Client) Put(url string, payload io.Reader, contentType string) err
 		return err
 	}
 	req.Header.Set("Content-Type", contentType)
-	response, err := http.DefaultClient.Do(req)
+	response, err := client.httpClient.Do(req)
 	err = client.parseJson(url, response, err, nil)
 	return err
 }
@@ -94,9 +98,13 @@ func (client *Client) Delete(url string) error {
 	if err != nil {
 		return err
 	}
-	response, err := http.DefaultClient.Do(req)
+	response, err := client.httpClient.Do(req)
 	err = client.parseJson(url, response, err, nil)
 	return err
+}
+
+func (client *Client) SetHttpTimeout(timeout time.Duration){
+	client.httpClient.Timeout = timeout
 }
 
 func (client *Client) addHostToUrl(url string) (string, error) {
