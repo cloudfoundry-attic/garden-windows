@@ -3,6 +3,10 @@
 
 For more information on Diego and Garden, pleasd refer to: [Garden](https://github.com/cloudfoundry-incubator/garden).
 
+## Development requirements
+
+- Go 1.4
+
 ## To run on *nix
 
 
