@@ -52,8 +52,9 @@ func (container *container) GraceTime() time.Duration {
 	return container.graceTime
 }
 
-func (container *container) SetGraceTime(graceTime time.Duration) {
+func (container *container) SetGraceTime(graceTime time.Duration) error {
 	container.graceTime = graceTime
+	return nil
 }
 
 var ErrReadFromPath = errors.New("could not read tar path")
