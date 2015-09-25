@@ -19,13 +19,13 @@ const defaultHttpTimeout time.Duration = 10 * time.Second
 
 
 type Client struct {
-	logger  lager.Logger
-	baseUrl *neturl.URL
+	logger     lager.Logger
+	baseUrl    *neturl.URL
 	httpClient *http.Client
 }
 
 func NewClient(logger lager.Logger, baseUrl *neturl.URL) *Client {
-	return &Client{logger: logger, baseUrl: baseUrl, httpClient: &http.Client{Timeout: defaultHttpTimeout }}
+	return &Client{logger: logger, baseUrl: baseUrl, httpClient: &http.Client{Timeout: defaultHttpTimeout}}
 }
 
 func (client *Client) ReadBody(url string) (io.ReadCloser, error) {
@@ -103,7 +103,7 @@ func (client *Client) Delete(url string) error {
 	return err
 }
 
-func (client *Client) SetHttpTimeout(timeout time.Duration){
+func (client *Client) SetHttpTimeout(timeout time.Duration) {
 	client.httpClient.Timeout = timeout
 }
 

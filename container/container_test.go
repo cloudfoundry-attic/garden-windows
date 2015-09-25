@@ -636,7 +636,7 @@ var _ = Describe("container", func() {
 			Eventually(proc.(process.DotNetProcess).StreamOpen, "10s", "0.1s").Should(BeClosed())
 		})
 
-		It("closes the WebSocket connection with CloseNormalClosure when the close event is received", func(){
+		It("closes the WebSocket connection with CloseNormalClosure when the close event is received", func() {
 			proc, err := container.Run(garden.ProcessSpec{}, garden.ProcessIO{})
 			Expect(err).ShouldNot(HaveOccurred())
 
