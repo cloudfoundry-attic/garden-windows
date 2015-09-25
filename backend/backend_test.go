@@ -60,7 +60,7 @@ var _ = Describe("backend", func() {
 			It("returns an error", func() {
 				_, err := dotNetBackend.Capacity()
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("use of closed network connection"))
+				Expect(err.Error()).To(MatchRegexp("use of closed network connection|Client.Timeout exceeded while awaiting headers"))
 			})
 		})
 	})
