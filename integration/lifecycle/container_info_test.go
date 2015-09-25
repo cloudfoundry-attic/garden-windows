@@ -2,7 +2,6 @@ package lifecycle
 
 import (
 	"github.com/cloudfoundry-incubator/garden"
-	"github.com/cloudfoundry-incubator/garden/client/connection"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -113,14 +112,12 @@ var _ = Describe("Container information", func() {
 
 				value, err = container.Property("foo")
 				Expect(err).To(HaveOccurred())
-				Expect(err.(connection.Error).StatusCode).To(Equal(500))
-				Expect(err.(connection.Error).Message).To(Equal("property does not exist: foo"))
+				Expect(err.Error()).To(ContainSubstring("property does not exist: foo"))
 
 				client.Destroy(container.Handle())
 				value, err = container.Property("foo")
 				Expect(err).To(HaveOccurred())
-				Expect(err.(connection.Error).StatusCode).To(Equal(500))
-				Expect(err.(connection.Error).Message).To(Equal("unknown handle: " + container.Handle()))
+				Expect(err.Error()).To(ContainSubstring("unknown handle: " + container.Handle()))
 			})
 		})
 
