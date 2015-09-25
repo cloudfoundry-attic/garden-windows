@@ -123,7 +123,11 @@ func (r *Runner) TryDial() error {
 }
 
 func (r *Runner) NewClient() client.Client {
-	return client.New(connection.New(r.network, r.addr))
+	conn := connection.NewWithDialerAndLogger(func(string, string) (net.Conn, error) {
+		return net.DialTimeout(r.network, r.addr, 10 * time.Second)
+	}, lager.NewLogger("garden-connection"))
+
+	return client.New(conn)
 }
 
 func (r *Runner) destroyContainers() error {

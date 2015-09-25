@@ -29,10 +29,14 @@ func createContainer(containerSpec garden.ContainerSpec) garden.Container {
 }
 
 func StreamIn(c garden.Container) error {
+	return StreamInToDestination(c, "bin")
+}
+
+func StreamInToDestination(c garden.Container, destPath string) error {
 	tarFile, err := os.Open("../bin/consume.tgz")
 	Expect(err).ShouldNot(HaveOccurred())
 	defer tarFile.Close()
-	return c.StreamIn(garden.StreamInSpec{Path: "bin", TarStream: tarFile})
+	return c.StreamIn(garden.StreamInSpec{Path: destPath, TarStream: tarFile})
 }
 
 func AssertMemoryLimits(container garden.Container) {
@@ -200,10 +204,11 @@ var _ = Describe("Process limits", func() {
 
 			It("streamed in data is enforced", func() {
 				container = createDefaultContainer()
-				limit := uint64(1024 * 1024)
+				limit := uint64(9 * 1024 * 1024)
 				err := container.LimitDisk(garden.DiskLimits{ByteHard: limit})
-				err = StreamIn(container)
-				Expect(err).Should(HaveOccurred())
+				Expect(err).ShouldNot(HaveOccurred())
+
+				StreamInToDestination(container, "extra")
 				metrics, err := container.Metrics()
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(metrics.DiskStat.TotalBytesUsed).Should(BeNumerically("<", limit))
