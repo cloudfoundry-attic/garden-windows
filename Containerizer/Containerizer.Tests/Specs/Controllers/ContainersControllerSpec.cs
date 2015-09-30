@@ -93,9 +93,10 @@ namespace Containerizer.Tests.Specs.Controllers
                     result.should_contain("handle3");
                 };
 
-                it["filters out destroyed containers when a query is passed"] = () =>
+                it["filters out containers missing their properties.json"] = () =>
                 {
-                    mockContainer1.Setup(x => x.GetProperties()).Returns(() => { throw new InvalidOperationException(); });
+                    mockContainer1.Setup(x => x.GetProperties())
+                        .Returns(() => { throw new DirectoryNotFoundException(); });
 
                     result = containersController.Index("{}");
                     result.should_not_contain("handle1");

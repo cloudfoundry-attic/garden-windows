@@ -1,5 +1,6 @@
 ﻿#region
 
+using System.IO;
 using System.Threading.Tasks;
 using Containerizer.Models;
 using IronFrame;
@@ -32,6 +33,7 @@ namespace Containerizer.Controllers
         private readonly ILogger logger;
         private const uint CONTAINER_ACTIVE_PROCESS_LIMIT = 10;
         internal const int CONTAINER_DEFAULT_CPU_WEIGHT = 5;
+        private static readonly object containerDeletionLock = new Object();
 
         public ContainersController(IContainerService containerService, ILogger logger)
         {
@@ -49,23 +51,26 @@ namespace Containerizer.Controllers
             {
                 var desiredProps = JsonConvert.DeserializeObject<Dictionary<string, string>>(q);
 
-                containers = containers.Where((x) =>
+                lock (containerDeletionLock)
                 {
-                    try
+                    containers = containers.Where((x) =>
                     {
-                        var properties = x.GetProperties();
-                        return desiredProps.All(p =>
+                        try
                         {
-                            string propValue;
-                            var exists = properties.TryGetValue(p.Key, out propValue);
-                            return exists && propValue == p.Value;
-                        });
-                    }
-                    catch (InvalidOperationException)
-                    {
-                        return false;
-                    }
-                });
+                            var properties = x.GetProperties();
+                            return desiredProps.All(p =>
+                            {
+                                string propValue;
+                                var exists = properties.TryGetValue(p.Key, out propValue);
+                                return exists && propValue == p.Value;
+                            });
+                        }
+                        catch (DirectoryNotFoundException)
+                        {
+                            return false;
+                        }
+                    });
+                }
             }
             return containers.Select(x => x.Handle).ToList();
         }
@@ -152,7 +157,10 @@ namespace Containerizer.Controllers
                 {
                     try
                     {
-                        destroy();
+                        lock (containerDeletionLock)
+                        {
+                            destroy();
+                        }
                         lastException = null;
                         break;
                     }
