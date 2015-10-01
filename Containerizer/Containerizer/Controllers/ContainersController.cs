@@ -1,7 +1,5 @@
 ﻿#region
 
-using System.IO;
-using System.Threading.Tasks;
 using Containerizer.Models;
 using IronFrame;
 using Logger;
@@ -51,26 +49,23 @@ namespace Containerizer.Controllers
             {
                 var desiredProps = JsonConvert.DeserializeObject<Dictionary<string, string>>(q);
 
-                lock (containerDeletionLock)
+                containers = containers.Where((x) =>
                 {
-                    containers = containers.Where((x) =>
+                    try
                     {
-                        try
+                        var properties = x.GetProperties();
+                        return desiredProps.All(p =>
                         {
-                            var properties = x.GetProperties();
-                            return desiredProps.All(p =>
-                            {
-                                string propValue;
-                                var exists = properties.TryGetValue(p.Key, out propValue);
-                                return exists && propValue == p.Value;
-                            });
-                        }
-                        catch (DirectoryNotFoundException)
-                        {
-                            return false;
-                        }
-                    });
-                }
+                            string propValue;
+                            var exists = properties.TryGetValue(p.Key, out propValue);
+                            return exists && propValue == p.Value;
+                        });
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        return false;
+                    }
+                });
             }
             return containers.Select(x => x.Handle).ToList();
         }
@@ -134,48 +129,16 @@ namespace Containerizer.Controllers
 
         [Route("api/containers/{handle}")]
         [HttpDelete]
-        public async Task<IHttpActionResult> Destroy(string handle)
+        public IHttpActionResult Destroy(string handle)
         {
             var container = containerService.GetContainerByHandle(handle);
             if (container != null)
             {
-                Exception ex = await Retry(() => containerService.DestroyContainer(handle), MaxRetrys, DelayInMilliseconds);
-                if(ex == null) return Ok();
-                return InternalServerError(ex);
+                containerService.DestroyContainer(handle);
+                return Ok();
             }
 
             return NotFound();
-        }
-
-
-        private Task<Exception> Retry(Action destroy, int maxRetrys, int delayInMilliseconds)
-        {
-            return Task.Run<Exception>(async () =>
-            {
-                Exception lastException = null;
-                while (maxRetrys > 0)
-                {
-                    try
-                    {
-                        lock (containerDeletionLock)
-                        {
-                            destroy();
-                        }
-                        lastException = null;
-                        break;
-                    }
-                    catch (Exception exception)
-                    {
-                        lastException = exception;
-                        maxRetrys--;
-                        logger.Info("Retrying container deletion", new Dictionary<string,object> {
-                            {"reason", lastException},
-                        });
-                    }
-                    await Task.Delay(delayInMilliseconds);
-                }
-                return lastException;
-            });
         }
     }
 }

@@ -93,10 +93,10 @@ namespace Containerizer.Tests.Specs.Controllers
                     result.should_contain("handle3");
                 };
 
-                it["filters out containers missing their properties.json"] = () =>
+                it["filters out destroyed containers when a query is passed"] = () =>
                 {
                     mockContainer1.Setup(x => x.GetProperties())
-                        .Returns(() => { throw new DirectoryNotFoundException(); });
+                        .Returns(() => { throw new InvalidOperationException(); });
 
                     result = containersController.Index("{}");
                     result.should_not_contain("handle1");
@@ -355,7 +355,7 @@ namespace Containerizer.Tests.Specs.Controllers
             {
                 IHttpActionResult result = null;
 
-                act = () => result = containersController.Destroy(handle).Result;
+                act = () => result = containersController.Destroy(handle);
 
                 context["a handle which exists"] = () =>
                 {
@@ -384,31 +384,6 @@ namespace Containerizer.Tests.Specs.Controllers
                             if (callsCount++ < errorCount) throw new IOException("file is in use");
                         });
                     });
-
-                    context["when the containerService initially fails to destroy the container"] = () =>
-                    {
-                        before = () => setupDestroyExceptions(2);
-
-                        it["retries"] = () =>
-                        {
-                            mockContainerService.Verify(x => x.DestroyContainer(handle), Times.Exactly(3));
-                            result.should_cast_to<OkResult>();
-                        };
-
-                    };
-
-                    context["when the containerService fails too many times"] = () =>
-                    {
-                        before = () => setupDestroyExceptions(5);
-
-                        it["errors out"] = () =>
-                        {
-                            mockContainerService.Verify(x => x.DestroyContainer(handle), Times.Exactly(5));
-                            result.should_cast_to<ExceptionResult>();
-                            var exceptionResult = (ExceptionResult) result;
-                            expect<IOException>(exceptionResult.Exception.ToString());
-                        };
-                    };
                 };
 
                 context["a handle which does not exist"] = () =>
