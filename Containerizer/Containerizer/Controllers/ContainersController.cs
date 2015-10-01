@@ -134,7 +134,19 @@ namespace Containerizer.Controllers
             var container = containerService.GetContainerByHandle(handle);
             if (container != null)
             {
-                containerService.DestroyContainer(handle);
+                try
+                {
+                    containerService.DestroyContainer(handle);
+                }
+                catch (Exception e)
+                {
+                    logger.Error("Cannot delete container", new Dictionary<string, object>
+                    {
+                        {"handle", handle},
+                        {"exception", e},
+                    });
+                    throw;
+                }
                 return Ok();
             }
 
