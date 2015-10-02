@@ -31,13 +31,22 @@ namespace Containerizer.Controllers
         {
             var response = new Dictionary<string, BulkMetricsResponse>();
             foreach (var handle in handles) {
-                var metrics = containerInfoService.GetMetricsByHandle(handle);
-                if (metrics != null)
+                try
                 {
-                    response[handle] = new BulkMetricsResponse
+                    var metrics = containerInfoService.GetMetricsByHandle(handle);
+                    if (metrics != null)
                     {
-                        Metrics = metrics,
-                    };
+                        response[handle] = new BulkMetricsResponse
+                        {
+                            Metrics = metrics,
+                        };
+                    }
+                }
+                catch (Exception e)
+                {
+                    var ex = new Exception("failed", e);
+                    ex.Data.Add("handle", handle);
+                    throw ex;
                 }
             }
             return response;
