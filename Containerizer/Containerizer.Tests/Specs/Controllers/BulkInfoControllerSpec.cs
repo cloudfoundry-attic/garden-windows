@@ -70,7 +70,7 @@ namespace Containerizer.Tests.Specs.Controllers
                     {
                         result.Count.should_be(2);
                         result[handles[0]].Info.should_be_null();
-                        result[handles[0]].Err.ErrorMsg.should_contain("BOOOOM");
+                        result[handles[0]].Err.Message.should_contain("BOOOOM");
                         result[handles[1]].Info.should_be(info[1]);
                         result[handles[1]].Err.should_be_null();
                     };
@@ -89,7 +89,7 @@ namespace Containerizer.Tests.Specs.Controllers
                     it["returns a not exist error for handle1"] = () =>
                     {
                         result.Count.should_be(2);
-                        result[handles[0]].Err.ErrorMsg.should_contain("not exist");
+                        result[handles[0]].Err.Message.should_contain("not exist");
                         result[handles[1]].Info.should_be(info[1]);
                     };
                 };

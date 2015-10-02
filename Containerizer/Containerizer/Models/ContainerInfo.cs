@@ -37,8 +37,8 @@ namespace Containerizer.Models
 
     public class Error
     {
-        [JsonProperty("error_msg")]
-        public string ErrorMsg;
+        [JsonProperty("Message")]
+        public string Message;
     }
 
     public class ContainerInfo

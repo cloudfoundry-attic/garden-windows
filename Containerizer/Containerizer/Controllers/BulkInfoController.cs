@@ -48,7 +48,7 @@ namespace Containerizer.Controllers
                 {
                     infoEntry.Err = new Error()
                     {
-                        ErrorMsg = "cannot get info for container " + handle + ". Error: " + e.Message,
+                        Message = "cannot get info for container " + handle + ". Error: " + e.Message,
                     };
                 }
                 response[handle] = infoEntry;
