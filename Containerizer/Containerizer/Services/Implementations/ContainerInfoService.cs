@@ -54,18 +54,18 @@ namespace Containerizer.Services.Implementations
                 return null;
             }
 
-            var info = container.GetInfo();
+            var metrics = container.GetMetrics();
 
             var diskUsage = container.CurrentDiskUsage();
             return new ContainerMetricsApiModel
             {
                 MemoryStat = new ContainerMemoryStatApiModel
                 {
-                   TotalBytesUsed = info.MemoryStat.PrivateBytes
+                   TotalBytesUsed = metrics.MemoryStat.PrivateBytes
                 },
                 CPUStat = new ContainerCPUStatApiModel
                 {
-                    Usage = (ulong)info.CpuStat.TotalProcessorTime.Ticks * 100
+                    Usage = (ulong)metrics.CpuStat.TotalProcessorTime.Ticks * 100
                 },
                 DiskStat = new ContainerDiskApiModel
                 {

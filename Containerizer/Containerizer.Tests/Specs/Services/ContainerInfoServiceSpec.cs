@@ -109,7 +109,7 @@ namespace Containerizer.Tests.Specs.Services
 
                 before = () =>
                 {
-                    mockContainer.Setup(x => x.GetInfo()).Returns(new IronFrame.ContainerInfo
+                    mockContainer.Setup(x => x.GetMetrics()).Returns(new IronFrame.ContainerMetrics()
                     {
                         MemoryStat = new ContainerMemoryStat
                         {

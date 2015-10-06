@@ -18,12 +18,8 @@ namespace Containerizer.Services.Implementations
             container.StartGuard();
 
             var processSpec = NewProcessSpec(apiProcessSpec);
-            var info = container.GetInfo();
-            if (info != null)
-            {
-                CopyProcessSpecEnvVariables(processSpec, apiProcessSpec.Env);
-                OverrideEnvPort(processSpec, info);
-            }
+            CopyProcessSpecEnvVariables(processSpec, apiProcessSpec.Env);
+            OverrideEnvPort(processSpec);
 
             var process = Run(websocket, processSpec);
             if (process != null)
@@ -64,7 +60,7 @@ namespace Containerizer.Services.Implementations
             }
         }
 
-        private void OverrideEnvPort(ProcessSpec processSpec, ContainerInfo info)
+        private void OverrideEnvPort(ProcessSpec processSpec)
         {
             if (processSpec.Environment.ContainsKey("PORT"))
             {
