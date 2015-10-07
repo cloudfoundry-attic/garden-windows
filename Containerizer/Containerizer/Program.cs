@@ -31,6 +31,9 @@ namespace Containerizer
 
             // Start OWIN host
             DependencyResolver.ExternalIP = new ExternalIP(externalIP);
+            int workerThreads, portFinishingThreads;
+            ThreadPool.GetMaxThreads(out workerThreads, out portFinishingThreads);
+            ThreadPool.SetMinThreads(workerThreads, portFinishingThreads);
             using (WebApp.Start<Startup>("http://*:" + port + "/"))
             {
                 logger.Info("containerizer.started", new Dictionary<string, object> {{"port", port }, {"externalIP", externalIP}});
