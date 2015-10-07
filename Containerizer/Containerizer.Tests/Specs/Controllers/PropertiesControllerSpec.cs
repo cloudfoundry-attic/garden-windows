@@ -2,13 +2,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using System.Net.Http;
-using System.Threading;
 using System.Web.Http;
 using Containerizer.Controllers;
-using Containerizer.Services.Interfaces;
 using Moq;
 using NSpec;
 using IronFrame;
@@ -49,10 +46,9 @@ namespace Containerizer.Tests.Specs.Controllers
                         });
             };
 
-            /*
             describe[Controller.Index] = () =>
             {
-                Dictionary<string,string> result = null;
+                IHttpActionResult result = null;
                 Dictionary<string,string> properties = null;
 
                 before = () =>
@@ -61,18 +57,31 @@ namespace Containerizer.Tests.Specs.Controllers
                         { "wardrobe", "a lion" },
                         { "a hippo", "the number 25" }
                     };
-                    mockPropertyService.Setup(x => x.GetProperties(mockContainer.Object))
-                        .Returns(() => properties);
- 
-                   result = propertiesController.Index(containerHandle);
+                    mockContainer.Setup(x => x.GetProperties()).Returns(() => properties);
                 };
+
+                act = () => result = propertiesController.Index(containerHandle);
 
                 it["returns the correct property value"] = () =>
                 {
-                    result.should_be(properties);
+                    var jsonResult = result.should_cast_to<JsonResult<Dictionary<string,string>>>();
+                    jsonResult.Content.should_be(properties);
+                };
+
+                context["the container doesn't exist"] = () =>
+                {
+                    before = () =>
+                    {
+                        mockContainer = null;
+                    };
+
+                    it["returns a 404"] = () =>
+                    {
+                        var message = result.should_cast_to<ResponseMessageResult>();
+                        message.Response.StatusCode.should_be(HttpStatusCode.NotFound);
+                    };
                 };
             };
-             * */
 
             describe[Controller.Show] = () =>
             {
@@ -142,9 +151,9 @@ namespace Containerizer.Tests.Specs.Controllers
             describe[Controller.Destroy] = () =>
             {
                 IHttpActionResult result = null;
-                before = () =>
+                act = () =>
                 {
-                    result = propertiesController.Destroy(containerHandle, key).Result;
+                    result = propertiesController.Destroy(containerHandle, key);
                 };
 
                 it["calls the propertyService destroy method"] = () =>
@@ -155,6 +164,20 @@ namespace Containerizer.Tests.Specs.Controllers
                 it["returns a successful status code"] = () =>
                 {
                     result.VerifiesSuccessfulStatusCode();
+                };
+
+                context["the container doesn't exist"] = () =>
+                {
+                    before = () =>
+                    {
+                        mockContainer = null;
+                    };
+
+                    it["returns a 404"] = () =>
+                    {
+                        var message = result.should_cast_to<ResponseMessageResult>();
+                        message.Response.StatusCode.should_be(HttpStatusCode.NotFound);
+                    };
                 };
             };
         }

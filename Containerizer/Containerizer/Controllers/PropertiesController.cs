@@ -35,6 +35,10 @@ namespace Containerizer.Controllers
         public IHttpActionResult Index(string handle)
         {
             var container = containerService.GetContainerByHandle(handle);
+            if (container == null)
+            {
+                return ResponseMessage(Request.CreateResponse(System.Net.HttpStatusCode.NotFound, string.Format("unknown handle: {0}", handle)));
+            }
             var properties = container.GetProperties();
             return Json(properties);
         }
@@ -63,17 +67,25 @@ namespace Containerizer.Controllers
         {
             string requestBody = await Request.Content.ReadAsStringAsync();
             var container = containerService.GetContainerByHandle(handle);
+            if (container == null)
+            {
+                return NotFound();
+            }
             container.SetProperty(propertyKey, requestBody);
             return Json(new GetPropertyResponse {Value = "I did a thing"});
         }
 
         [Route("api/containers/{handle}/properties/{key}")]
         [HttpDelete]
-        public Task<IHttpActionResult> Destroy(string handle, string key)
+        public IHttpActionResult Destroy(string handle, string key)
         {
             var container = containerService.GetContainerByHandle(handle);
+            if (container == null)
+            {
+                return ResponseMessage(Request.CreateResponse(System.Net.HttpStatusCode.NotFound, string.Format("unknown handle: {0}", handle)));
+            }
             container.RemoveProperty(key);
-            return Task.FromResult((IHttpActionResult)Ok());
+            return Ok();
         }
     }
 }
