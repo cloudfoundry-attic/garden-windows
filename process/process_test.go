@@ -34,8 +34,8 @@ var _ = Describe("process", func() {
 
 	Describe("Id", func() {
 		It("returns the pid", func() {
-			proc = DotNetProcess{Pid: 9876}
-			Expect(proc.ID()).To(Equal(uint32(9876)))
+			proc = DotNetProcess{Pid: "9876"}
+			Expect(proc.ID()).To(Equal("9876"))
 		})
 	})
 
@@ -111,7 +111,7 @@ var _ = Describe("process", func() {
 
 		It("calls stop on the process through containerizer", func() {
 			proc = NewDotNetProcess("cHandle", client)
-			proc.Pid = 9876
+			proc.Pid = "9876"
 			err := proc.Signal(garden.SignalKill)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(server.ReceivedRequests()).Should(HaveLen(1))

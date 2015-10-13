@@ -13,7 +13,7 @@ type DotNetProcessExitStatus struct {
 }
 
 type DotNetProcess struct {
-	Pid             uint32
+	Pid             string
 	StreamOpen      chan DotNetProcessExitStatus
 	containerHandle string
 	client          *dotnet.Client
@@ -27,7 +27,7 @@ func NewDotNetProcess(containerHandle string, client *dotnet.Client) DotNetProce
 	}
 }
 
-func (process DotNetProcess) ID() uint32 {
+func (process DotNetProcess) ID() string {
 	return process.Pid
 }
 
@@ -41,6 +41,6 @@ func (process DotNetProcess) SetTTY(ttyspec garden.TTYSpec) error {
 }
 
 func (process DotNetProcess) Signal(signal garden.Signal) error {
-	url := fmt.Sprintf("/api/containers/%s/processes/%d", process.containerHandle, process.Pid)
+	url := fmt.Sprintf("/api/containers/%s/processes/%s", process.containerHandle, process.Pid)
 	return process.client.Delete(url)
 }

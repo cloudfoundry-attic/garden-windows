@@ -545,7 +545,7 @@ var _ = Describe("container", func() {
 				Stdout: stdout,
 			})
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(p.ID()).To(Equal(uint32(5432)))
+			Expect(p.ID()).To(Equal("5432"))
 		})
 
 		It("returns the pid of the process if stdin was closed", func() {
@@ -554,7 +554,7 @@ var _ = Describe("container", func() {
 				Stdin: stdin,
 			})
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(p.ID()).To(Equal(uint32(5432)))
+			Expect(p.ID()).To(Equal("5432"))
 		})
 
 		It("streams stdout from the websocket back through garden", func() {

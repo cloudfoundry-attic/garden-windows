@@ -176,7 +176,7 @@ func (container *container) Run(processSpec garden.ProcessSpec, processIO garden
 	})
 
 	proc := process.NewDotNetProcess(container.Handle(), container.client)
-	pidChannel := make(chan uint32)
+	pidChannel := make(chan string)
 
 	streamWebsocketIOToContainerizer(ws, processIO)
 	go func() {
@@ -190,7 +190,7 @@ func (container *container) Run(processSpec garden.ProcessSpec, processIO garden
 	return proc, nil
 }
 
-func (container *container) Attach(uint32, garden.ProcessIO) (garden.Process, error) {
+func (container *container) Attach(string, garden.ProcessIO) (garden.Process, error) {
 	return process.NewDotNetProcess(container.Handle(), container.client), nil
 }
 
@@ -235,7 +235,7 @@ func streamWebsocketIOToContainerizer(ws *websocket.Conn, processIO garden.Proce
 	}
 }
 
-func streamWebsocketIOFromContainerizer(ws *websocket.Conn, pidChannel chan<- uint32, processIO garden.ProcessIO) (int, error) {
+func streamWebsocketIOFromContainerizer(ws *websocket.Conn, pidChannel chan<- string, processIO garden.ProcessIO) (int, error) {
 	defer close(pidChannel)
 
 	defer func() {
@@ -261,11 +261,7 @@ func streamWebsocketIOFromContainerizer(ws *websocket.Conn, pidChannel chan<- ui
 		}
 
 		if receiveStream.MessageType == "pid" {
-			pid, err := strconv.ParseInt(receiveStream.Data, 10, 32)
-			if err != nil {
-				return -1, err
-			}
-			pidChannel <- uint32(pid)
+			pidChannel <- receiveStream.Data
 		}
 
 		if receiveStream.MessageType == "stdout" && processIO.Stdout != nil {

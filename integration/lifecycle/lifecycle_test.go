@@ -42,10 +42,7 @@ var _ = Describe("Lifecycle", func() {
 				Args: []string{"64"},
 			}, garden.ProcessIO{Stdout: stdout})
 			Expect(err).ShouldNot(HaveOccurred())
-			// NOTE: we have to cast the pid to uint32, otherwise int(0) !=
-			// uint32(0) and the following will be trivially true for any
-			// value of the pid
-			Expect(process.ID()).ToNot(Equal(uint32(0)))
+			Expect(process.ID()).ToNot(Equal("0"))
 		})
 
 		It("can be signaled", func(done Done) {
