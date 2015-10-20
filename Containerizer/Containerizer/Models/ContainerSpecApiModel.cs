@@ -17,6 +17,14 @@ namespace Containerizer.Models
             get;
             set;
         }
+
+       [JsonProperty("grace_time")]
+        public long? GraceTime
+        {
+            get;
+            set;
+        }
+
         public Dictionary<string, string> Properties
         {
             get;

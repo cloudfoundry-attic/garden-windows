@@ -56,6 +56,7 @@ namespace Containerizer
             containerBuilder.RegisterType<BulkInfoController>();
             containerBuilder.RegisterType<BulkMetricsController>();
             containerBuilder.RegisterType<ContainerProcessHandler>();
+            containerBuilder.RegisterType<GraceTimeController>();
             container = containerBuilder.Build();
         }
 

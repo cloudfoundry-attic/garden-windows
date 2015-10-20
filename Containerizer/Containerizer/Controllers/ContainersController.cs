@@ -96,6 +96,8 @@ namespace Containerizer.Controllers
                     container.LimitMemory(spec.Limits.MemoryLimits.LimitInBytes.Value);
                 if (spec.Limits.DiskLimits.ByteHard != null)
                     container.LimitDisk(spec.Limits.DiskLimits.ByteHard.Value);
+                if (spec.GraceTime.HasValue)
+                    container.SetProperty("GraceTime", spec.GraceTime.Value.ToString());
 
                 return new CreateResponse
                 {

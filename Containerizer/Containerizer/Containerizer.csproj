@@ -158,6 +158,7 @@
     <Compile Include="Controllers\ContainersController.cs" />
     <Compile Include="Controllers\FilesController.cs" />
     <Compile Include="Controllers\BulkInfoController.cs" />
+    <Compile Include="Controllers\GraceTimeController.cs" />
     <Compile Include="Controllers\MetricsController.cs" />
     <Compile Include="Controllers\InfoController.cs" />
     <Compile Include="Controllers\LimitsController.cs" />

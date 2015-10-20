@@ -116,10 +116,11 @@ namespace Containerizer.Tests.Specs.Controllers
                     {
                         Limits = new Limits
                         {
-                            MemoryLimits = new MemoryLimits {LimitInBytes = 500},
-                            CpuLimits = new CpuLimits {Weight = 9999},
-                            DiskLimits = new DiskLimits {ByteHard = 999}
-                        }
+                            MemoryLimits = new MemoryLimits { LimitInBytes = 500 },
+                            CpuLimits = new CpuLimits { Weight = 9999 },
+                            DiskLimits = new DiskLimits { ByteHard = 999 }
+                        },
+                        GraceTime = 1234
                     };
                 };
 
@@ -154,6 +155,12 @@ namespace Containerizer.Tests.Specs.Controllers
                         containersController.Create(containerSpec);
                         mockContainer.Verify(x => x.LimitMemory(500));
                         mockContainer.Verify(x => x.LimitDisk(999));
+                    };
+
+                    it["sets GraceTime on the Container"] = () =>
+                    {
+                        containersController.Create(containerSpec);
+                        mockContainer.Verify(x => x.SetProperty("GraceTime", "1234"));
                     };
 
                     it["doesn't set limits when the values are null"] = () =>
