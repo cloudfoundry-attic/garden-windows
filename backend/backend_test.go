@@ -320,4 +320,63 @@ var _ = Describe("backend", func() {
 			})
 		})
 	})
+
+	Describe("GraceTime", func() {
+		var testContainer garden.ContainerSpec
+
+		Context("containerizer GraceTime endpoint succeeds", func() {
+			BeforeEach(func() {
+				testContainer = garden.ContainerSpec{
+					GraceTime: 2 * time.Second,
+				}
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/containers"),
+						ghttp.VerifyJSONRepresenting(testContainer),
+						ghttp.RespondWith(200, `{"handle":"handle1"}`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/containers/handle1/grace_time"),
+						ghttp.RespondWith(200, `{"grace_time":2000000000}`),
+					),
+				)
+			})
+
+			It("returns the container gracetime", func() {
+				container, err := dotNetBackend.Create(testContainer)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(container.Handle()).To(Equal("handle1"))
+				graceTime := dotNetBackend.GraceTime(container)
+				Expect(graceTime).Should(Equal(2 * time.Second))
+			})
+		})
+
+		Context("containerizer GraceTime endpoint fails", func() {
+			BeforeEach(func() {
+				testContainer = garden.ContainerSpec{
+					GraceTime: 2 * time.Second,
+				}
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/containers"),
+						ghttp.VerifyJSONRepresenting(testContainer),
+						ghttp.RespondWith(200, `{"handle":"handle1"}`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/containers/handle1/grace_time"),
+						ghttp.RespondWith(500, `catastrophic error`),
+					),
+				)
+			})
+
+			It("returns the default backend gracetime", func() {
+				container, err := dotNetBackend.Create(testContainer)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(container.Handle()).To(Equal("handle1"))
+
+				graceTime := dotNetBackend.GraceTime(container)
+				Expect(graceTime).Should(Equal(1 * time.Minute))
+			})
+		})
+	})
 })

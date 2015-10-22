@@ -37,6 +37,10 @@ type ProcessStreamEvent struct {
 	Data           string             `json:"data"`
 }
 
+type GraceTimePorperty struct {
+	GraceTime time.Duration `json:"grace_time,omitempty"`
+}
+
 func NewContainer(
 	client *dotnet.Client,
 	handle string,
@@ -48,13 +52,18 @@ func NewContainer(
 	}
 }
 
-func (container *container) GraceTime() time.Duration {
-	return container.graceTime
+func (container *container) GraceTime() (time.Duration, error) {
+	containerGraceTime := GraceTimePorperty{}
+	url := fmt.Sprintf("/api/containers/%s/grace_time", container.handle)
+	err := container.client.Get(url, &containerGraceTime)
+
+	return containerGraceTime.GraceTime, err
 }
 
 func (container *container) SetGraceTime(graceTime time.Duration) error {
-	container.graceTime = graceTime
-	return nil
+	url := fmt.Sprintf("/api/containers/%s/grace_time", container.Handle())
+	err := container.client.Post(url, GraceTimePorperty{GraceTime: graceTime}, nil)
+	return err
 }
 
 var ErrReadFromPath = errors.New("could not read tar path")

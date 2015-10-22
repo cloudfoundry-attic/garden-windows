@@ -957,14 +957,51 @@ var _ = Describe("container", func() {
 	})
 
 	Describe("GraceTime", func() {
-		It("exposes a getter & setter", func() {
-			container := netContainer.NewContainer(client, "containerhandle", logger)
+		Describe("Getter", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("GET", "/api/containers/containerhandle/grace_time"),
+						ghttp.RespondWith(200, `{"grace_time":1000000000}`),
+					),
+				)
+			})
+			It("received the gracetime", func() {
+				container := netContainer.NewContainer(client, "containerhandle", logger)
 
-			container.SetGraceTime(time.Minute)
-			Expect(container.GraceTime()).To(Equal(time.Minute))
-			container.SetGraceTime(time.Second)
-			Expect(container.GraceTime()).To(Equal(time.Second))
+				graceTime, err := container.GraceTime()
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(server.ReceivedRequests()).Should(HaveLen(1))
+				Expect(graceTime).Should(Equal(time.Second))
+			})
 		})
 
+		Describe("Setter", func() {
+			var requestBody string
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/containers/containerhandle/grace_time"),
+						ghttp.RespondWith(200, `{}`),
+						func(w http.ResponseWriter, req *http.Request) {
+							body, err := ioutil.ReadAll(req.Body)
+							req.Body.Close()
+							Expect(err).ShouldNot(HaveOccurred())
+							requestBody = string(body)
+						},
+					),
+				)
+			})
+			It("sets the gracetime", func() {
+				container := netContainer.NewContainer(client, "containerhandle", logger)
+
+				err := container.SetGraceTime(time.Second)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(server.ReceivedRequests()).Should(HaveLen(1))
+				Expect(requestBody).Should(Equal(`{"grace_time":1000000000}`))
+			})
+		})
 	})
 })
