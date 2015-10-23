@@ -22,7 +22,6 @@ type container struct {
 	handle    string
 	logger    lager.Logger
 	client    *dotnet.Client
-	graceTime time.Duration
 }
 
 type ports struct {
