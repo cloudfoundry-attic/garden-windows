@@ -14,12 +14,12 @@ namespace Containerizer.Services.Implementations
     public class ContainerInfoService : IContainerInfoService
     {
         private readonly IContainerService containerService;
-        private readonly IExternalIP externalIP;
+        private readonly IOptions options;
 
-        public ContainerInfoService(IContainerService containerService, IExternalIP externalIP)
+        public ContainerInfoService(IContainerService containerService, IOptions options)
         {
             this.containerService = containerService;
-            this.externalIP = externalIP;
+            this.options = options;
         }
 
         public ContainerInfo GetInfoByHandle(string handle)
@@ -42,7 +42,7 @@ namespace Containerizer.Services.Implementations
             {
                 MappedPorts = portMappings.ToList(),
                 Properties = rawInfo.Properties,
-                ExternalIP = externalIP.ExternalIP(),
+                ExternalIP = options.ExternalIp,
             };
         }
 

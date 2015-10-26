@@ -24,14 +24,14 @@ namespace Containerizer.Tests.Specs.Services
             Mock<IContainer> mockContainer = null;
             string handle = "container-handle";
             ContainerInfoService service = null;
-            Mock<IExternalIP> mockExternalIP = null;
+            Mock<IOptions> mockExternalIP = null;
 
             before = () =>
             {
                 mockContainer = new Mock<IContainer>();
                 mockContainerService = new Mock<IContainerService>();
                 mockContainerService.Setup(x => x.GetContainerByHandle(handle)).Returns(mockContainer.Object);
-                mockExternalIP = new Mock<IExternalIP>();
+                mockExternalIP = new Mock<IOptions>();
                 service = new ContainerInfoService(mockContainerService.Object, mockExternalIP.Object);
             };
 
@@ -55,7 +55,7 @@ namespace Containerizer.Tests.Specs.Services
                             }
                         });
 
-                    mockExternalIP.Setup(x => x.ExternalIP()).Returns(expectedExternalIP);
+                    mockExternalIP.Setup(x => x.ExternalIp).Returns(expectedExternalIP);
                 };
 
                 act = () =>

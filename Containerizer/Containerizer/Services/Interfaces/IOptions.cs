@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 
 namespace Containerizer.Services.Interfaces
 {
-    public interface IExternalIP
+    public interface IOptions
     {
-         string ExternalIP();
+         string ExternalIp { get; }
+         string ContainerDirectory { get; }
+
     }
 }

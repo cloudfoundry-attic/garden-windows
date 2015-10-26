@@ -88,9 +88,9 @@ namespace Containerizer.Tests.Specs
             return BitConverter.ToString(hashBytes, 0, 9).Replace("-", "");
         }
 
-        public static string GetContainerPath(string handle)
+        public static string GetContainerPath(string containerRootDirectory, string handle)
         {
-            return Path.Combine(ContainerServiceFactory.GetContainerRoot(), GenerateContainerId(handle), "user");
+            return Path.Combine(containerRootDirectory, GenerateContainerId(handle), "user");
         }
         public static string CreateTarFile()
         {
@@ -122,12 +122,14 @@ namespace Containerizer.Tests.Specs
             private Job job;
             public readonly string ExternalIP;
             public readonly int Port;
-
-            public ContainerizerProcess(int port)
+            public readonly string ContainerDirectory;
+            
+            public ContainerizerProcess(int port, string containerDirectory)
             {
                 this.job = new Job();
                 this.ExternalIP = "10.1.2." + new Random().Next(2, 253).ToString();
                 this.Port = port;
+                this.ContainerDirectory = containerDirectory;
             }
 
             public void Start()
@@ -139,7 +141,7 @@ namespace Containerizer.Tests.Specs
                 process.StartInfo.RedirectStandardOutput = true;
                 process.StartInfo.CreateNoWindow = true;
                 process.StartInfo.FileName = Path.Combine(Helpers.AssemblyDirectory, "..", "..", "..", "Containerizer", "bin", "Containerizer.exe");
-                process.StartInfo.Arguments = ExternalIP + " " + Port.ToString();
+                process.StartInfo.Arguments = " --externalIP " + ExternalIP + " --port " + Port.ToString() + " --containerDirectory " + ContainerDirectory;
                 Retry.Do(() => process.Start(), TimeSpan.FromSeconds(1), 5);
                 job.AddProcess(process.Handle);
                 process.StandardOutput.ReadLine().should_contain("containerizer.started");
@@ -160,6 +162,11 @@ namespace Containerizer.Tests.Specs
         }
 
         public static ContainerizerProcess CreateContainerizerProcess()
+        {
+            return CreateContainerizerProcess(Factories.ContainerServiceFactory.GetContainerDefaultRoot());
+        }
+
+        public static ContainerizerProcess CreateContainerizerProcess(string containerDirectory)
         {
             while (true)
             {
@@ -187,7 +194,7 @@ namespace Containerizer.Tests.Specs
                 }
             }
             var port = 48080;
-            var process = new ContainerizerProcess(port);
+            var process = new ContainerizerProcess(port, containerDirectory);
             process.Start();
             return process;
         }

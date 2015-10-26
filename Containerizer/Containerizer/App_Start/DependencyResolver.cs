@@ -24,21 +24,25 @@ namespace Containerizer
     {
         private readonly Autofac.IContainer container;
         private static IContainerService containerService;
-        public static IExternalIP ExternalIP;
+        public static IOptions StartOptions;
         public static ILogger logger;
 
         static DependencyResolver()
         {
-            containerService = new ContainerServiceFactory().New();
             logger = new Logger.Logger("containerizer");
         }
 
         public DependencyResolver()
         {
+            if (containerService == null)
+            {
+                containerService = new ContainerServiceFactory(StartOptions).New();
+            }
+
             var containerBuilder = new ContainerBuilder();
 
             containerBuilder.Register(context => containerService).As<IContainerService>();
-            containerBuilder.Register(context => ExternalIP).As<IExternalIP>();
+            containerBuilder.Register(context => StartOptions).As<IOptions>();
             containerBuilder.RegisterType<RunService>().As<IRunService>();
             containerBuilder.RegisterType<ContainerInfoService>().As<IContainerInfoService>();
             containerBuilder.RegisterType<StreamInService>().As<IStreamInService>();
@@ -57,6 +61,7 @@ namespace Containerizer
             containerBuilder.RegisterType<BulkMetricsController>();
             containerBuilder.RegisterType<ContainerProcessHandler>();
             containerBuilder.RegisterType<GraceTimeController>();
+            containerBuilder.RegisterType<CapacityController>();
             container = containerBuilder.Build();
         }
 

@@ -44,6 +44,7 @@ func (dotNetBackend *dotNetBackend) Stop() {}
 
 func (dotNetBackend *dotNetBackend) GraceTime(container garden.Container) time.Duration {
 	graceTime, err := container.(WindowsContainer).GraceTime()
+	fmt.Println(graceTime, dotNetBackend.graceTime, err)
 	if err != nil {
 		return dotNetBackend.graceTime
 	}

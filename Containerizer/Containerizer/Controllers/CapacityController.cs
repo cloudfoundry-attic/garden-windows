@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Web.Http;
 using Containerizer.Factories;
 using Newtonsoft.Json;
+using Containerizer.Services.Interfaces;
 
 namespace Containerizer.Controllers
 {
@@ -18,6 +19,12 @@ namespace Containerizer.Controllers
     public class CapacityController : ApiController
     {
         private const ulong MaxContainers = 100;
+        private readonly string containerDirectory;
+
+        public CapacityController(IOptions options)
+        {
+            containerDirectory = options.ContainerDirectory;
+        }
 
         [Route("api/capacity")]
         [HttpGet]
@@ -29,7 +36,7 @@ namespace Containerizer.Controllers
                 throw new Win32Exception(Marshal.GetLastWin32Error());
             }
 
-            var drive = new DriveInfo(ContainerServiceFactory.GetContainerRoot());
+            var drive = new DriveInfo(containerDirectory);
 
             return new Capacity
             {

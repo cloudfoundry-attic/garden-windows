@@ -64,7 +64,7 @@ func StartGarden(gardenBin, containerizerBin string, argv ...string) (ifrit.Proc
 	gardenRunner := garden_runner.New("tcp4", gardenAddr, tmpDir, gardenBin, fmt.Sprintf("http://127.0.0.1:%d", containerizerPort))
 	containerizerRunner := ginkgomon.New(ginkgomon.Config{
 		Name:              "containerizer",
-		Command:           exec.Command(containerizerBin, "127.0.0.1", strconv.Itoa(int(containerizerPort))),
+		Command:           exec.Command(containerizerBin, "--externalIp", "127.0.0.1",  "--port", strconv.Itoa(int(containerizerPort))),
 		AnsiColorCode:     "",
 		StartCheck:        "containerizer.started",
 		StartCheckTimeout: 10 * time.Second,

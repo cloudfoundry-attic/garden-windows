@@ -3,6 +3,8 @@ using Containerizer.Services.Implementations;
 using Microsoft.Owin.Hosting;
 using System;
 using System.Threading;
+using CommandLine;
+using CommandLine.Text;
 
 namespace Containerizer
 {
@@ -14,30 +16,26 @@ namespace Containerizer
         {
             var logger = DependencyResolver.logger;
 
-            if (args.Length != 2)
+            var startOptions = new Options();
+            if (CommandLine.Parser.Default.ParseArguments(args, startOptions))
             {
-                Console.Error.WriteLine("Usage: {0} [ExternalIP] [Port]", "Containerizer.exe");
-                return;
-            }
+                Console.CancelKeyPress += (s, e) =>
+                {
+                    e.Cancel = true;
+                    ExitLatch.Set();
+                };
 
-            var externalIP = args[0];
-            var port = args[1];
+                // Start OWIN host
+                DependencyResolver.StartOptions = startOptions;
 
-            Console.CancelKeyPress += (s, e) =>
-            {
-                e.Cancel = true;
-                ExitLatch.Set();
-            };
-
-            // Start OWIN host
-            DependencyResolver.ExternalIP = new ExternalIP(externalIP);
-            int workerThreads, portFinishingThreads;
-            ThreadPool.GetMaxThreads(out workerThreads, out portFinishingThreads);
-            ThreadPool.SetMinThreads(workerThreads, portFinishingThreads);
-            using (WebApp.Start<Startup>("http://*:" + port + "/"))
-            {
-                logger.Info("containerizer.started", new Dictionary<string, object> {{"port", port }, {"externalIP", externalIP}});
-                ExitLatch.WaitOne();
+                int workerThreads, portFinishingThreads;
+                ThreadPool.GetMaxThreads(out workerThreads, out portFinishingThreads);
+                ThreadPool.SetMinThreads(workerThreads, portFinishingThreads);
+                using (WebApp.Start<Startup>("http://*:" + startOptions.Port + "/"))
+                {
+                    logger.Info("containerizer.started", new Dictionary<string, object> { { "port", startOptions.Port }, { "externalIP", startOptions.ExternalIp } });
+                    ExitLatch.WaitOne();
+                }
             }
         }
     }

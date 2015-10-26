@@ -14,8 +14,14 @@ namespace Containerizer.Tests.Specs.Features
             Helpers.ContainerizerProcess process = null;
             HttpClient client = null;
             string handle = null;
+            string containerRootDirectory = null;
 
-            before = () => process = Helpers.CreateContainerizerProcess();
+            before = () =>
+            {
+                containerRootDirectory = Factories.ContainerServiceFactory.GetContainerDefaultRoot();
+                process = Helpers.CreateContainerizerProcess(containerRootDirectory);
+            };
+
             after = () => process.Dispose();
 
             context["given that I am a consumer of the api and a container exists"] = () =>
@@ -44,7 +50,7 @@ namespace Containerizer.Tests.Specs.Features
                     var response = client.DeleteAsync("/api/containers/" + handle).GetAwaiter().GetResult();
                     response.StatusCode.should_be(HttpStatusCode.OK);
 
-                    Directory.Exists(Helpers.GetContainerPath(handle)).should_be_false();
+                    Directory.Exists(Helpers.GetContainerPath(containerRootDirectory, handle)).should_be_false();
                 };
             };
         }

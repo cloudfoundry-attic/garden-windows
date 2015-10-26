@@ -1,4 +1,5 @@
 ﻿using Containerizer.Controllers;
+using Containerizer.Services.Implementations;
 using NSpec;
 
 namespace Containerizer.Tests.Specs.Controllers
@@ -11,7 +12,10 @@ namespace Containerizer.Tests.Specs.Controllers
             {
                 CapacityController controller = null;
 
-                before = () => { controller = new CapacityController(); };
+                before = () => {
+                    var options = new Options() { };
+                    controller = new CapacityController(options); 
+                };
 
                 it["returns positive capacity for MemoryInBytes"] = () =>
                 {

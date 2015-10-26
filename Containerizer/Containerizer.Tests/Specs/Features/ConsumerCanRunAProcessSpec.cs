@@ -23,10 +23,12 @@ namespace Containerizer.Tests.Specs.Features
             HttpClient httpClient = null;
             string handle = null;
             Helpers.ContainerizerProcess process = null;
+            string containerRootDirectory = null;
 
             before = () =>
             {
-                process = Helpers.CreateContainerizerProcess();
+                containerRootDirectory = Factories.ContainerServiceFactory.GetContainerDefaultRoot();
+                process = Helpers.CreateContainerizerProcess(containerRootDirectory);
                 httpClient = process.GetClient();
                 handle = Helpers.CreateContainerWithGUID(httpClient);
             };
@@ -48,7 +50,7 @@ namespace Containerizer.Tests.Specs.Features
                         var response = httpClient.PutAsync("/api/containers/" + handle + "/properties/executor:env", new StringContent("[{\"name\":\"INSTANCE_GUID\",\"value\":\"ExcitingGuid\"}]")).Result;
                         response.IsSuccessStatusCode.should_be_true();
 
-                        containerPath = Helpers.GetContainerPath(handle);
+                        containerPath = Helpers.GetContainerPath(containerRootDirectory, handle);
                         File.WriteAllBytes(containerPath + "/myfile.bat",
                             new UTF8Encoding(true).GetBytes(
                                 "@echo off\r\n@echo Hi Fred\r\n@echo Jane is good\r\n@echo Jill is better\r\nset PORT\r\nset INSTANCE_GUID\r\n"));
