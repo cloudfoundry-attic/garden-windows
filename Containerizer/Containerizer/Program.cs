@@ -33,7 +33,7 @@ namespace Containerizer
                 ThreadPool.SetMinThreads(workerThreads, portFinishingThreads);
                 using (WebApp.Start<Startup>("http://*:" + startOptions.Port + "/"))
                 {
-                    logger.Info("containerizer.started", new Dictionary<string, object> { { "port", startOptions.Port }, { "externalIP", startOptions.ExternalIp } });
+                    logger.Info("containerizer.started", new Dictionary<string, object> { { "port", startOptions.Port }, { "machineIp", startOptions.MachineIp } });
                     ExitLatch.WaitOne();
                 }
             }

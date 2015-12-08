@@ -42,7 +42,7 @@ namespace Containerizer.Services.Implementations
             {
                 MappedPorts = portMappings.ToList(),
                 Properties = rawInfo.Properties,
-                ExternalIP = options.ExternalIp,
+                ExternalIP = options.MachineIp,
             };
         }
 

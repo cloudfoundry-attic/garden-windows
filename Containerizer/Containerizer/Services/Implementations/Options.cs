@@ -15,7 +15,7 @@ namespace Containerizer.Services.Implementations
         [Option(
             Required = true,
             HelpText = "IP address to listen on.")]
-        public string ExternalIp { get; set; }
+        public string MachineIp { get; set; }
 
         [Option(
             Required = true,

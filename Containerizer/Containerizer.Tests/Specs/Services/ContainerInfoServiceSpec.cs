@@ -40,7 +40,7 @@ namespace Containerizer.Tests.Specs.Services
                 ContainerInfo result = null;
                 int expectedHttpPort = 1234;
                 int expectedSsshPort = 4567;
-                string expectedExternalIP = "10.11.12.13";
+                string expectedMachineIP = "10.11.12.13";
 
                 before = () =>
                 {
@@ -55,7 +55,7 @@ namespace Containerizer.Tests.Specs.Services
                             }
                         });
 
-                    mockExternalIP.Setup(x => x.ExternalIp).Returns(expectedExternalIP);
+                    mockExternalIP.Setup(x => x.MachineIp).Returns(expectedMachineIP);
                 };
 
                 act = () =>
@@ -82,7 +82,7 @@ namespace Containerizer.Tests.Specs.Services
                 it["returns the external ip address"] = () =>
                 {
                     var extrernalIP = result.ExternalIP;
-                    extrernalIP.should_be(expectedExternalIP);
+                    extrernalIP.should_be(expectedMachineIP);
                 };
 
                 context["when the container does not exist"] = () =>

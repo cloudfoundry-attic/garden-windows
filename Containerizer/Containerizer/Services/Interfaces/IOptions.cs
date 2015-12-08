@@ -8,7 +8,7 @@ namespace Containerizer.Services.Interfaces
 {
     public interface IOptions
     {
-         string ExternalIp { get; }
+         string MachineIp { get; }
          string ContainerDirectory { get; }
 
     }

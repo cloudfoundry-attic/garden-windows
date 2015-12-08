@@ -120,14 +120,14 @@ namespace Containerizer.Tests.Specs
         public class ContainerizerProcess : IDisposable
         {
             private Job job;
-            public readonly string ExternalIP;
+            public readonly string MachineIP;
             public readonly int Port;
             public readonly string ContainerDirectory;
             
             public ContainerizerProcess(int port, string containerDirectory)
             {
                 this.job = new Job();
-                this.ExternalIP = "10.1.2." + new Random().Next(2, 253).ToString();
+                this.MachineIP = "10.1.2." + new Random().Next(2, 253).ToString();
                 this.Port = port;
                 this.ContainerDirectory = containerDirectory;
             }
@@ -141,7 +141,7 @@ namespace Containerizer.Tests.Specs
                 process.StartInfo.RedirectStandardOutput = true;
                 process.StartInfo.CreateNoWindow = true;
                 process.StartInfo.FileName = Path.Combine(Helpers.AssemblyDirectory, "..", "..", "..", "Containerizer", "bin", "Containerizer.exe");
-                process.StartInfo.Arguments = " --externalIP " + ExternalIP + " --port " + Port.ToString() + " --containerDirectory " + ContainerDirectory;
+                process.StartInfo.Arguments = " --machineIP " + MachineIP + " --port " + Port.ToString() + " --containerDirectory " + ContainerDirectory;
                 Retry.Do(() => process.Start(), TimeSpan.FromSeconds(1), 5);
                 job.AddProcess(process.Handle);
                 process.StandardOutput.ReadLine().should_contain("containerizer.started");

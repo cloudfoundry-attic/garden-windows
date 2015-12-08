@@ -67,8 +67,8 @@ namespace Containerizer.Tests.Specs.Features
                         var response = result.Content.ReadAsJson();
 
                         response.Count.should_be(2);
-                        response[handle1]["Info"]["ExternalIP"].ToString().should_be(process.ExternalIP);
-                        response[handle2]["Info"]["ExternalIP"].ToString().should_be(process.ExternalIP);
+                        response[handle1]["Info"]["ExternalIP"].ToString().should_be(process.MachineIP);
+                        response[handle2]["Info"]["ExternalIP"].ToString().should_be(process.MachineIP);
                     };
                 };
             };
@@ -100,7 +100,7 @@ namespace Containerizer.Tests.Specs.Features
             var infoPath = "/api/containers/" + handle + "/info";
             var infoResponse = client.GetAsync(infoPath).Result.Content.ReadAsJson() as JObject;
 
-            infoResponse["ExternalIP"].ToString().should_be(process.ExternalIP);
+            infoResponse["ExternalIP"].ToString().should_be(process.MachineIP);
             infoResponse["Properties"].ToObject<Dictionary<string, string>>().should_be(properties);
         }
 
