@@ -148,35 +148,6 @@ namespace Containerizer.Tests.Specs.Controllers
                 };
             };
 
-            describe["#LimitDisk"] = () =>
-            {
-                IHttpActionResult result = null;
-                const ulong bytes = 5;
-                act = () =>
-                {
-                    var limits = new DiskLimits { ByteHard = bytes };
-                    result = LimitsController.LimitDisk(handle, limits);
-                };
-
-                it["sets limits on the container"] = () =>
-                {
-                    mockContainer.Verify(x => x.LimitDisk(bytes));
-                };
-
-                context["when the container does not exist"] = () =>
-                {
-                    before = () =>
-                    {
-                        mockContainerService.Setup(x => x.GetContainerByHandle(It.IsAny<string>())).Returns(null as IContainer);
-                    };
-
-                    it["Returns not found"] = () =>
-                    {
-                        result.should_cast_to<NotFoundResult>();
-                    };
-                };
-            };
-
             describe["#CurrentDiskLimit"] = () =>
             {
                 it["returns the current limit on the container"] = () =>

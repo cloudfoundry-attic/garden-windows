@@ -131,11 +131,6 @@ func (container *container) CurrentCPULimits() (garden.CPULimits, error) {
 	return limits, err
 }
 
-func (container *container) LimitDisk(limits garden.DiskLimits) error {
-	url := fmt.Sprintf("/api/containers/%s/disk_limit", container.Handle())
-	return container.client.Post(url, limits, nil)
-}
-
 func (container *container) CurrentDiskLimits() (garden.DiskLimits, error) {
 	url := fmt.Sprintf("/api/containers/%s/disk_limit", container.Handle())
 	limits := garden.DiskLimits{}

@@ -94,20 +94,6 @@ namespace Containerizer.Controllers
         }
 
         [Route("api/containers/{handle}/disk_limit")]
-        [HttpPost]
-        public IHttpActionResult LimitDisk(string handle, DiskLimits limits)
-        {
-            var container = containerService.GetContainerByHandle(handle);
-            if (container == null)
-            {
-                return NotFound();
-            }
-
-            if (limits.ByteHard != null) container.LimitDisk(limits.ByteHard.Value);
-            return Ok();
-        }
-
-        [Route("api/containers/{handle}/disk_limit")]
         [HttpGet]
         public IHttpActionResult CurrentDiskLimit(string handle)
         {

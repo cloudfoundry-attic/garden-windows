@@ -190,52 +190,6 @@ var _ = Describe("container", func() {
 		})
 	})
 
-	Describe("LimitDisk", func() {
-		Context("Containerizer returns 200", func() {
-			var requestBody string
-			BeforeEach(func() {
-				server.AppendHandlers(
-					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("POST", "/api/containers/containerhandle/disk_limit"),
-						ghttp.RespondWith(200, `{}`),
-						func(w http.ResponseWriter, req *http.Request) {
-							body, err := ioutil.ReadAll(req.Body)
-							req.Body.Close()
-							Expect(err).ShouldNot(HaveOccurred())
-							requestBody = string(body)
-						},
-					),
-				)
-			})
-
-			It("sets limits on the container", func() {
-				limit := garden.DiskLimits{ByteHard: 555}
-				err := container.LimitDisk(limit)
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(server.ReceivedRequests()).Should(HaveLen(1))
-				Expect(requestBody).Should(Equal(`{"byte_hard":555}`))
-			})
-		})
-
-		Context("Containerizer returns non 200", func() {
-			BeforeEach(func() {
-				server.AppendHandlers(
-					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("POST", "/api/containers/containerhandle/disk_limit"),
-						ghttp.RespondWith(500, "{}"),
-					),
-				)
-			})
-
-			It("returns an error", func() {
-				limit := garden.DiskLimits{ByteHard: 555}
-				err := container.LimitDisk(limit)
-				Expect(err).To(HaveOccurred())
-			})
-		})
-	})
-
 	Describe("CurrentDiskLimits", func() {
 		BeforeEach(func() {
 			server.AppendHandlers(
