@@ -2,6 +2,7 @@
 
 using System;
 using Containerizer.Services.Implementations;
+using Newtonsoft.Json;
 using NSpec;
 using IronFrame;
 using Moq;
@@ -183,7 +184,7 @@ namespace Containerizer.Tests.Specs.Services
                         };
                     };
 
-                    context["when a 'address' argument is in the request"] = () =>
+                    context["when it's running the launcher with diego-sshd"] = () =>
                     {
                         it["modifies the address argument to use the hostport matching the requested container port"] = () =>
                         {
@@ -192,10 +193,11 @@ namespace Containerizer.Tests.Specs.Services
 
                             runService.Run(websocketMock.Object, new ApiProcessSpec
                             {
-                                Args = new string[] { "-address=foobar:8080" },
+                                Args = new string[] { "/tmp/lifecycle/diego-sshd -address=foobar:8080 -otherFlags=\"foo bar baz\"" },
                             });
-
-                            containerMock.Verify(x => x.Run(It.Is((ProcessSpec p) => p.Arguments[0] == "-address=foobar:1234"), It.IsAny<IProcessIO>()));
+                            containerMock.Verify(
+                                x => x.Run(It.Is((ProcessSpec p) => String.Join(" ", JsonConvert.DeserializeObject<string[]>(p.Environment["ARGJSON"])) == "/tmp/lifecycle/diego-sshd -address=foobar:1234 -otherFlags=\"foo bar baz\"" ), It.IsAny<IProcessIO>())
+                            );
                         };
                     };
                 };
