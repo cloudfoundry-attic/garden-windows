@@ -1,7 +1,7 @@
 # Garden Windows 
 (Windows backend for Garden)
 
-For more information on Diego and Garden, pleasd refer to: [Garden](https://github.com/cloudfoundry-incubator/garden).
+For more information on Diego and Garden, please refer to: [Garden](https://github.com/cloudfoundry-incubator/garden).
 
 ## Development requirements
 
