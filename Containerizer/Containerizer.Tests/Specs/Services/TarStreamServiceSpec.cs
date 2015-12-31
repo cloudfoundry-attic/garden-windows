@@ -4,11 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Containerizer.Services.Implementations;
 using IronFrame;
 using Moq;
 using NSpec;
+using SharpCompress.Archive;
 using SharpCompress.Reader;
 
 #endregion
@@ -132,23 +134,21 @@ namespace Containerizer.Tests.Specs.Services
 
                 it["returns a stream with the files inside"] = () =>
                 {
-                    using (IReader tar = ReaderFactory.Open(tarStream))
+                    using (var tar = ArchiveFactory.Open(tarStream))
                     {
-                        tar.MoveToNextEntry().should_be_true();
-                        tar.Entry.Key.should_be("a_file.txt");
-
-                        tar.MoveToNextEntry().should_be_true();
-                        tar.Entry.Key.should_be("a_dir/another_file.txt");
+                        var entries = tar.Entries.Select(x => x.Key).ToList();
+                        entries.should_contain("a_file.txt");
+                        entries.should_contain("a_dir/another_file.txt");
                     }
                 };
 
                 it["has content in the files"] = () =>
                 {
-                    using (IReader tar = ReaderFactory.Open(tarStream))
+                    using (var tar = ArchiveFactory.Open(tarStream))
                     {
-                        tar.MoveToNextEntry().should_be_true();
-                        tar.Entry.Key.should_be("a_file.txt");
-                        GetString(tar.OpenEntryStream(), tar.Entry.Size).should_be("Some exciting text");
+                        var entries = tar.Entries.ToList();
+                        var aFile = entries.First(x => x.Key == "a_file.txt");
+                        GetString(aFile.OpenEntryStream(), aFile.Size).should_be("Some exciting text");
                     }
                 };
             };

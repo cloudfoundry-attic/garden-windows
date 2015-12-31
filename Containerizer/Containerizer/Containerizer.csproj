@@ -99,9 +99,6 @@
     <Reference Include="Owin.WebSocket">
       <HintPath>..\packages\Owin.WebSocket.1.3.1\lib\net45\Owin.WebSocket.dll</HintPath>
     </Reference>
-    <Reference Include="SharpCompress">
-      <HintPath>..\vendor\SharpCompress.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.DirectoryServices.AccountManagement" />
@@ -182,6 +179,11 @@
       </SubType>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Services\Implementations\ContainerInfoService.cs" />
     <Compile Include="Services\Implementations\Options.cs" />
     <Compile Include="Services\Implementations\RunService.cs" />
@@ -197,6 +199,7 @@
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\7za.exe" />
     <None Include="App.config" />
     <Content Include="packages.config">
       <SubType>Designer</SubType>
@@ -222,6 +225,15 @@
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="bin\" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
