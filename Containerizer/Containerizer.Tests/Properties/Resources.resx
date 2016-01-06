@@ -124,8 +124,14 @@
   <data name="bzip2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\bzip2.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="fixture1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\fixtures\fixture1.tgz;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="libarchive2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\libarchive2.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="longfile" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\fixtures\longfile.tar;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="zlib1" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\zlib1.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>

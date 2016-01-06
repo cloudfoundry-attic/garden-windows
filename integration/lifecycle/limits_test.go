@@ -216,7 +216,7 @@ var _ = Describe("Process limits", func() {
 						},
 					},
 				)
-				
+
 				err := StreamToDestination(container, "test")
 				Expect(err).Should(HaveOccurred())
 				metrics, err := container.Metrics()

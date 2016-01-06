@@ -1,11 +1,11 @@
 ﻿#region
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Containerizer.Services.Implementations;
 using IronFrame;
 using Moq;
@@ -22,24 +22,16 @@ namespace Containerizer.Tests.Specs.Services
         private Stream tarStream;
         private TarStreamService tarStreamService;
         private string tmpDir;
-        private string inputDir;
-        private string tarFile;
         private string outputDir;
 
         private void before_each()
         {
-            tmpDir = Path.Combine(@"C:\", Path.GetRandomFileName());
-            inputDir = Path.Combine(tmpDir, "input");
+            tmpDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             outputDir = Path.Combine(tmpDir, "output");
-            tarFile = Path.Combine(tmpDir, "output.tgz");
 
             Directory.CreateDirectory(tmpDir);
-            Directory.CreateDirectory(inputDir);
             Directory.CreateDirectory(outputDir);
 
-            var proc = Process.Start("icacls", tmpDir + " /grant \"everyone\":(OI)(CI)M");
-            proc.WaitForExit();
-            proc.ExitCode.should_be(0);
             tarStreamService = new TarStreamService();
         }
 
@@ -50,45 +42,72 @@ namespace Containerizer.Tests.Specs.Services
 
         private void describe_WriteTarStreamToPath()
         {
-            string destinationArchiveFileName = null;
             Mock<IContainer> containerMock = null;
-            LocalPrincipalManager userManager = null;
-            string username = null;
+            string mappedPath = null;
+            string tmpPath = null;
 
             before = () =>
             {
-                Helpers.AssertAdministratorPrivileges();
-
-                userManager = new LocalPrincipalManager();
-                var guid = System.Guid.NewGuid().ToString("N");
-                username = "if" + guid.Substring(0, 6);
-                var credentials = userManager.CreateUser(username);
                 containerMock = new Mock<IContainer>();
-                containerMock.Setup(x => x.ImpersonateContainerUser(It.IsAny<Action>())).Callback((Action x) => x());
 
-                Directory.CreateDirectory(Path.Combine(inputDir, "fooDir"));
-                File.WriteAllText(Path.Combine(inputDir, "content.txt"), "content");
-                File.WriteAllText(Path.Combine(inputDir, "fooDir", "content.txt"), "MOAR content");
-                new TarStreamService().CreateTarFromDirectory(inputDir, tarFile);
-                tarStream = new FileStream(tarFile, FileMode.Open);
-            };
+                mappedPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+                containerMock.Setup(x => x.Directory.MapBinPath(It.IsAny<String>())).Returns(mappedPath);
 
-            context["when the tar stream contains files and directories"] = () =>
-            {
-                act = () => tarStreamService.WriteTarStreamToPath(tarStream, containerMock.Object, outputDir);
-
-                it["writes the file to disk"] = () =>
-                {
-                    File.ReadAllLines(Path.Combine(outputDir, "content.txt")).should_be("content");
-                    File.ReadAllLines(Path.Combine(outputDir, "fooDir", "content.txt")).should_be("MOAR content");
-                };
+                tmpPath = Path.GetTempFileName();
+                tarStream = new FileStream(tmpPath, FileMode.Open);
             };
 
             after = () =>
             {
                 tarStream.Close();
-                File.Delete(tarFile);
-                userManager.DeleteUser(username);
+                File.Delete(tmpPath);
+            };
+
+            context["when the tar process returns a zero exit code"] = () =>
+            {
+                before = () =>
+                {
+                    var processMock = new Mock<IContainerProcess>();
+                    processMock.Setup(x => x.WaitForExit()).Returns(0);
+
+                    containerMock.Setup(x => x.Run(It.IsAny<ProcessSpec>(), It.IsAny<IProcessIO>()))
+                        .Returns(processMock.Object);
+                };
+
+                act = () => tarStreamService.WriteTarStreamToPath(tarStream, containerMock.Object, outputDir);
+
+                it["extracts the tar to the container"] = () =>
+                {
+                    var executablePath = new Regex(@"tar\.exe$");
+                    var arguments = new[] {"xf", mappedPath, "-C", outputDir};
+                    containerMock.Verify(x => x.Run(It.Is<ProcessSpec>(p => executablePath.IsMatch(p.ExecutablePath) && Enumerable.SequenceEqual(p.Arguments, arguments)), null));
+                };
+            };
+
+            context["when the tar process returns a non-zero exit code"] = () =>
+            {
+                before = () =>
+                {
+                    var processMock = new Mock<IContainerProcess>();
+                    processMock.Setup(x => x.WaitForExit()).Returns(1);
+
+                    containerMock.Setup(x => x.Run(It.IsAny<ProcessSpec>(), It.IsAny<IProcessIO>()))
+                        .Returns(processMock.Object);
+                };
+
+                it["throws an exception"] = () =>
+                {
+                    var passed = false;
+                    try
+                    {
+                        tarStreamService.WriteTarStreamToPath(tarStream, containerMock.Object, outputDir);
+                    } catch(Exception)
+                    {
+                        passed = true;
+                    }
+
+                    passed.should_be_true();
+                };
             };
         }
 
@@ -97,8 +116,8 @@ namespace Containerizer.Tests.Specs.Services
             before = () =>
             {
                 File.WriteAllText(Path.Combine(tmpDir, "a_file.txt"), "Some exciting text");
-                Directory.CreateDirectory(Path.Combine(tmpDir, "a_dir"));
-                File.WriteAllText(Path.Combine(tmpDir, "a_dir", "another_file.txt"), "Some different text");
+                Directory.CreateDirectory(Path.Combine(tmpDir, "a dir"));
+                File.WriteAllText(Path.Combine(tmpDir, "a dir", "another_file.txt"), "Some spacey text");
             };
 
             context["requesting a single file"] = () =>
@@ -137,8 +156,8 @@ namespace Containerizer.Tests.Specs.Services
                     using (var tar = ArchiveFactory.Open(tarStream))
                     {
                         var entries = tar.Entries.Select(x => x.Key).ToList();
-                        entries.should_contain("a_file.txt");
-                        entries.should_contain("a_dir/another_file.txt");
+                        entries.should_contain("./a_file.txt");
+                        entries.should_contain("./a dir/another_file.txt");
                     }
                 };
 
@@ -147,7 +166,8 @@ namespace Containerizer.Tests.Specs.Services
                     using (var tar = ArchiveFactory.Open(tarStream))
                     {
                         var entries = tar.Entries.ToList();
-                        var aFile = entries.First(x => x.Key == "a_file.txt");
+                        entries.Select(x => x.Key).should_contain("./a_file.txt");
+                        var aFile = entries.First(x => x.Key == "./a_file.txt");
                         GetString(aFile.OpenEntryStream(), aFile.Size).should_be("Some exciting text");
                     }
                 };

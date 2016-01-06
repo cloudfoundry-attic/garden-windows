@@ -1,12 +1,14 @@
 ﻿#region
 
 using System;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using Containerizer.Services.Implementations;
+using System.Reflection;
+using Containerizer.Tests.Properties;
 using NSpec;
-using SharpCompress.Reader;
 
 #endregion
 
@@ -16,19 +18,54 @@ namespace Containerizer.Tests.Specs.Features
     {
         private string handle;
         private Helpers.ContainerizerProcess process;
-        private string tgzPath;
+        private Stream tarStream;
+
+        private static string TarArchiverPath(string filename)
+        {
+            var uri = new Uri(Assembly.GetExecutingAssembly().CodeBase);
+            return Path.Combine(Path.GetDirectoryName(uri.LocalPath), filename);
+        }
+
+        private void before_all()
+        {
+            File.WriteAllBytes(TarArchiverPath("tar.exe"), Resources.bsdtar);
+            File.WriteAllBytes(TarArchiverPath("bzip2.dll"), Resources.bzip2);
+            File.WriteAllBytes(TarArchiverPath("libarchive2.dll"), Resources.libarchive2);
+            File.WriteAllBytes(TarArchiverPath("zlib1.dll"), Resources.zlib1);
+        }
 
         private void before_each()
         {
             process = Helpers.CreateContainerizerProcess();
-            tgzPath = Helpers.CreateTarFile();
+            tarStream = new MemoryStream(Resources.fixture1);
         }
 
         private void after_each()
         {
-            var tgzDirectory = Directory.GetParent(tgzPath);
-            tgzDirectory.Delete(true);
             process.Dispose();
+        }
+
+        private string WriteTarToDirectory(Stream tarStream)
+        {
+            var tmpPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            Directory.CreateDirectory(tmpPath);
+            var process = new Process()
+            {
+                StartInfo = new ProcessStartInfo()
+                {
+                    FileName = TarArchiverPath("tar.exe"),
+                    Arguments = "xf - -C" + tmpPath,
+                    RedirectStandardInput = true,
+                    UseShellExecute = false
+                }
+            };
+            process.Start();
+            using (var stdin = process.StandardInput)
+            {
+                tarStream.CopyTo(stdin.BaseStream);
+            }
+            process.WaitForExit();
+            return tmpPath;
         }
 
         private void describe_stream_in()
@@ -50,35 +87,34 @@ namespace Containerizer.Tests.Specs.Features
 
                         before = () =>
                         {
-                            responseMessage = Helpers.StreamIn(handle: handle, tgzPath: tgzPath, client: client);
+                            responseMessage = Helpers.StreamIn(handle: handle, tarStream: tarStream, client: client);
                         };
 
-                        it["returns a successful status code"] = () =>
+                        it["returns a tarred version of the file"] = () =>
                         {
                             responseMessage.IsSuccessStatusCode.should_be_true();
+
+                            HttpResponseMessage getTask =
+                                client.GetAsync("/api/containers/" + handle + "/files?source=/test/file.txt").Result;
+                            getTask.IsSuccessStatusCode.should_be_true();
+
+                            var resultStream = getTask.Content.ReadAsStreamAsync().Result;
+                            var extracted = WriteTarToDirectory(resultStream);
+                            var listing = Directory.GetFileSystemEntries(extracted).Select(Path.GetFileName);
+                            listing.Count().should_be(1);
+                            listing.should_contain("file.txt");
                         };
 
-                        context["and I stream the file out of the container"] = () =>
+                        it["allows files that have filenames > 100 characters"] = () =>
                         {
-                            it["returns a tarred version of the file"] = () =>
-                            {
-
-                                responseMessage.IsSuccessStatusCode.should_be_true();
-
-                                HttpResponseMessage getTask =
-                                    client.GetAsync("/api/containers/" + handle + "/files?source=/file.txt")
-                                        .GetAwaiter()
-                                        .GetResult();
-                                getTask.IsSuccessStatusCode.should_be_true();
-                                Stream tarStream = getTask.Content.ReadAsStreamAsync().GetAwaiter().GetResult();
-                                using (IReader tar = ReaderFactory.Open(tarStream))
-                                {
-                                    tar.MoveToNextEntry().should_be_true();
-                                    tar.Entry.Key.should_be("file.txt");
-
-                                    tar.MoveToNextEntry().should_be_false();
-                                }
-                            };
+                            var filename = 'l' + new String('o', 100) + "ngfile.txt";
+                            var getTask =
+                                client.GetAsync("/api/containers/" + handle + "/files?source=/test/" + filename).Result;
+                            getTask.StatusCode.should_be(HttpStatusCode.OK);
+                            var resultStream = getTask.Content.ReadAsStreamAsync().Result;
+                            var extracted = WriteTarToDirectory(resultStream);
+                            var listing = Directory.GetFileSystemEntries(extracted).Select(Path.GetFileName);
+                            listing.should_contain(filename);
                         };
                     };
                 };

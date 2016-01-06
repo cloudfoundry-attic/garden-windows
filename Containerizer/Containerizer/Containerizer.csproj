@@ -199,8 +199,11 @@
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\7za.exe" />
     <None Include="App.config" />
+    <None Include="Resources\bsdtar.exe" />
+    <None Include="Resources\bzip2.dll" />
+    <None Include="Resources\libarchive2.dll" />
+    <None Include="Resources\zlib1.dll" />
     <Content Include="packages.config">
       <SubType>Designer</SubType>
     </Content>
@@ -226,9 +229,7 @@
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="bin\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

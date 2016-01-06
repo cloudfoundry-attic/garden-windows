@@ -1,7 +1,10 @@
 ﻿#region
 
+using System;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
+using System.Security.AccessControl;
 using Containerizer.Properties;
 using Containerizer.Services.Interfaces;
 using IronFrame;
@@ -13,14 +16,18 @@ namespace Containerizer.Services.Implementations
     public class TarStreamService : ITarStreamService
     {
 
-        private static string TarArchiverPath()
+        private static string TarArchiverPath(string filename)
         {
-            return Path.Combine(Path.GetTempPath(), "7za.exe");
+            var uri = new Uri(Assembly.GetExecutingAssembly().CodeBase);
+            return Path.Combine(Path.GetDirectoryName(uri.LocalPath), filename);
         }
 
         public TarStreamService()
         {
-            File.WriteAllBytes(TarArchiverPath(), Resources.SevenZip);
+            File.WriteAllBytes(TarArchiverPath("tar.exe"), Resources.bsdtar);
+            File.WriteAllBytes(TarArchiverPath("bzip2.dll"), Resources.bzip2);
+            File.WriteAllBytes(TarArchiverPath("libarchive2.dll"), Resources.libarchive2);
+            File.WriteAllBytes(TarArchiverPath("zlib1.dll"), Resources.zlib1);
         }
 
         public Stream WriteTarToStream(string filePath)
@@ -38,41 +45,46 @@ namespace Containerizer.Services.Implementations
 
         public void WriteTarStreamToPath(Stream stream, IContainer container, string filePath)
         {
-            var process = new Process();
-            var processStartInfo = process.StartInfo;
-            processStartInfo.FileName = TarArchiverPath();
-            processStartInfo.Arguments = "x -y -ttar -si -o" + filePath;
-            processStartInfo.UseShellExecute = false;
-            processStartInfo.RedirectStandardInput = true;
-
-            process.Start();
-
-            using (var stdin = process.StandardInput)
+            var tmpFilePath = container.Directory.MapBinPath(Path.GetRandomFileName());
+            Directory.CreateDirectory(filePath);
+            using (var tmpFile = File.Create(tmpFilePath))
             {
-                stream.CopyTo(stdin.BaseStream);
+                stream.CopyTo(tmpFile);
             }
-
-            process.WaitForExit();
-
-            //container.ImpersonateContainerUser(() => reader.WriteAllToDirectory(filePath, ExtractOptions.ExtractFullPath | ExtractOptions.Overwrite));
+            var pSpec = new ProcessSpec()
+            {
+                ExecutablePath = TarArchiverPath("tar.exe"),
+                Arguments = new []{"xf", tmpFilePath, "-C", filePath},
+            };
+            var process = container.Run(pSpec, null);
+            var exitCode = process.WaitForExit();
+            if (exitCode != 0)
+                throw new Exception("Failed to extract stream");
+            File.Delete(tmpFilePath);
         }
 
         public void CreateTarFromDirectory(string sourceDirectoryName, string destinationArchiveFileName)
         {
-            var pattern = "";
+            string file;
+            string directory;
             if (File.GetAttributes(sourceDirectoryName).HasFlag(FileAttributes.Directory))
             {
-                pattern = @"/*";
+                file = ".";
+                directory = sourceDirectoryName;
+            }
+            else
+            {
+                file = Path.GetFileName(sourceDirectoryName);
+                directory = Path.GetDirectoryName(sourceDirectoryName);
             }
             var process = new Process();
             var processStartInfo = process.StartInfo;
-            processStartInfo.FileName = TarArchiverPath();
-            processStartInfo.Arguments = "a -y -ttar " + destinationArchiveFileName + " " + sourceDirectoryName + pattern;
+            processStartInfo.FileName = TarArchiverPath("tar.exe");
+            processStartInfo.Arguments = "cf " + destinationArchiveFileName + " -C " + directory + " " + file;
             processStartInfo.UseShellExecute = false;
 
             process.Start();
             process.WaitForExit();
-
         }
     }
 }
