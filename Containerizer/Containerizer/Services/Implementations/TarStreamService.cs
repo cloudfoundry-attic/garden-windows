@@ -22,7 +22,7 @@ namespace Containerizer.Services.Implementations
             return Path.Combine(Path.GetDirectoryName(uri.LocalPath), filename);
         }
 
-        public TarStreamService()
+        static TarStreamService()
         {
             File.WriteAllBytes(TarArchiverPath("tar.exe"), Resources.bsdtar);
             File.WriteAllBytes(TarArchiverPath("bzip2.dll"), Resources.bzip2);
