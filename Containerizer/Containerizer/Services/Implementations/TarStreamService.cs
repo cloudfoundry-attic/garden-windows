@@ -32,7 +32,7 @@ namespace Containerizer.Services.Implementations
 
         public Stream WriteTarToStream(string filePath)
         {
-            string tarPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".gz");
+            string tarPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             CreateTarFromDirectory(filePath, tarPath);
             Stream stream = File.OpenRead(tarPath);
             var buffer = new byte[stream.Length];
@@ -82,9 +82,13 @@ namespace Containerizer.Services.Implementations
             processStartInfo.FileName = TarArchiverPath("tar.exe");
             processStartInfo.Arguments = "cf " + destinationArchiveFileName + " -C " + directory + " " + file;
             processStartInfo.UseShellExecute = false;
-
             process.Start();
             process.WaitForExit();
+            var exitCode = process.ExitCode;
+            if (exitCode != 0)
+            {
+                throw new Exception("Failed to create archive");
+            }
         }
     }
 }
