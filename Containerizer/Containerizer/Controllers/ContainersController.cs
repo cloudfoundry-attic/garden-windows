@@ -83,7 +83,8 @@ namespace Containerizer.Controllers
             {
                 Handle = spec.Handle,
                 Properties = spec.Properties,
-                Environment = ContainerService.EnvsFromList(spec.Env)
+                Environment = ContainerService.EnvsFromList(spec.Env),
+                BindMounts = spec.BindMounts.Select(b => b.ToIronFrame()).ToArray()
             };
 
             try
@@ -108,10 +109,6 @@ namespace Containerizer.Controllers
             {
                 throw new HttpResponseException(Request.CreateResponse(HttpStatusCode.Conflict,
                     string.Format("handle already exists: {0}", spec.Handle)));
-            }
-            catch (Exception ex)
-            {
-                throw new HttpResponseException(Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message));
             }
         }
 

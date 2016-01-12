@@ -10,6 +10,7 @@ namespace Containerizer.Models
         public ContainerSpecApiModel ()
         {
             Limits = new Limits();
+            BindMounts = new BindMount[]{};
         }
 
         public string Handle
@@ -34,6 +35,30 @@ namespace Containerizer.Models
         public List<String> Env { get; set; }
 
         public Limits Limits { get; set; }
+
+       [JsonProperty("bind_mounts")]
+        public BindMount[] BindMounts { get; set; }
+    }
+
+    public class BindMount
+    {
+       [JsonProperty("src_path")]
+        public string SourcePath { get; set; }
+
+       [JsonProperty("dst_path")]
+        public string DestinationPath { get; set; }
+
+        public int Mode { get; set; }
+
+        public IronFrame.BindMount ToIronFrame()
+        {
+            return new IronFrame.BindMount()
+            {
+                SourcePath = this.SourcePath,
+                DestinationPath = this.DestinationPath,
+            };
+        }
+
     }
 
     public class Limits
