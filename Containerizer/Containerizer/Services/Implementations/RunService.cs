@@ -78,19 +78,14 @@ namespace Containerizer.Services.Implementations
                     processSpec.Environment["PORT"] = hostport;
                 }
                 // TODO: Remove this. This case is for the ssh daemon
-                var addressArgIdx = Array.FindIndex(processSpec.Arguments, s => s.StartsWith("/tmp/lifecycle/diego-sshd"));
+                var addressArgIdx = Array.FindIndex(processSpec.Arguments, s => s.StartsWith("-address="));
                 if (addressArgIdx != -1)
                 {
-                    var sshCmd = processSpec.Arguments[addressArgIdx].Split(' ');
-                    var addressFlag = sshCmd[1];
-                    var containerHostAndPort = addressFlag.Split('=')[1].Split(':');
-                    var containerHost = containerHostAndPort[0];
-                    var requestedSshPort = containerHostAndPort[1];
-                    var actualSshPort = container.GetProperty("ContainerPort:" + requestedSshPort);
-
-                    sshCmd[1] = "-address=" + containerHost + ":" + actualSshPort;
-                    processSpec.Arguments[addressArgIdx] = String.Join(" ", sshCmd);
-                    processSpec.Environment["ARGJSON"] = JsonConvert.SerializeObject(processSpec.Arguments);
+                    var containerAddr = processSpec.Arguments[addressArgIdx].Split(new Char[] { '=' })[1];
+                    var containerHostAndPort = containerAddr.Split(new Char[] { ':' });
+                    var containerPort = containerHostAndPort[1];
+                    var hostport = container.GetProperty("ContainerPort:" + containerPort);
+                    processSpec.Arguments[addressArgIdx] = "-address=" + containerHostAndPort[0] + ":" + hostport;
                 }
             }
         }
