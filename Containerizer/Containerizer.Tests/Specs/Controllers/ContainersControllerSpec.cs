@@ -298,21 +298,6 @@ namespace Containerizer.Tests.Specs.Controllers
                             httpResponse.Response.Content.ReadAsJsonString().should_be("handle already exists: foo");
                         };
                     };
-
-                    context["because other random exception"] = () =>
-                    {
-                        before = () =>
-                        {
-                            mockContainerService.Setup(x => x.CreateContainer(It.IsAny<ContainerSpec>())).Throws(new Exception("BOOM"));
-                        };
-
-                        it["throw HttpResponseException with the original exception's message"] = () =>
-                        {
-                            var httpResponse = ex.should_cast_to<HttpResponseException>();
-                            httpResponse.Response.StatusCode.should_be(HttpStatusCode.InternalServerError);
-                            httpResponse.Response.Content.ReadAsJsonString().should_be("BOOM");
-                        };
-                    };
                 };
             };
 
