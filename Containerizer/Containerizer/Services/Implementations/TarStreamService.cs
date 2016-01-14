@@ -4,7 +4,6 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using System.Security.AccessControl;
 using Containerizer.Properties;
 using Containerizer.Services.Interfaces;
 using IronFrame;
@@ -25,9 +24,7 @@ namespace Containerizer.Services.Implementations
         static TarStreamService()
         {
             File.WriteAllBytes(TarArchiverPath("tar.exe"), Resources.bsdtar);
-            File.WriteAllBytes(TarArchiverPath("bzip2.dll"), Resources.bzip2);
-            File.WriteAllBytes(TarArchiverPath("libarchive2.dll"), Resources.libarchive2);
-            File.WriteAllBytes(TarArchiverPath("zlib1.dll"), Resources.zlib1);
+            File.WriteAllBytes(TarArchiverPath("archive.dll"), Resources.archive);
         }
 
         public Stream WriteTarToStream(string filePath)

@@ -199,11 +199,9 @@
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\archive.dll" />
     <None Include="App.config" />
     <None Include="Resources\bsdtar.exe" />
-    <None Include="Resources\bzip2.dll" />
-    <None Include="Resources\libarchive2.dll" />
-    <None Include="Resources\zlib1.dll" />
     <Content Include="packages.config">
       <SubType>Designer</SubType>
     </Content>

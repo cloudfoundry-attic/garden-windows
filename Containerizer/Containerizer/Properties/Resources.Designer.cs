@@ -63,39 +63,19 @@ namespace Containerizer.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
+        internal static byte[] archive {
+            get {
+                object obj = ResourceManager.GetObject("archive", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
         internal static byte[] bsdtar {
             get {
                 object obj = ResourceManager.GetObject("bsdtar", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        internal static byte[] bzip2 {
-            get {
-                object obj = ResourceManager.GetObject("bzip2", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        internal static byte[] libarchive2 {
-            get {
-                object obj = ResourceManager.GetObject("libarchive2", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        internal static byte[] zlib1 {
-            get {
-                object obj = ResourceManager.GetObject("zlib1", resourceCulture);
                 return ((byte[])(obj));
             }
         }
