@@ -50,7 +50,7 @@ var _ = Describe("Websocket connections", func() {
 
 	It("aren't leaked when the process exits without errors", func() {
 		googleIPAddress := "74.125.226.164"
-		tarFile, err := os.Open("../bin/connect_to_remote_url.tgz")
+		tarFile, err := os.Open("../bin/connect_to_remote_url.tar")
 		Expect(err).ShouldNot(HaveOccurred())
 		defer tarFile.Close()
 		err = c.StreamIn(garden.StreamInSpec{Path: "bin", TarStream: tarFile})

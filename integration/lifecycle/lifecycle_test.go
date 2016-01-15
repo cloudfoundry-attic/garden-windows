@@ -27,7 +27,7 @@ var _ = Describe("Lifecycle", func() {
 
 	Describe("process", func() {
 		It("pid is returned", func() {
-			tarFile, err := os.Open("../bin/consume.tgz")
+			tarFile, err := os.Open("../bin/consume.tar")
 			Expect(err).ShouldNot(HaveOccurred())
 			defer tarFile.Close()
 
@@ -46,7 +46,7 @@ var _ = Describe("Lifecycle", func() {
 		})
 
 		It("can be signaled", func(done Done) {
-			for _, f := range []string{"../bin/loop.tgz", "../bin/launcher.tgz"} {
+			for _, f := range []string{"../bin/loop.tar", "../bin/launcher.tar"} {
 				tarFile, err := os.Open(f)
 				Expect(err).ShouldNot(HaveOccurred())
 				defer tarFile.Close()

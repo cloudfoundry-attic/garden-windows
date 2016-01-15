@@ -20,7 +20,7 @@ var _ = Describe("NetIn", func() {
 		Expect(err).ToNot(HaveOccurred())
 
 		// Put show_port.bat in container
-		tarFile, err := os.Open("../bin/show_port.tgz")
+		tarFile, err := os.Open("../bin/show_port.tar")
 		Expect(err).ShouldNot(HaveOccurred())
 		defer tarFile.Close()
 		err = c.StreamIn(garden.StreamInSpec{Path: "bin", TarStream: tarFile})

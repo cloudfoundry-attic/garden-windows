@@ -29,7 +29,7 @@ func createContainer(containerSpec garden.ContainerSpec) garden.Container {
 }
 
 func StreamToDestination(c garden.Container, destPath string) error {
-	tarFile, err := os.Open("../bin/consume.tgz")
+	tarFile, err := os.Open("../bin/consume.tar")
 	Expect(err).ShouldNot(HaveOccurred())
 	defer tarFile.Close()
 	return c.StreamIn(garden.StreamInSpec{Path: destPath, TarStream: tarFile})
