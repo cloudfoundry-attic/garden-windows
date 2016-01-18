@@ -199,7 +199,7 @@
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\archive.dll" />
+    <None Include="Resources\zlib1.dll" />
     <None Include="App.config" />
     <None Include="Resources\bsdtar.exe" />
     <Content Include="packages.config">

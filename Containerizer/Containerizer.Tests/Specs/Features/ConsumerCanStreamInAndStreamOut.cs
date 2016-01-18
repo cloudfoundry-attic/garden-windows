@@ -29,8 +29,6 @@ namespace Containerizer.Tests.Specs.Features
         private void before_all()
         {
             File.WriteAllBytes(TarArchiverPath("tar.exe"), Resources.bsdtar);
-            File.WriteAllBytes(TarArchiverPath("bzip2.dll"), Resources.bzip2);
-            File.WriteAllBytes(TarArchiverPath("libarchive2.dll"), Resources.libarchive2);
             File.WriteAllBytes(TarArchiverPath("zlib1.dll"), Resources.zlib1);
         }
 

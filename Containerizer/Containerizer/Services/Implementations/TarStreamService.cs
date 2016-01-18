@@ -24,7 +24,7 @@ namespace Containerizer.Services.Implementations
         static TarStreamService()
         {
             File.WriteAllBytes(TarArchiverPath("tar.exe"), Resources.bsdtar);
-            File.WriteAllBytes(TarArchiverPath("archive.dll"), Resources.archive);
+            File.WriteAllBytes(TarArchiverPath("zlib1.dll"), Resources.zlib1);
         }
 
         public Stream WriteTarToStream(string filePath)

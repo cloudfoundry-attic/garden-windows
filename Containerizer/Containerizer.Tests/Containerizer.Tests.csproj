@@ -213,12 +213,6 @@
     <None Include="Resources\bsdtar.exe" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\bzip2.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\libarchive2.dll" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\zlib1.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
