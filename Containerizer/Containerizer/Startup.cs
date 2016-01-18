@@ -4,7 +4,6 @@ using Autofac;
 using Autofac.Integration.WebApi;
 using Containerizer;
 using Containerizer.Controllers;
-using Microsoft.Owin.Logging;
 using Owin;
 using Owin.WebSocket.Extensions;
 using Containerizer.Services.Implementations;

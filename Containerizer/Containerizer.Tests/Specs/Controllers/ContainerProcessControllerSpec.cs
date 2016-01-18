@@ -8,7 +8,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Web.Http;
 using System.Web.Http.Results;
-using System.Xml.Schema;
 using Containerizer.Controllers;
 using Containerizer.Services.Interfaces;
 using Moq;

@@ -1,14 +1,11 @@
 ﻿#region
 
 using System;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.Web.Administration;
 using Newtonsoft.Json.Linq;
 using NSpec;
-using System.Net.Http.Headers;
 using System.Text;
 
 #endregion
