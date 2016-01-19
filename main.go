@@ -8,8 +8,8 @@ import (
 	"syscall"
 
 	"github.com/cloudfoundry-incubator/cf-lager"
-	"github.com/cloudfoundry-incubator/garden-windows/backend"
-	"github.com/cloudfoundry-incubator/garden-windows/dotnet"
+	"github.com/cloudfoundry/garden-windows/backend"
+	"github.com/cloudfoundry/garden-windows/dotnet"
 	"github.com/cloudfoundry-incubator/garden/server"
 	"github.com/cloudfoundry/dropsonde"
 	"github.com/pivotal-golang/lager"

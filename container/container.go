@@ -11,8 +11,8 @@ import (
 	"strings"
 
 	"github.com/cloudfoundry-incubator/garden"
-	"github.com/cloudfoundry-incubator/garden-windows/dotnet"
-	"github.com/cloudfoundry-incubator/garden-windows/process"
+	"github.com/cloudfoundry/garden-windows/dotnet"
+	"github.com/cloudfoundry/garden-windows/process"
 
 	"github.com/gorilla/websocket"
 	"github.com/pivotal-golang/lager"

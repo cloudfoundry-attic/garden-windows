@@ -9,7 +9,7 @@ import (
 	"github.com/onsi/gomega/gexec"
 	"github.com/tedsuo/ifrit"
 
-	"github.com/cloudfoundry-incubator/garden-windows/integration/helpers"
+	"github.com/cloudfoundry/garden-windows/integration/helpers"
 )
 
 var gardenBin, containerizerBin string

@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/cloudfoundry-incubator/garden"
-	"github.com/cloudfoundry-incubator/garden-windows/container"
-	"github.com/cloudfoundry-incubator/garden-windows/dotnet"
+	"github.com/cloudfoundry/garden-windows/container"
+	"github.com/cloudfoundry/garden-windows/dotnet"
 	"github.com/pivotal-golang/lager"
 )
 

@@ -20,7 +20,7 @@ For more information on Diego and Garden, please refer to: [Garden](https://gith
 
     scripts/update
 
-    cd $GOPATH/src/github.com/cloudfoundry-incubator/garden-windows/
+    cd $GOPATH/src/github.com/cloudfoundry/garden-windows/
 
     go install
 
@@ -43,7 +43,7 @@ containerizer
 Containerizer is a restful API to the
 [if_warden](https://github.com/cloudfoundry-incubator/if_warden) windows
 containerization technology. When it runs with [garden
-windows](https://github.com/cloudfoundry-incubator/garden-windows), it provides
+windows](https://github.com/cloudfoundry/garden-windows), it provides
 a [garden](https://github.com/cloudfoundry-incubator/garden) implementation.
 
 ## dependencies

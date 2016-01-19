@@ -17,7 +17,7 @@ import (
 var _ = Describe("bind mounts", func() {
 	It("works", func() {
 		client = startGarden()
-		exePath, err := gexec.Build("github.com/cloudfoundry-incubator/garden-windows/integration/bin/ls-files", "-race")
+		exePath, err := gexec.Build("github.com/cloudfoundry/garden-windows/integration/bin/ls-files", "-race")
 		Expect(err).ShouldNot(HaveOccurred())
 
 		tmpDir, err := ioutil.TempDir("", "")

@@ -8,9 +8,9 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/cloudfoundry-incubator/garden"
-	"github.com/cloudfoundry-incubator/garden-windows/backend"
-	"github.com/cloudfoundry-incubator/garden-windows/container"
-	"github.com/cloudfoundry-incubator/garden-windows/dotnet"
+	"github.com/cloudfoundry/garden-windows/backend"
+	"github.com/cloudfoundry/garden-windows/container"
+	"github.com/cloudfoundry/garden-windows/dotnet"
 	"github.com/pivotal-golang/lager/lagertest"
 
 	"time"

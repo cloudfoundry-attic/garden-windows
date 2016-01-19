@@ -12,7 +12,7 @@ import (
 	"github.com/pivotal-golang/lager/lagertest"
 
 	"github.com/cloudfoundry-incubator/garden"
-	"github.com/cloudfoundry-incubator/garden-windows/dotnet"
+	"github.com/cloudfoundry/garden-windows/dotnet"
 )
 
 var _ = Describe("process", func() {
