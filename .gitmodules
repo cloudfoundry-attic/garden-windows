@@ -1,6 +1,6 @@
 [submodule "Containerizer/IronFrame"]
 	path = Containerizer/IronFrame
-	url = https://github.com/cloudfoundry-incubator/ironframe
+	url = https://github.com/cloudfoundry/IronFrame
 [submodule "greenhouse-security-fixtures"]
 	path = greenhouse-security-fixtures
 	url = https://github.com/pivotal-cf/greenhouse-security-fixtures.git
