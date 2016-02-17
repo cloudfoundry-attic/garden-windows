@@ -15,9 +15,6 @@ import (
 	"github.com/pivotal-golang/lager"
 )
 
-const defaultHttpTimeout time.Duration = 10 * time.Second
-
-
 type Client struct {
 	logger     lager.Logger
 	baseUrl    *neturl.URL
@@ -25,7 +22,7 @@ type Client struct {
 }
 
 func NewClient(logger lager.Logger, baseUrl *neturl.URL) *Client {
-	return &Client{logger: logger, baseUrl: baseUrl, httpClient: &http.Client{Timeout: defaultHttpTimeout}}
+	return &Client{logger: logger, baseUrl: baseUrl, httpClient: &http.Client{}}
 }
 
 func (client *Client) ReadBody(url string) (io.ReadCloser, error) {
