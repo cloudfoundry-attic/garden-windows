@@ -40,6 +40,10 @@
 | Processes#SetTTY                 | Not Implemented                                                     |
 | Processes#Signal                 | Implemented (the signal argument is ignored, the process is killed) |
 
+# Limitations of Container#Create
+
+Supplying a base Docker image for your container via `RootFSPath` is not supported.
+
 # Limitations of Container#LimitCPU
 
 As opposed to garden linux, on windows we **will probably** (this
