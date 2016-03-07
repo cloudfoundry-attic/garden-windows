@@ -16,7 +16,7 @@ var _ = Describe("NetOut", func() {
 	var err error
 	var udpPort uint16 = 53
 	var tcpPort uint16 = 80
-	googleIPAddress := "74.125.226.164"
+	googleIPAddress := "173.194.207.101"
 	googleDNSServer := "8.8.8.8"
 
 	JustBeforeEach(func() {
@@ -108,7 +108,7 @@ var _ = Describe("NetOut", func() {
 		})
 
 		Describe("outbound tcp traffic", func() {
-			blockedGoogleIPAddress := "74.125.226.168"
+			blockedGoogleIPAddress := "173.194.207.100"
 
 			It("is disabled by default", func() {
 				helpers.AssertEventuallyProcessExitsWith(1, func() (garden.Process, error) {
