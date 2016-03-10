@@ -21,12 +21,6 @@ namespace Containerizer.Services.Implementations
             return Path.Combine(Path.GetDirectoryName(uri.LocalPath), filename);
         }
 
-        static TarStreamService()
-        {
-            File.WriteAllBytes(TarArchiverPath("tar.exe"), Resources.bsdtar);
-            File.WriteAllBytes(TarArchiverPath("zlib1.dll"), Resources.zlib1);
-        }
-
         public Stream WriteTarToStream(string filePath)
         {
             string tarPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
