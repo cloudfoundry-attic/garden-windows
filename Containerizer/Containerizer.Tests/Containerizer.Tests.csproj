@@ -131,7 +131,6 @@
     <Compile Include="Specs\ExtensionMethods.cs" />
     <Compile Include="Specs\Facades\FakeAspNetWebSocketContext.cs" />
     <Compile Include="Specs\Features\ConsumerCanDestroyContainerSpec.cs" />
-    <Compile Include="Specs\Features\ConsumerCanSetLimitsSpec.cs" />
     <Compile Include="Specs\Features\ConsumerCanUsePropertyAndInfoEndpointsSpec.cs" />
     <Compile Include="Specs\Features\ConsumerCanStreamInAndStreamOut.cs" />
     <Compile Include="Specs\Features\PingSpec.cs" />
@@ -219,4 +218,3 @@
   </Target>
   -->
 </Project>
-

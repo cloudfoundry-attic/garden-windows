@@ -38,20 +38,6 @@ namespace Containerizer.Controllers
         }
 
         [Route("api/containers/{handle}/memory_limit")]
-        [HttpPost]
-        public IHttpActionResult LimitMemory(string handle, MemoryLimits limits)
-        {
-            var container = containerService.GetContainerByHandle(handle);
-            if (container == null)
-            {
-                return NotFound();
-            }
-
-            if (limits.LimitInBytes != null) container.LimitMemory(limits.LimitInBytes.Value);
-            return Ok();
-        }
-
-        [Route("api/containers/{handle}/memory_limit")]
         [HttpGet]
         public IHttpActionResult CurrentMemoryLimit(string handle)
         {
@@ -63,21 +49,6 @@ namespace Containerizer.Controllers
             var limit = container.CurrentMemoryLimit();
             return Json(new MemoryLimits { LimitInBytes = limit });
         }
-
-        [Route("api/containers/{handle}/cpu_limit")]
-        [HttpPost]
-        public IHttpActionResult LimitCpu(string handle, CpuLimits limits)
-        {
-            var container = containerService.GetContainerByHandle(handle);
-            if (container == null)
-            {
-                return NotFound();
-            }
-
-            container.LimitCpu(ContainersController.CONTAINER_DEFAULT_CPU_WEIGHT);
-            return Ok();
-        }
-
 
         [Route("api/containers/{handle}/cpu_limit")]
         [HttpGet]
