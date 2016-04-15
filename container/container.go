@@ -19,9 +19,9 @@ import (
 )
 
 type container struct {
-	handle    string
-	logger    lager.Logger
-	client    *dotnet.Client
+	handle string
+	logger lager.Logger
+	client *dotnet.Client
 }
 
 type ports struct {
@@ -111,17 +111,8 @@ func (container *container) StreamOut(spec garden.StreamOutSpec) (io.ReadCloser,
 	return container.client.ReadBody(url)
 }
 
-func (container *container) LimitBandwidth(limits garden.BandwidthLimits) error {
-	return nil
-}
 func (container *container) CurrentBandwidthLimits() (garden.BandwidthLimits, error) {
 	return garden.BandwidthLimits{}, nil
-}
-
-func (container *container) LimitCPU(limits garden.CPULimits) error {
-	url := fmt.Sprintf("/api/containers/%s/cpu_limit", container.Handle())
-	err := container.client.Post(url, limits, nil)
-	return err
 }
 
 func (container *container) CurrentCPULimits() (garden.CPULimits, error) {
@@ -136,11 +127,6 @@ func (container *container) CurrentDiskLimits() (garden.DiskLimits, error) {
 	limits := garden.DiskLimits{}
 	err := container.client.Get(url, &limits)
 	return limits, err
-}
-
-func (container *container) LimitMemory(limits garden.MemoryLimits) error {
-	url := fmt.Sprintf("/api/containers/%s/memory_limit", container.Handle())
-	return container.client.Post(url, limits, nil)
 }
 
 func (container *container) CurrentMemoryLimits() (garden.MemoryLimits, error) {

@@ -144,52 +144,6 @@ var _ = Describe("container", func() {
 
 	})
 
-	Describe("LimitMemory", func() {
-		Context("Containerizer returns 200", func() {
-			var requestBody string
-			BeforeEach(func() {
-				server.AppendHandlers(
-					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("POST", "/api/containers/containerhandle/memory_limit"),
-						ghttp.RespondWith(200, `{}`),
-						func(w http.ResponseWriter, req *http.Request) {
-							body, err := ioutil.ReadAll(req.Body)
-							req.Body.Close()
-							Expect(err).ShouldNot(HaveOccurred())
-							requestBody = string(body)
-						},
-					),
-				)
-			})
-
-			It("sets limits on the container", func() {
-				limit := garden.MemoryLimits{LimitInBytes: 555}
-				err := container.LimitMemory(limit)
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(server.ReceivedRequests()).Should(HaveLen(1))
-				Expect(requestBody).Should(Equal(`{"limit_in_bytes":555}`))
-			})
-		})
-
-		Context("Containerizer returns non 200", func() {
-			BeforeEach(func() {
-				server.AppendHandlers(
-					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("POST", "/api/containers/containerhandle/memory_limit"),
-						ghttp.RespondWith(500, "{}"),
-					),
-				)
-			})
-
-			It("returns an error", func() {
-				limit := garden.MemoryLimits{LimitInBytes: 555}
-				err := container.LimitMemory(limit)
-				Expect(err).To(HaveOccurred())
-			})
-		})
-	})
-
 	Describe("CurrentDiskLimits", func() {
 		BeforeEach(func() {
 			server.AppendHandlers(
@@ -204,53 +158,6 @@ var _ = Describe("container", func() {
 			limit, err := container.CurrentDiskLimits()
 			Expect(err).NotTo(HaveOccurred())
 			Expect(limit.ByteHard).To(Equal(uint64(456)))
-		})
-	})
-
-	Describe("LimitCPU", func() {
-		var requestBody string
-		Context("success", func() {
-			BeforeEach(func() {
-				server.AppendHandlers(
-					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("POST", "/api/containers/containerhandle/cpu_limit"),
-						ghttp.RespondWith(200, `{}`),
-						func(w http.ResponseWriter, req *http.Request) {
-							body, err := ioutil.ReadAll(req.Body)
-							req.Body.Close()
-							Expect(err).ShouldNot(HaveOccurred())
-							requestBody = string(body)
-						},
-					),
-				)
-			})
-
-			It("sets limits on the container", func() {
-				limit := garden.CPULimits{LimitInShares: uint64(50)}
-				err := container.LimitCPU(limit)
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(server.ReceivedRequests()).Should(HaveLen(1))
-				Expect(requestBody).Should(Equal(`{"limit_in_shares":50}`))
-			})
-		})
-
-		Context("Containerizer returns non 200", func() {
-			BeforeEach(func() {
-				server.AppendHandlers(
-					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("POST", "/api/containers/containerhandle/cpu_limit"),
-						ghttp.RespondWith(500, "{}"),
-					),
-				)
-			})
-
-			It("returns an error", func() {
-				limit := garden.CPULimits{LimitInShares: 9001}
-				err := container.LimitCPU(limit)
-				Expect(server.ReceivedRequests()).Should(HaveLen(1))
-				Expect(err).To(HaveOccurred())
-			})
 		})
 	})
 

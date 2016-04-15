@@ -13,19 +13,25 @@ import (
 	uuid "github.com/nu7hatch/gouuid"
 )
 
-func createDefaultContainer() garden.Container {
+func createDefaultContainer() (garden.Container, error) {
 	return createContainer(garden.ContainerSpec{})
 }
 
-func createContainer(containerSpec garden.ContainerSpec) garden.Container {
+func createContainer(containerSpec garden.ContainerSpec) (garden.Container, error) {
 	handle, err := uuid.NewV4()
-	Expect(err).ShouldNot(HaveOccurred())
+	if err != nil {
+		return nil, err
+	}
 	containerSpec.Handle = handle.String()
 	container, err := client.Create(containerSpec)
-	Expect(err).ShouldNot(HaveOccurred())
+	if err != nil {
+		return nil, err
+	}
 	err = StreamIn(container)
-	Expect(err).ShouldNot(HaveOccurred())
-	return container
+	if err != nil {
+		return nil, err
+	}
+	return container, nil
 }
 
 func StreamToDestination(c garden.Container, destPath string) error {
@@ -66,32 +72,31 @@ var _ = Describe("Process limits", func() {
 
 	Describe("a started process", func() {
 		Describe("a memory limit", func() {
-			var container garden.Container
+			var (
+				container garden.Container
+				err       error
+			)
 			AfterEach(func() {
 				err := client.Destroy(container.Handle())
 				Expect(err).ShouldNot(HaveOccurred())
 			})
 
 			It("is enforced when changed at creation", func() {
-				container = createContainer(garden.ContainerSpec{
+				container, err = createContainer(garden.ContainerSpec{
 					Limits: garden.Limits{
 						Memory: garden.MemoryLimits{64 * 1024 * 1024},
 					},
 				})
-				AssertMemoryLimits(container)
-			})
-
-			It("is enforced when changed dynamically", func() {
-				container = createDefaultContainer()
-				err := container.LimitMemory(garden.MemoryLimits{64 * 1024 * 1024})
 				Expect(err).ShouldNot(HaveOccurred())
-
 				AssertMemoryLimits(container)
 			})
 
 			It("handles large limits", func() {
-				container = createDefaultContainer()
-				err := container.LimitMemory(garden.MemoryLimits{4 * 1024 * 1024 * 1024})
+				container, err = createContainer(garden.ContainerSpec{
+					Limits: garden.Limits{
+						Memory: garden.MemoryLimits{4 * 1024 * 1024 * 1024},
+					},
+				})
 				Expect(err).ShouldNot(HaveOccurred())
 			})
 		})
@@ -100,8 +105,20 @@ var _ = Describe("Process limits", func() {
 			var containers [2]garden.Container
 
 			BeforeEach(func() {
-				containers[0] = createDefaultContainer()
-				containers[1] = createDefaultContainer()
+				c1, err := createContainer(garden.ContainerSpec{
+					Limits: garden.Limits{
+						CPU: garden.CPULimits{LimitInShares: 2500},
+					},
+				})
+				Expect(err).ShouldNot(HaveOccurred())
+				c2, err := createContainer(garden.ContainerSpec{
+					Limits: garden.Limits{
+						CPU: garden.CPULimits{LimitInShares: 7500},
+					},
+				})
+				Expect(err).ShouldNot(HaveOccurred())
+				containers[0] = c1
+				containers[1] = c2
 			})
 
 			AfterEach(func() {
@@ -111,12 +128,6 @@ var _ = Describe("Process limits", func() {
 			})
 
 			It("is enforced", func() {
-				setCPU := func(container garden.Container, limit uint64) error {
-					return container.LimitCPU(garden.CPULimits{LimitInShares: limit})
-				}
-				Expect(setCPU(containers[0], 2500)).Should(Succeed())
-				Expect(setCPU(containers[1], 7500)).Should(Succeed())
-
 				cpuLimit, err := containers[0].CurrentCPULimits()
 				Expect(err).ToNot(HaveOccurred())
 				Expect(cpuLimit.LimitInShares).To(Equal(uint64(2500)))
@@ -168,7 +179,10 @@ var _ = Describe("Process limits", func() {
 		})
 
 		Describe("disk limits", func() {
-			var container garden.Container
+			var (
+				container garden.Container
+				err       error
+			)
 
 			AfterEach(func() {
 				err := client.Destroy(container.Handle())
@@ -178,13 +192,14 @@ var _ = Describe("Process limits", func() {
 			It("generated data is enforced", func() {
 				limitInBytes := uint64(15 * 1024 * 1024)
 
-				container = createContainer(
+				container, err = createContainer(
 					garden.ContainerSpec{
 						Limits: garden.Limits{
 							Disk: garden.DiskLimits{ByteHard: limitInBytes},
 						},
 					},
 				)
+				Expect(err).ShouldNot(HaveOccurred())
 
 				buf := make([]byte, 0, 1024*1024)
 				stdout := bytes.NewBuffer(buf)
@@ -209,15 +224,16 @@ var _ = Describe("Process limits", func() {
 
 			It("streamed in data is enforced", func() {
 				limit := uint64(8 * 1024 * 1024)
-				container = createContainer(
+				container, err = createContainer(
 					garden.ContainerSpec{
 						Limits: garden.Limits{
 							Disk: garden.DiskLimits{ByteHard: limit},
 						},
 					},
 				)
+				Expect(err).ShouldNot(HaveOccurred())
 
-				err := StreamToDestination(container, "test")
+				err = StreamToDestination(container, "test")
 				Expect(err).Should(HaveOccurred())
 				metrics, err := container.Metrics()
 				Expect(err).ShouldNot(HaveOccurred())
