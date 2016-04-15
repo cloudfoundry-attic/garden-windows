@@ -4,7 +4,6 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using Containerizer.Properties;
 using Containerizer.Services.Interfaces;
 using IronFrame;
 
@@ -14,7 +13,6 @@ namespace Containerizer.Services.Implementations
 {
     public class TarStreamService : ITarStreamService
     {
-
         private static string TarArchiverPath(string filename)
         {
             var uri = new Uri(Assembly.GetExecutingAssembly().CodeBase);
@@ -36,15 +34,23 @@ namespace Containerizer.Services.Implementations
 
         public void WriteTarStreamToPath(Stream stream, IContainer container, string filePath)
         {
+            var localPath = container.Directory.MapBinPath("tar.exe");
+            if (!File.Exists(localPath))
+            {
+                File.Copy(TarArchiverPath("tar.exe"), localPath);
+                File.Copy(TarArchiverPath("zlib1.dll"), container.Directory.MapBinPath("zlib1.dll"));
+            }
+
             var tmpFilePath = container.Directory.MapBinPath(Path.GetRandomFileName());
             Directory.CreateDirectory(filePath);
+
             using (var tmpFile = File.Create(tmpFilePath))
             {
                 stream.CopyTo(tmpFile);
             }
             var pSpec = new ProcessSpec()
             {
-                ExecutablePath = TarArchiverPath("tar.exe"),
+                ExecutablePath = localPath,
                 Arguments = new []{"xf", tmpFilePath, "-C", filePath},
             };
             var process = container.Run(pSpec, null);

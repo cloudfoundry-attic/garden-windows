@@ -1,11 +1,10 @@
 ﻿#region
 
 using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using Containerizer.Services.Implementations;
 using IronFrame;
 using Moq;
@@ -51,7 +50,15 @@ namespace Containerizer.Tests.Specs.Services
                 containerMock = new Mock<IContainer>();
 
                 mappedPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-                containerMock.Setup(x => x.Directory.MapBinPath(It.IsAny<String>())).Returns(mappedPath);
+                var binPath = Path.Combine(mappedPath, "bin");
+                Directory.CreateDirectory(binPath);
+
+                containerMock.Setup(x => x.Directory.MapBinPath(It.IsIn(new List<string>(){"tar.exe"}.AsEnumerable())))
+                    .Returns(Path.Combine(binPath,"tar.exe"));
+                containerMock.Setup(x => x.Directory.MapBinPath(It.IsIn(new List<string>(){"zlib1.dll"}.AsEnumerable())))
+                    .Returns(Path.Combine(binPath,"zlib1.dll"));
+                containerMock.Setup(x => x.Directory.MapBinPath(It.IsNotIn(new List<string>() {"tar.exe","zlib1.dll"}.AsEnumerable())))
+                    .Returns(Path.Combine(binPath, Path.GetRandomFileName()));
 
                 tmpPath = Path.GetTempFileName();
                 tarStream = new FileStream(tmpPath, FileMode.Open);
@@ -61,6 +68,28 @@ namespace Containerizer.Tests.Specs.Services
             {
                 tarStream.Close();
                 File.Delete(tmpPath);
+            };
+
+            context["when copying tar.exe to localPath"] = () =>
+            {
+                before = () =>
+                {
+                    var processMock = new Mock<IContainerProcess>();
+                    processMock.Setup(x => x.WaitForExit()).Returns(0);
+
+                    containerMock.Setup(x => x.Run(It.IsAny<ProcessSpec>(), It.IsAny<IProcessIO>()))
+                        .Returns(processMock.Object);
+                };
+
+                act = () => tarStreamService.WriteTarStreamToPath(tarStream, containerMock.Object, outputDir);
+
+                it["expects the tar.exe to exists in container bin directory"] = () =>
+                {
+                    var tarPath = containerMock.Object.Directory.MapBinPath("tar.exe");
+                    File.Exists(tarPath).should_be_true();
+                    var zlibPath = containerMock.Object.Directory.MapBinPath("zlib1.dll");
+                    File.Exists(zlibPath).should_be_true();
+                };
             };
 
             context["when the tar process returns a zero exit code"] = () =>
@@ -78,9 +107,10 @@ namespace Containerizer.Tests.Specs.Services
 
                 it["extracts the tar to the container"] = () =>
                 {
-                    var executablePath = new Regex(@"tar\.exe$");
-                    var arguments = new[] {"xf", mappedPath, "-C", outputDir};
-                    containerMock.Verify(x => x.Run(It.Is<ProcessSpec>(p => executablePath.IsMatch(p.ExecutablePath) && Enumerable.SequenceEqual(p.Arguments, arguments)), null));
+                    var arguments = new[] {"xf", "-C", outputDir};
+                    // Verify the processes arguments are a subset of the expected arguments.
+                    // We cannot check the temp file argument as it is random.
+                    containerMock.Verify(x => x.Run(It.Is<ProcessSpec>(p => !arguments.Except(p.Arguments).Any()), null));
                 };
             };
 
