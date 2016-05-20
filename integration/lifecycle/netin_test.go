@@ -81,5 +81,16 @@ var _ = Describe("NetIn", func() {
 		_, err = process.Wait()
 		Expect(err).ShouldNot(HaveOccurred())
 		Expect(stdout).Should(ContainSubstring(fmt.Sprintf("PORT=%v", externalPort2)))
+
+		By("Mapping 2's container arg port sets its env port from the mapping")
+		stdout = bytes.NewBuffer(make([]byte, 0, 1024*1024))
+		process, err = c.Run(garden.ProcessSpec{
+			Path: "bin/show_port.bat",
+			Args: []string{fmt.Sprintf("-port=%v", internalPort2)},
+		}, garden.ProcessIO{Stdout: stdout})
+		Expect(err).ShouldNot(HaveOccurred())
+		_, err = process.Wait()
+		Expect(err).ShouldNot(HaveOccurred())
+		Expect(stdout).Should(ContainSubstring(fmt.Sprintf("PORT=%v", externalPort2)))
 	})
 })
