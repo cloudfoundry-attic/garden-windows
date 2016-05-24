@@ -16,3 +16,5 @@ MSBuild IronFrame\Guard\Guard.vcxproj /t:Rebuild /p:Platform=x64 /p:Configuratio
 MSBuild Containerizer\Containerizer.csproj /t:Rebuild /p:Configuration=Release || exit /b 1
 MSBuild Containerizer.Tests\Containerizer.Tests.csproj /t:Rebuild /p:Configuration=Release || exit /b 1
 packages\nspec.0.9.68\tools\NSpecRunner.exe Containerizer.Tests\bin\Release\Containerizer.Tests.dll || exit /b 1
+
+robocopy Containerizer\bin\ ..\output\ ^& IF %ERRORLEVEL% LEQ 1 exit 0
