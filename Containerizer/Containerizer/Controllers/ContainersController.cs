@@ -130,7 +130,7 @@ namespace Containerizer.Controllers
         [HttpDelete]
         public IHttpActionResult Destroy(string handle)
         {
-            var container = containerService.GetContainerByHandle(handle);
+            var container = containerService.GetContainerByHandleIncludingDestroyed(handle);
             if (container != null)
             {
                 try

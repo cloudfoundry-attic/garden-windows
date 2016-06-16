@@ -355,7 +355,7 @@ namespace Containerizer.Tests.Specs.Controllers
                     before = () =>
                     {
                         mockContainer = new Mock<IContainer>();
-                        mockContainerService.Setup(x => x.GetContainerByHandle(handle)).Returns(mockContainer.Object);
+                        mockContainerService.Setup(x => x.GetContainerByHandleIncludingDestroyed(handle)).Returns(mockContainer.Object);
                     };
 
                     it["returns 200"] = () =>
@@ -382,7 +382,7 @@ namespace Containerizer.Tests.Specs.Controllers
                 {
                     before = () =>
                     {
-                        mockContainerService.Setup(x => x.GetContainerByHandle(handle)).Returns(null as IContainer);
+                        mockContainerService.Setup(x => x.GetContainerByHandleIncludingDestroyed(handle)).Returns(null as IContainer);
                     };
 
                     it["returns 404"] = () =>
