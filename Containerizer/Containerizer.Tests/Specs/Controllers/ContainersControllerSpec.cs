@@ -103,6 +103,17 @@ namespace Containerizer.Tests.Specs.Controllers
                     result.should_contain("handle2");
                     result.should_contain("handle3");
                 };
+
+                it["includes partially destroyed containers when a query is passed"] = () =>
+                {
+                    mockContainer1.Setup(x => x.GetProperties())
+                        .Returns(() => { throw new DirectoryNotFoundException(); });
+
+                    result = containersController.Index("{}");
+                    result.should_contain("handle1");
+                    result.should_contain("handle2");
+                    result.should_contain("handle3");
+                };
             };
 
             describe["#Create"] = () =>
