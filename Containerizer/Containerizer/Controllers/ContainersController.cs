@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.DirectoryServices.AccountManagement;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -44,7 +45,6 @@ namespace Containerizer.Controllers
         public IReadOnlyList<string> Index(string q = null)
         {
             IEnumerable<IContainer> containers = containerService.GetContainers();
-
             if (q != null)
             {
                 var desiredProps = JsonConvert.DeserializeObject<Dictionary<string, string>>(q);
@@ -65,7 +65,12 @@ namespace Containerizer.Controllers
                     {
                         return false;
                     }
+                    catch (DirectoryNotFoundException)
+                    {
+                        return true;
+                    }
                 });
+
             }
             return containers.Select(x => x.Handle).ToList();
         }
