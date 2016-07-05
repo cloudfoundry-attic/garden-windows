@@ -31,7 +31,7 @@ namespace Containerizer
                 int workerThreads, portFinishingThreads;
                 ThreadPool.GetMaxThreads(out workerThreads, out portFinishingThreads);
                 ThreadPool.SetMinThreads(workerThreads, portFinishingThreads);
-                using (WebApp.Start<Startup>("http://*:" + startOptions.Port + "/"))
+                using (WebApp.Start<Startup>("http://127.0.0.1:" + startOptions.Port + "/"))
                 {
                     logger.Info("containerizer.started", new Dictionary<string, object> { { "port", startOptions.Port }, { "machineIp", startOptions.MachineIp } });
                     ExitLatch.WaitOne();
