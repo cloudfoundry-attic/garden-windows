@@ -55,7 +55,7 @@ a [garden](https://github.com/cloudfoundry-incubator/garden) implementation.
 git on windows
 ==============
 
-we suggest: http://msysgit.github.io/
+We suggest: http://msysgit.github.io/
 
 
 building on the command line
