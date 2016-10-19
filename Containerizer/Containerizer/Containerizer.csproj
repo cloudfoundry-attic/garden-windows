@@ -170,6 +170,7 @@
     <Compile Include="Filters\ExceptionLoggingFilter.cs" />
     <Compile Include="Factories\ContainerServiceFactory.cs" />
     <Compile Include="Filters\LogActionFilter.cs" />
+    <Compile Include="LoggerTarget.cs" />
     <Compile Include="Models\ApiProcessSpec.cs" />
     <Compile Include="Models\ArgumentEscaper.cs" />
     <Compile Include="Models\ContainerInfo.cs" />

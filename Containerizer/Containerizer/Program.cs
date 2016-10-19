@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
 using Containerizer.Services.Implementations;
+using Logger;
 using Microsoft.Owin.Hosting;
 using System;
 using System.Threading;
-using CommandLine;
-using CommandLine.Text;
+using NLog;
+using NLog.Config;
+using LogLevel = NLog.LogLevel;
 
 namespace Containerizer
 {
@@ -15,6 +17,7 @@ namespace Containerizer
         static void Main(string[] args)
         {
             var logger = DependencyResolver.logger;
+            ConfigNLog(logger);
 
             var startOptions = new Options();
             if (CommandLine.Parser.Default.ParseArguments(args, startOptions))
@@ -37,6 +40,19 @@ namespace Containerizer
                     ExitLatch.WaitOne();
                 }
             }
+        }
+
+        static void ConfigNLog(ILogger logger)
+        {
+            var config = new LoggingConfiguration();
+
+            var loggerTarget = new LoggerTarget(logger);
+            config.AddTarget("logger", loggerTarget);
+            loggerTarget.Layout = "${message}";
+            var rule = new LoggingRule("*", LogLevel.Trace, loggerTarget);
+            config.LoggingRules.Add(rule);
+
+            LogManager.Configuration = config;
         }
     }
 }
