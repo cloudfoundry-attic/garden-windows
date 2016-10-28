@@ -3,7 +3,7 @@ package process
 import (
 	"fmt"
 
-	"github.com/cloudfoundry-incubator/garden"
+	"code.cloudfoundry.org/garden"
 	"github.com/cloudfoundry/garden-windows/dotnet"
 )
 

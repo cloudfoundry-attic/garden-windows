@@ -1,7 +1,7 @@
 # Garden Windows 
 (Windows backend for Garden)
 
-For more information on Diego and Garden, please refer to: [Garden](https://github.com/cloudfoundry-incubator/garden).
+For more information on Diego and Garden, please refer to: [Garden](https://code.cloudfoundry.org/garden).
 
 ## Development requirements
 
@@ -44,7 +44,7 @@ Containerizer is a restful API to the
 [if_warden](https://github.com/cloudfoundry-incubator/if_warden) windows
 containerization technology. When it runs with [garden
 windows](https://github.com/cloudfoundry/garden-windows), it provides
-a [garden](https://github.com/cloudfoundry-incubator/garden) implementation.
+a [garden](https://code.cloudfoundry.org/garden) implementation.
 
 ## dependencies
 - 64 bit version of Windows (tested with Windows Server 2012 R2 Standard)

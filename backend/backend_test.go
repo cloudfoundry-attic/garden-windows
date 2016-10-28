@@ -7,11 +7,11 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"github.com/cloudfoundry-incubator/garden"
+	"code.cloudfoundry.org/garden"
 	"github.com/cloudfoundry/garden-windows/backend"
 	"github.com/cloudfoundry/garden-windows/container"
 	"github.com/cloudfoundry/garden-windows/dotnet"
-	"github.com/pivotal-golang/lager/lagertest"
+	"code.cloudfoundry.org/lager/lagertest"
 
 	"time"
 

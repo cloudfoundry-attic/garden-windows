@@ -7,12 +7,12 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/cloudfoundry-incubator/cf-lager"
+	cf_lager "code.cloudfoundry.org/cflager"
+	"code.cloudfoundry.org/garden/server"
+	"code.cloudfoundry.org/lager"
+	"github.com/cloudfoundry/dropsonde"
 	"github.com/cloudfoundry/garden-windows/backend"
 	"github.com/cloudfoundry/garden-windows/dotnet"
-	"github.com/cloudfoundry-incubator/garden/server"
-	"github.com/cloudfoundry/dropsonde"
-	"github.com/pivotal-golang/lager"
 )
 
 var containerGraceTime = flag.Duration(

@@ -5,7 +5,7 @@ import (
 	"net"
 	"os"
 
-	"github.com/cloudfoundry-incubator/garden"
+	"code.cloudfoundry.org/garden"
 	"github.com/cloudfoundry/garden-windows/integration/helpers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -176,6 +176,68 @@ var _ = Describe("NetOut", func() {
 					return testConnection("udp", googleDNSServer, udpPort)
 				})
 				openPort(garden.ProtocolUDP, udpPort, "")
+
+				helpers.AssertEventuallyProcessExitsWith(0, func() (garden.Process, error) {
+					return testConnection("udp", googleDNSServer, udpPort)
+				})
+			})
+		})
+
+		Describe("bulk net out", func() {
+			blockedGoogleIPAddress := "173.194.207.100"
+			var blockedTCPPort uint16 = 443
+			It("applies multiple rules", func() {
+				helpers.AssertEventuallyProcessExitsWith(1, func() (garden.Process, error) {
+					return testConnection("tcp", googleIPAddress, tcpPort)
+				})
+				helpers.AssertEventuallyProcessExitsWith(1, func() (garden.Process, error) {
+					return testConnection("udp", googleDNSServer, udpPort)
+				})
+
+				rules := []garden.NetOutRule{
+					{
+						Protocol: garden.ProtocolTCP,
+						Networks: []garden.IPRange{
+							{
+								Start: net.ParseIP(googleIPAddress),
+								End:   net.ParseIP(googleIPAddress),
+							},
+						},
+						Ports: []garden.PortRange{
+							{Start: tcpPort, End: tcpPort},
+						},
+					},
+					{
+						Protocol: garden.ProtocolUDP,
+						Networks: []garden.IPRange{
+							{
+								Start: net.ParseIP(googleDNSServer),
+								End:   net.ParseIP(googleDNSServer),
+							},
+						},
+						Ports: []garden.PortRange{
+							{Start: udpPort, End: udpPort},
+						},
+					},
+				}
+
+				Expect(c.BulkNetOut(rules)).To(Succeed())
+
+				// check TCP
+
+				helpers.AssertEventuallyProcessExitsWith(0, func() (garden.Process, error) {
+					return testConnection("tcp", googleIPAddress, tcpPort)
+				})
+
+				helpers.AssertEventuallyProcessExitsWith(1, func() (garden.Process, error) {
+					return testConnection("tcp", blockedGoogleIPAddress, tcpPort)
+				})
+
+				helpers.AssertEventuallyProcessExitsWith(1, func() (garden.Process, error) {
+					return testConnection("tcp", googleIPAddress, blockedTCPPort)
+				})
+
+				// check UDP
 
 				helpers.AssertEventuallyProcessExitsWith(0, func() (garden.Process, error) {
 					return testConnection("udp", googleDNSServer, udpPort)

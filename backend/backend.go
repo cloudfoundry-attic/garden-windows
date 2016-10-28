@@ -6,10 +6,10 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/cloudfoundry-incubator/garden"
+	"code.cloudfoundry.org/garden"
 	"github.com/cloudfoundry/garden-windows/container"
 	"github.com/cloudfoundry/garden-windows/dotnet"
-	"github.com/pivotal-golang/lager"
+	"code.cloudfoundry.org/lager"
 )
 
 type dotNetBackend struct {

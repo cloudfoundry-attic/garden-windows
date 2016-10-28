@@ -10,12 +10,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/cloudfoundry-incubator/garden"
+	"code.cloudfoundry.org/garden"
 	"github.com/cloudfoundry/garden-windows/dotnet"
 	"github.com/cloudfoundry/garden-windows/process"
 
 	"github.com/gorilla/websocket"
-	"github.com/pivotal-golang/lager"
+	"code.cloudfoundry.org/lager"
 )
 
 type container struct {
@@ -151,6 +151,15 @@ func (container *container) NetIn(hostPort, containerPort uint32) (uint32, uint3
 func (container *container) NetOut(rule garden.NetOutRule) error {
 	url := fmt.Sprintf("/api/containers/%s/net/out", container.Handle())
 	return container.client.Post(url, rule, nil)
+}
+
+func (container *container) BulkNetOut(rules []garden.NetOutRule) error {
+	for _, rule := range rules {
+		if err := container.NetOut(rule); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (container *container) Run(processSpec garden.ProcessSpec, processIO garden.ProcessIO) (garden.Process, error) {

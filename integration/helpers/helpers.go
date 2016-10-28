@@ -10,7 +10,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/cloudfoundry-incubator/garden"
+	"code.cloudfoundry.org/garden"
 	"github.com/mitchellh/go-ps"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"

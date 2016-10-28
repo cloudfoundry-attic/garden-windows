@@ -1,13 +1,14 @@
 package container_test
 
 import (
+	"fmt"
 	"io"
 	"net"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"github.com/cloudfoundry-incubator/garden"
+	"code.cloudfoundry.org/garden"
 	netContainer "github.com/cloudfoundry/garden-windows/container"
 	"github.com/cloudfoundry/garden-windows/dotnet"
 	"github.com/cloudfoundry/garden-windows/process"
@@ -18,10 +19,10 @@ import (
 	"strings"
 	"time"
 
+	"code.cloudfoundry.org/lager/lagertest"
 	"github.com/gorilla/websocket"
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/ghttp"
-	"github.com/pivotal-golang/lager/lagertest"
 
 	"net/http"
 	"net/url"
@@ -347,6 +348,88 @@ var _ = Describe("container", func() {
 
 			It("returns the error", func() {
 				Expect(err).Should(MatchError(errors.New("user does not exist")))
+			})
+		})
+	})
+
+	Describe("BulkNetOut", func() {
+		var err error
+		ranges := []struct{ start, end string }{
+			{"0.0.0.0", "100.100.100.100"},
+			{"101.101.101.101", "200.200.200.200"},
+			{"201.201.201.201", "255.255.255.255"},
+		}
+		var rules []garden.NetOutRule
+		for _, x := range ranges {
+			rules = append(rules, garden.NetOutRule{
+				Protocol: garden.ProtocolTCP,
+				Networks: []garden.IPRange{{
+					Start: net.ParseIP(x.start),
+					End:   net.ParseIP(x.end),
+				}},
+			})
+		}
+		JustBeforeEach(func() {
+			err = container.BulkNetOut(rules)
+		})
+
+		Describe("succeeds", func() {
+			BeforeEach(func() {
+				for _, x := range ranges {
+					expRequest := fmt.Sprintf(`{"protocol":1,"networks":[{"start":"%s","end":"%s"}]}`, x.start, x.end)
+
+					server.AppendHandlers(
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("POST", "/api/containers/containerhandle/net/out"),
+							ghttp.RespondWith(200, ""),
+							func(w http.ResponseWriter, req *http.Request) {
+								body, err := ioutil.ReadAll(req.Body)
+								req.Body.Close()
+								Expect(err).ShouldNot(HaveOccurred())
+								Expect(string(body)).Should(Equal(expRequest))
+							},
+						),
+					)
+				}
+			})
+
+			It("delegates to containerizer", func() {
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(server.ReceivedRequests()).Should(HaveLen(len(rules)))
+			})
+		})
+
+		Describe("when Containerizer has an error", func() {
+			BeforeEach(func() {
+				for i, x := range ranges {
+					expRequest := fmt.Sprintf(`{"protocol":1,"networks":[{"start":"%s","end":"%s"}]}`, x.start, x.end)
+					if i >= 1 {
+						server.AppendHandlers(
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest("POST", "/api/containers/containerhandle/net/out"),
+								ghttp.RespondWith(500, fmt.Sprintf(`"user does not exist: %d"`, i)),
+							),
+						)
+						continue
+					}
+					server.AppendHandlers(
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("POST", "/api/containers/containerhandle/net/out"),
+							ghttp.RespondWith(200, ""),
+							func(w http.ResponseWriter, req *http.Request) {
+								body, err := ioutil.ReadAll(req.Body)
+								req.Body.Close()
+								Expect(err).ShouldNot(HaveOccurred())
+								Expect(string(body)).Should(Equal(expRequest))
+							},
+						),
+					)
+				}
+			})
+
+			It("returns the first error", func() {
+				Expect(err).Should(MatchError(errors.New("user does not exist: 1")))
+				Expect(server.ReceivedRequests()).Should(HaveLen(2))
 			})
 		})
 	})
