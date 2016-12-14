@@ -8,9 +8,9 @@ import (
 	. "github.com/onsi/gomega"
 
 	"code.cloudfoundry.org/garden"
-	"github.com/cloudfoundry/garden-windows/backend"
-	"github.com/cloudfoundry/garden-windows/container"
-	"github.com/cloudfoundry/garden-windows/dotnet"
+	"code.cloudfoundry.org/garden-windows/backend"
+	"code.cloudfoundry.org/garden-windows/container"
+	"code.cloudfoundry.org/garden-windows/dotnet"
 	"code.cloudfoundry.org/lager/lagertest"
 
 	"time"

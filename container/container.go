@@ -11,11 +11,11 @@ import (
 	"strings"
 
 	"code.cloudfoundry.org/garden"
-	"github.com/cloudfoundry/garden-windows/dotnet"
-	"github.com/cloudfoundry/garden-windows/process"
+	"code.cloudfoundry.org/garden-windows/dotnet"
+	"code.cloudfoundry.org/garden-windows/process"
 
-	"github.com/gorilla/websocket"
 	"code.cloudfoundry.org/lager"
+	"github.com/gorilla/websocket"
 )
 
 type container struct {

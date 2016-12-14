@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"code.cloudfoundry.org/garden"
-	"github.com/cloudfoundry/garden-windows/dotnet"
+	"code.cloudfoundry.org/garden-windows/dotnet"
 )
 
 type DotNetProcessExitStatus struct {

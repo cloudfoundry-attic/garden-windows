@@ -7,12 +7,12 @@ import (
 	"os/signal"
 	"syscall"
 
-	cf_lager "code.cloudfoundry.org/cflager"
+	"code.cloudfoundry.org/garden-windows/backend"
+	"code.cloudfoundry.org/garden-windows/dotnet"
 	"code.cloudfoundry.org/garden/server"
 	"code.cloudfoundry.org/lager"
+	"code.cloudfoundry.org/lager/lagerflags"
 	"github.com/cloudfoundry/dropsonde"
-	"github.com/cloudfoundry/garden-windows/backend"
-	"github.com/cloudfoundry/garden-windows/dotnet"
 )
 
 var containerGraceTime = flag.Duration(
@@ -62,10 +62,10 @@ func main() {
 		defaultListAddr,
 		"address to listen on",
 	)
-	cf_lager.AddFlags(flag.CommandLine)
+	lagerflags.AddFlags(flag.CommandLine)
 	flag.Parse()
 
-	logger, _ := cf_lager.New("garden-windows")
+	logger, _ := lagerflags.New("garden-windows")
 
 	initializeDropsonde(logger)
 

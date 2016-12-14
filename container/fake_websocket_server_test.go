@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"sync"
 
-	"github.com/cloudfoundry/garden-windows/container"
+	"code.cloudfoundry.org/garden-windows/container"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"github.com/hydrogen18/stoppableListener"

@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"code.cloudfoundry.org/garden"
-	"github.com/cloudfoundry/garden-windows/integration/helpers"
+	"code.cloudfoundry.org/garden-windows/integration/helpers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

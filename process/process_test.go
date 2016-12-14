@@ -6,13 +6,13 @@ import (
 	"net/url"
 	"time"
 
+	"code.cloudfoundry.org/lager/lagertest"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"
-	"code.cloudfoundry.org/lager/lagertest"
 
 	"code.cloudfoundry.org/garden"
-	"github.com/cloudfoundry/garden-windows/dotnet"
+	"code.cloudfoundry.org/garden-windows/dotnet"
 )
 
 var _ = Describe("process", func() {

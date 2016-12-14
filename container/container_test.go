@@ -9,9 +9,9 @@ import (
 	. "github.com/onsi/gomega"
 
 	"code.cloudfoundry.org/garden"
-	netContainer "github.com/cloudfoundry/garden-windows/container"
-	"github.com/cloudfoundry/garden-windows/dotnet"
-	"github.com/cloudfoundry/garden-windows/process"
+	netContainer "code.cloudfoundry.org/garden-windows/container"
+	"code.cloudfoundry.org/garden-windows/dotnet"
+	"code.cloudfoundry.org/garden-windows/process"
 
 	"io/ioutil"
 

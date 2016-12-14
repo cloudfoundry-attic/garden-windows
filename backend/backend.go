@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"code.cloudfoundry.org/garden"
-	"github.com/cloudfoundry/garden-windows/container"
-	"github.com/cloudfoundry/garden-windows/dotnet"
+	"code.cloudfoundry.org/garden-windows/container"
+	"code.cloudfoundry.org/garden-windows/dotnet"
 	"code.cloudfoundry.org/lager"
 )
 

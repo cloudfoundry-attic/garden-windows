@@ -19,8 +19,8 @@ import (
 	"github.com/tedsuo/ifrit/ginkgomon"
 	"github.com/tedsuo/ifrit/grouper"
 
-	garden_runner "github.com/cloudfoundry/garden-windows/integration/runner"
-	"github.com/cloudfoundry/loggregator/src/bitbucket.org/kardianos/osext"
+	garden_runner "code.cloudfoundry.org/garden-windows/integration/runner"
+	"github.com/kardianos/osext"
 )
 
 func BuildContainerizer() string {
@@ -44,7 +44,7 @@ func BuildContainerizer() string {
 }
 
 func BuildGarden() string {
-	gardenPath, err := gexec.Build("github.com/cloudfoundry/garden-windows", "-race")
+	gardenPath, err := gexec.Build("code.cloudfoundry.org/garden-windows", "-race")
 	Expect(err).ShouldNot(HaveOccurred())
 	return gardenPath
 }

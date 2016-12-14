@@ -16,7 +16,7 @@ For more information on Diego and Garden, please refer to: [Garden](https://code
 
     scripts/update
 
-    cd $GOPATH/src/github.com/cloudfoundry/garden-windows/
+    cd $GOPATH/src/code.cloudfoundry.org/garden-windows/
 
     go install
 
