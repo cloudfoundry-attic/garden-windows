@@ -30,7 +30,7 @@ namespace Containerizer.Controllers
         private const int DelayInMilliseconds = 1000;
         private readonly IContainerService containerService;
         private readonly ILogger logger;
-        private const uint CONTAINER_ACTIVE_PROCESS_LIMIT = 10;
+        private const uint CONTAINER_ACTIVE_PROCESS_LIMIT = 100;
         internal const int CONTAINER_DEFAULT_CPU_WEIGHT = 5;
         private static readonly object containerDeletionLock = new Object();
 
