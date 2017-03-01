@@ -64,6 +64,9 @@ func (dotNetBackend *dotNetBackend) Create(containerSpec garden.ContainerSpec) (
 	var returnedContainer createContainerResponse
 	err := dotNetBackend.client.Post("/api/containers", containerSpec, &returnedContainer)
 	netContainer := container.NewContainer(dotNetBackend.client, returnedContainer.Handle, dotNetBackend.logger)
+	if err != nil {
+		return netContainer, err
+	}
 	for _, v := range containerSpec.NetIn {
 		if _, _, err := netContainer.NetIn(v.HostPort, v.ContainerPort); err != nil {
 			return netContainer, err

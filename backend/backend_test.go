@@ -1,6 +1,7 @@
 package backend_test
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -139,88 +140,203 @@ var _ = Describe("backend", func() {
 
 	Describe("Create", func() {
 		var testContainer garden.ContainerSpec
-		ranges := []struct{ start, end string }{
-			{"0.0.0.0", "100.100.100.100"},
-			{"101.101.101.101", "200.200.200.200"},
-			{"201.201.201.201", "255.255.255.255"},
-		}
-		var rules []garden.NetOutRule
-		for _, x := range ranges {
-			rules = append(rules, garden.NetOutRule{
-				Protocol: garden.ProtocolTCP,
-				Networks: []garden.IPRange{{
-					Start: net.ParseIP(x.start),
-					End:   net.ParseIP(x.end),
-				}},
-			})
-		}
 
-		BeforeEach(func() {
-			testContainer = garden.ContainerSpec{
-				Handle:     "Fred",
-				GraceTime:  1 * time.Second,
-				RootFSPath: "/stuff",
-				Env: []string{
-					"jim",
-					"jane",
-				},
-				NetIn: []garden.NetIn{
-					{HostPort: 1234, ContainerPort: 3456},
-				},
-				NetOut: rules,
+		Describe("When valid settings", func() {
+			ranges := []struct{ start, end string }{
+				{"0.0.0.0", "100.100.100.100"},
+				{"101.101.101.101", "200.200.200.200"},
+				{"201.201.201.201", "255.255.255.255"},
 			}
-			server.AppendHandlers(
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("POST", "/api/containers"),
-					ghttp.VerifyJSONRepresenting(testContainer),
-					ghttp.RespondWith(200, `{"handle":"ServerChangedHandle"}`),
-				),
-				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("POST", "/api/containers/ServerChangedHandle/net/in"),
-					ghttp.RespondWith(200, `{"hostPort":1234}`),
-					func(w http.ResponseWriter, req *http.Request) {
-						body, err := ioutil.ReadAll(req.Body)
-						req.Body.Close()
-						Expect(err).ShouldNot(HaveOccurred())
-						Expect(string(body)).Should(Equal(`{"hostPort":1234,"containerPort":3456}`))
-					},
-				),
-			)
+			var rules []garden.NetOutRule
 			for _, x := range ranges {
-				expRequest := fmt.Sprintf(`{"protocol":1,"networks":[{"start":"%s","end":"%s"}]}`, x.start, x.end)
+				rules = append(rules, garden.NetOutRule{
+					Protocol: garden.ProtocolTCP,
+					Networks: []garden.IPRange{{
+						Start: net.ParseIP(x.start),
+						End:   net.ParseIP(x.end),
+					}},
+				})
+			}
 
+			BeforeEach(func() {
+				testContainer = garden.ContainerSpec{
+					Handle:     "Fred",
+					GraceTime:  1 * time.Second,
+					RootFSPath: "/stuff",
+					Env: []string{
+						"jim",
+						"jane",
+					},
+					NetIn: []garden.NetIn{
+						{HostPort: 1234, ContainerPort: 3456},
+					},
+					NetOut: rules,
+				}
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("POST", "/api/containers/ServerChangedHandle/net/out"),
-						ghttp.RespondWith(200, ""),
+						ghttp.VerifyRequest("POST", "/api/containers"),
+						ghttp.VerifyJSONRepresenting(testContainer),
+						ghttp.RespondWith(200, `{"handle":"ServerChangedHandle"}`),
+					),
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/containers/ServerChangedHandle/net/in"),
+						ghttp.RespondWith(200, `{"hostPort":1234}`),
 						func(w http.ResponseWriter, req *http.Request) {
 							body, err := ioutil.ReadAll(req.Body)
 							req.Body.Close()
 							Expect(err).ShouldNot(HaveOccurred())
-							Expect(string(body)).Should(Equal(expRequest))
+							Expect(string(body)).Should(Equal(`{"hostPort":1234,"containerPort":3456}`))
 						},
 					),
 				)
-			}
-		})
+				for _, x := range ranges {
+					expRequest := fmt.Sprintf(`{"protocol":1,"networks":[{"start":"%s","end":"%s"}]}`, x.start, x.end)
 
-		It("makes a call out to an external service", func() {
-			_, err := dotNetBackend.Create(testContainer)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(server.ReceivedRequests()).Should(HaveLen(2 + len(rules)))
-		})
+					server.AppendHandlers(
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("POST", "/api/containers/ServerChangedHandle/net/out"),
+							ghttp.RespondWith(200, ""),
+							func(w http.ResponseWriter, req *http.Request) {
+								body, err := ioutil.ReadAll(req.Body)
+								req.Body.Close()
+								Expect(err).ShouldNot(HaveOccurred())
+								Expect(string(body)).Should(Equal(expRequest))
+							},
+						),
+					)
+				}
+			})
 
-		It("sets the container's handle from the response", func() {
-			container, err := dotNetBackend.Create(testContainer)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(container.Handle()).To(Equal("ServerChangedHandle"))
-		})
-
-		Context("when there is an error making the http connection", func() {
-			It("returns an error", func() {
-				server.Close()
+			It("makes a call out to an external service", func() {
 				_, err := dotNetBackend.Create(testContainer)
-				Expect(err).To(HaveOccurred())
+				Expect(err).NotTo(HaveOccurred())
+				Expect(server.ReceivedRequests()).Should(HaveLen(2 + len(rules)))
+			})
+
+			It("sets the container's handle from the response", func() {
+				container, err := dotNetBackend.Create(testContainer)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(container.Handle()).To(Equal("ServerChangedHandle"))
+			})
+
+			Context("when there is an error making the http connection", func() {
+				It("returns an error", func() {
+					server.Close()
+					_, err := dotNetBackend.Create(testContainer)
+					Expect(err).To(HaveOccurred())
+				})
+			})
+		})
+
+		Describe("When misconfigured NetIn settings", func() {
+			BeforeEach(func() {
+				testContainer = garden.ContainerSpec{
+					Handle:     "Fred",
+					GraceTime:  1 * time.Second,
+					RootFSPath: "/stuff",
+					Env: []string{
+						"jim",
+						"jane",
+					},
+					NetIn: []garden.NetIn{
+						{HostPort: 1234, ContainerPort: 3456},
+					},
+				}
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/containers"),
+						ghttp.RespondWith(200, `{"handle":"ServerChangedHandle"}`),
+					),
+				)
+			})
+			Context("has an error", func() {
+				It("returns the error", func() {
+					server.AppendHandlers(
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("POST", "/api/containers/ServerChangedHandle/net/in"),
+							ghttp.RespondWith(200, `{"error":"Port in use"}`),
+						),
+					)
+					_, err := dotNetBackend.Create(testContainer)
+					Expect(err).Should(MatchError(errors.New("Port in use")))
+				})
+			})
+
+			Context("returns malformed JSON", func() {
+				It("returns the error", func() {
+					server.AppendHandlers(
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("POST", "/api/containers/ServerChangedHandle/net/in"),
+							ghttp.RespondWith(200, `hi { fred`),
+						),
+					)
+					_, err := dotNetBackend.Create(testContainer)
+					Expect(err).To(HaveOccurred())
+				})
+			})
+		})
+
+		Describe("When misconfigured NetOut settings", func() {
+			ranges := []struct{ start, end string }{
+				{"0.0.0.0", "100.100.100.100"},
+				{"101.101.101.101", "200.200.200.200"},
+				{"201.201.201.201", "255.255.255.255"},
+			}
+			var rules []garden.NetOutRule
+			for _, x := range ranges {
+				rules = append(rules, garden.NetOutRule{
+					Protocol: garden.ProtocolTCP,
+					Networks: []garden.IPRange{{
+						Start: net.ParseIP(x.start),
+						End:   net.ParseIP(x.end),
+					}},
+				})
+			}
+			BeforeEach(func() {
+				testContainer = garden.ContainerSpec{
+					Handle:     "Fred",
+					GraceTime:  1 * time.Second,
+					RootFSPath: "/stuff",
+					Env: []string{
+						"jim",
+						"jane",
+					},
+					NetOut: rules,
+				}
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/containers"),
+						ghttp.RespondWith(200, `{"handle":"ServerChangedHandle"}`),
+					),
+				)
+				for i, x := range ranges {
+					expRequest := fmt.Sprintf(`{"protocol":1,"networks":[{"start":"%s","end":"%s"}]}`, x.start, x.end)
+					if i >= 1 {
+						server.AppendHandlers(
+							ghttp.CombineHandlers(
+								ghttp.VerifyRequest("POST", "/api/containers/ServerChangedHandle/net/out"),
+								ghttp.RespondWith(500, fmt.Sprintf(`"user does not exist: %d"`, i)),
+							),
+						)
+						continue
+					}
+					server.AppendHandlers(
+						ghttp.CombineHandlers(
+							ghttp.VerifyRequest("POST", "/api/containers/ServerChangedHandle/net/out"),
+							ghttp.RespondWith(200, ""),
+							func(w http.ResponseWriter, req *http.Request) {
+								body, err := ioutil.ReadAll(req.Body)
+								req.Body.Close()
+								Expect(err).ShouldNot(HaveOccurred())
+								Expect(string(body)).Should(Equal(expRequest))
+							},
+						),
+					)
+				}
+			})
+			It("returns the first error", func() {
+				_, err := dotNetBackend.Create(testContainer)
+				Expect(err).Should(MatchError(errors.New("user does not exist: 1")))
 			})
 		})
 	})
