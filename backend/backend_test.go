@@ -1,6 +1,9 @@
 package backend_test
 
 import (
+	"fmt"
+	"io/ioutil"
+	"net"
 	"net/http"
 	"net/url"
 
@@ -136,6 +139,21 @@ var _ = Describe("backend", func() {
 
 	Describe("Create", func() {
 		var testContainer garden.ContainerSpec
+		ranges := []struct{ start, end string }{
+			{"0.0.0.0", "100.100.100.100"},
+			{"101.101.101.101", "200.200.200.200"},
+			{"201.201.201.201", "255.255.255.255"},
+		}
+		var rules []garden.NetOutRule
+		for _, x := range ranges {
+			rules = append(rules, garden.NetOutRule{
+				Protocol: garden.ProtocolTCP,
+				Networks: []garden.IPRange{{
+					Start: net.ParseIP(x.start),
+					End:   net.ParseIP(x.end),
+				}},
+			})
+		}
 
 		BeforeEach(func() {
 			testContainer = garden.ContainerSpec{
@@ -146,6 +164,10 @@ var _ = Describe("backend", func() {
 					"jim",
 					"jane",
 				},
+				NetIn: []garden.NetIn{
+					{HostPort: 1234, ContainerPort: 3456},
+				},
+				NetOut: rules,
 			}
 			server.AppendHandlers(
 				ghttp.CombineHandlers(
@@ -153,13 +175,39 @@ var _ = Describe("backend", func() {
 					ghttp.VerifyJSONRepresenting(testContainer),
 					ghttp.RespondWith(200, `{"handle":"ServerChangedHandle"}`),
 				),
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("POST", "/api/containers/ServerChangedHandle/net/in"),
+					ghttp.RespondWith(200, `{"hostPort":1234}`),
+					func(w http.ResponseWriter, req *http.Request) {
+						body, err := ioutil.ReadAll(req.Body)
+						req.Body.Close()
+						Expect(err).ShouldNot(HaveOccurred())
+						Expect(string(body)).Should(Equal(`{"hostPort":1234,"containerPort":3456}`))
+					},
+				),
 			)
+			for _, x := range ranges {
+				expRequest := fmt.Sprintf(`{"protocol":1,"networks":[{"start":"%s","end":"%s"}]}`, x.start, x.end)
+
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/api/containers/ServerChangedHandle/net/out"),
+						ghttp.RespondWith(200, ""),
+						func(w http.ResponseWriter, req *http.Request) {
+							body, err := ioutil.ReadAll(req.Body)
+							req.Body.Close()
+							Expect(err).ShouldNot(HaveOccurred())
+							Expect(string(body)).Should(Equal(expRequest))
+						},
+					),
+				)
+			}
 		})
 
 		It("makes a call out to an external service", func() {
 			_, err := dotNetBackend.Create(testContainer)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(server.ReceivedRequests()).Should(HaveLen(1))
+			Expect(server.ReceivedRequests()).Should(HaveLen(2 + len(rules)))
 		})
 
 		It("sets the container's handle from the response", func() {

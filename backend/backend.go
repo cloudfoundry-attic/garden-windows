@@ -60,16 +60,18 @@ func (dotNetBackend *dotNetBackend) Capacity() (garden.Capacity, error) {
 	return capacity, err
 }
 
-/*
-container = backend.Create(spec)
-bomber.Create(backend, container)
--  backend.GraceTime(container)
-*/
-
 func (dotNetBackend *dotNetBackend) Create(containerSpec garden.ContainerSpec) (garden.Container, error) {
 	var returnedContainer createContainerResponse
 	err := dotNetBackend.client.Post("/api/containers", containerSpec, &returnedContainer)
 	netContainer := container.NewContainer(dotNetBackend.client, returnedContainer.Handle, dotNetBackend.logger)
+	for _, v := range containerSpec.NetIn {
+		if _, _, err := netContainer.NetIn(v.HostPort, v.ContainerPort); err != nil {
+			return netContainer, err
+		}
+	}
+	if err = netContainer.BulkNetOut(containerSpec.NetOut); err != nil {
+		return netContainer, err
+	}
 	return netContainer, err
 }
 
