@@ -163,6 +163,12 @@ func (container *container) BulkNetOut(rules []garden.NetOutRule) error {
 }
 
 func (container *container) Run(processSpec garden.ProcessSpec, processIO garden.ProcessIO) (garden.Process, error) {
+	container.logger.Debug("container.Run.processSpec.Path", map[string]interface{}{"value": processSpec.Path})
+	container.logger.Debug("container.Run.processSpec.Args", map[string]interface{}{"value": processSpec.Args})
+	container.logger.Debug("container.Run.processSpec.Dir", map[string]interface{}{"value": processSpec.Dir})
+	container.logger.Debug("container.Run.processSpec.User", map[string]interface{}{"value": processSpec.User})
+	container.logger.Debug("container.Run.processSpec.Env", map[string]interface{}{"value": processSpec.Env})
+
 	wsUri := container.client.RunURL(container.Handle())
 	ws, _, err := websocket.DefaultDialer.Dial(wsUri, nil)
 	if err != nil {
