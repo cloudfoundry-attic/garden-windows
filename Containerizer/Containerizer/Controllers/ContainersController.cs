@@ -13,6 +13,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using Containerizer.Services.Interfaces;
 
 #endregion
 
@@ -28,16 +29,18 @@ namespace Containerizer.Controllers
     {
         private const int MaxRetrys = 5;
         private const int DelayInMilliseconds = 1000;
+        private readonly uint ContainerActiveProcessLimit;
         private readonly IContainerService containerService;
         private readonly ILogger logger;
-        private const uint CONTAINER_ACTIVE_PROCESS_LIMIT = 10;
+
         internal const int CONTAINER_DEFAULT_CPU_WEIGHT = 5;
         private static readonly object containerDeletionLock = new Object();
 
-        public ContainersController(IContainerService containerService, ILogger logger)
+        public ContainersController(IContainerService containerService, ILogger logger, IOptions options)
         {
             this.containerService = containerService;
             this.logger = logger;
+            this.ContainerActiveProcessLimit = (uint)options.ActiveProcessLimit;
         }
 
         [Route("api/containers")]
@@ -95,7 +98,7 @@ namespace Containerizer.Controllers
             try
             {
                 var container = containerService.CreateContainer(containerSpec);
-                container.SetActiveProcessLimit(CONTAINER_ACTIVE_PROCESS_LIMIT);
+                container.SetActiveProcessLimit(ContainerActiveProcessLimit);
                 container.SetPriorityClass(ProcessPriorityClass.BelowNormal);
                 container.LimitCpu(CONTAINER_DEFAULT_CPU_WEIGHT);
                 if (spec.Limits.MemoryLimits.LimitInBytes != null)

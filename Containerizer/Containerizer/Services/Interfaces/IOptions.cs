@@ -10,6 +10,6 @@ namespace Containerizer.Services.Interfaces
     {
          string MachineIp { get; }
          string ContainerDirectory { get; }
-
+         int ActiveProcessLimit { get; }
     }
 }
