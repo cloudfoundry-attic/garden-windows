@@ -10,7 +10,8 @@ namespace Containerizer.Services.Implementations
 {
     public class Options : IOptions
     {
-        private string containerDirectory; 
+        private string containerDirectory;
+        private int activeProcessLimit;
 
         [Option(
             Required = true,
@@ -38,6 +39,25 @@ namespace Containerizer.Services.Implementations
             set
             {
                 this.containerDirectory = value;
+            }
+        }
+
+        [Option("activeProcessLimit",
+            Required = false,
+            HelpText = "Max number of processes in container")]
+        public int ActiveProcessLimit
+        {
+            get
+            {
+                if (this.activeProcessLimit < 10)
+                {
+                    return 10;
+                }
+                return this.activeProcessLimit;
+            }
+            set
+            {
+                this.activeProcessLimit = value;
             }
         }
 

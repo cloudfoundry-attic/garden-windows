@@ -15,11 +15,30 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using Containerizer.Services.Interfaces;
 
 #endregion
 
 namespace Containerizer.Tests.Specs.Controllers
 {
+    public class MockOptions : IOptions
+    {
+
+        public string MachineIp
+        {
+            get { return ""; }
+        }
+
+        public string ContainerDirectory
+        {
+            get { return ""; }
+        }
+
+        public int ActiveProcessLimit
+        {
+            get { return 15; }
+        }
+    }
     internal class ContainersControllerSpec : nspec
     {
 
@@ -35,13 +54,15 @@ namespace Containerizer.Tests.Specs.Controllers
             ContainersController containersController = null;
             Mock<IContainerService> mockContainerService = null;
             Mock<ILogger> mockLogger = null;
-
+            MockOptions mockOptions = null;
 
             before = () =>
             {
                 mockContainerService = new Mock<IContainerService>();
                 mockLogger = new Mock<ILogger>();
-                containersController = new ContainersController(mockContainerService.Object, mockLogger.Object)
+                mockOptions = new MockOptions();
+
+                containersController = new ContainersController(mockContainerService.Object, mockLogger.Object, mockOptions)
                 {
                     Configuration = new HttpConfiguration(),
                     Request = new HttpRequestMessage()
@@ -152,7 +173,7 @@ namespace Containerizer.Tests.Specs.Controllers
                     it["sets ActiveProcessLimit on the Container"] = () =>
                     {
                         containersController.Create(containerSpec);
-                        mockContainer.Verify(x => x.SetActiveProcessLimit(10));
+                        mockContainer.Verify(x => x.SetActiveProcessLimit(15));
                     };
 
                     it["sets PriorityClass on the Container"] = () =>
