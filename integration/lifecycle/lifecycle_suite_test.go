@@ -21,8 +21,8 @@ var gardenProcess ifrit.Process
 var containerizerPort int
 var client garden.Client
 
-func startGarden(argv ...string) garden.Client {
-	gardenProcess, client = helpers.StartGarden(gardenBin, containerizerBin, argv...)
+func startGarden(maxContainerProcs int, argv ...string) garden.Client {
+	gardenProcess, client = helpers.StartGarden(gardenBin, containerizerBin, maxContainerProcs, argv...)
 	return client
 }
 

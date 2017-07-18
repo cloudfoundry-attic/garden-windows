@@ -15,7 +15,7 @@ var _ = Describe("Lifecycle", func() {
 	var err error
 
 	JustBeforeEach(func() {
-		client = startGarden()
+		client = startGarden(0)
 		c, err = client.Create(garden.ContainerSpec{})
 		Expect(err).ToNot(HaveOccurred())
 	})

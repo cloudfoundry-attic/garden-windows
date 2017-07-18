@@ -14,7 +14,7 @@ var _ = Describe("Gracetime", func() {
 
 	BeforeEach(func() {
 		gardenArgs = []string{}
-		client = startGarden(gardenArgs...)
+		client = startGarden(0, gardenArgs...)
 	})
 
 	It("can be specified at container creation", func() {

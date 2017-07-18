@@ -12,7 +12,7 @@ var _ = Describe("Container Metrics", func() {
 
 	BeforeEach(func() {
 		gardenArgs = []string{}
-		client = startGarden(gardenArgs...)
+		client = startGarden(0, gardenArgs...)
 	})
 
 	Describe("for a single container", func() {
