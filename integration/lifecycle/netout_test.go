@@ -20,7 +20,7 @@ var _ = Describe("NetOut", func() {
 	googleDNSServer := "8.8.8.8"
 
 	JustBeforeEach(func() {
-		client = startGarden()
+		client = startGarden(0)
 		c, err = client.Create(garden.ContainerSpec{})
 		Expect(err).ToNot(HaveOccurred())
 

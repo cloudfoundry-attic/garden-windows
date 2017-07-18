@@ -33,7 +33,7 @@ var _ = Describe("Websocket connections", func() {
 	}
 
 	JustBeforeEach(func() {
-		client = startGarden()
+		client = startGarden(0)
 		c, err = client.Create(garden.ContainerSpec{})
 		Expect(err).ToNot(HaveOccurred())
 		connsBefore = countConns()

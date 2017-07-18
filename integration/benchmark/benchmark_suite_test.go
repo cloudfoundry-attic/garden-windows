@@ -22,7 +22,7 @@ var containerizerPort int
 var client garden.Client
 
 func startGarden(argv ...string) garden.Client {
-	gardenProcess, client = helpers.StartGarden(gardenBin, containerizerBin, argv...)
+	gardenProcess, client = helpers.StartGarden(gardenBin, containerizerBin, 0, argv...)
 	return client
 }
 

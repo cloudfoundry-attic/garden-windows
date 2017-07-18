@@ -3,6 +3,7 @@ package lifecycle
 import (
 	"bytes"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 
@@ -63,28 +64,90 @@ func AssertMemoryLimits(container garden.Container) {
 }
 
 var _ = Describe("Process limits", func() {
-	var gardenArgs []string
+	var (
+		maxContainerProcs int
+		gardenArgs        []string
+		container         garden.Container
+	)
 
 	BeforeEach(func() {
 		gardenArgs = []string{}
-		client = startGarden(gardenArgs...)
+		maxContainerProcs = 0
+	})
+
+	AfterEach(func() {
+		if container != nil {
+			err := client.Destroy(container.Handle())
+			Expect(err).ShouldNot(HaveOccurred())
+		}
+	})
+
+	JustBeforeEach(func() {
+		client = startGarden(maxContainerProcs, gardenArgs...)
+	})
+
+	Context("container process limits", func() {
+		testMaxProcs := func(maxProcs int) {
+			containerProcs := maxProcs / 2
+			var err error
+			container, err = createContainer(garden.ContainerSpec{})
+			Expect(err).ShouldNot(HaveOccurred())
+
+			launchProc := func() {
+				_, err := container.Run(garden.ProcessSpec{
+					Path: "C:\\Windows\\System32\\cmd.exe",
+				}, garden.ProcessIO{})
+				Expect(err).NotTo(HaveOccurred())
+			}
+
+			for i := 0; i < containerProcs; i++ {
+				go func() {
+					defer GinkgoRecover()
+					launchProc()
+				}()
+			}
+
+			output, err := exec.Command("cmd.exe", "/C", "wmic process where (Name='IronFrame.Host.exe') get ProcessId").CombinedOutput()
+			Expect(err).NotTo(HaveOccurred())
+
+			containerPid := strings.Fields(string(output))[1]
+
+			getContainerProcCount := func() int {
+				output, err = exec.Command("cmd.exe", "/C", "wmic process where (ParentProcessId="+containerPid+") get ProcessId").CombinedOutput()
+				Expect(err).NotTo(HaveOccurred())
+
+				return len(strings.Fields(string(output))[1:])
+			}
+
+			Eventually(getContainerProcCount, "20s").Should(Equal(containerProcs))
+			launchProc()
+			Consistently(getContainerProcCount, "2s").Should(Equal(containerProcs))
+		}
+
+		Context("when configured with a max number of processes", func() {
+			BeforeEach(func() {
+				maxContainerProcs = 14
+			})
+
+			It("limits the number of active processes to the specified value", func() {
+				testMaxProcs(maxContainerProcs)
+			})
+		})
+
+		Context("when not configured with a max number of container processes", func() {
+			It("uses the default as the max number of active processes", func() {
+				testMaxProcs(10)
+			})
+		})
 	})
 
 	Describe("a started process", func() {
 		Describe("a memory limit", func() {
-			var (
-				container garden.Container
-				err       error
-			)
-			AfterEach(func() {
-				err := client.Destroy(container.Handle())
-				Expect(err).ShouldNot(HaveOccurred())
-			})
-
 			It("is enforced when changed at creation", func() {
+				var err error
 				container, err = createContainer(garden.ContainerSpec{
 					Limits: garden.Limits{
-						Memory: garden.MemoryLimits{64 * 1024 * 1024},
+						Memory: garden.MemoryLimits{LimitInBytes: 64 * 1024 * 1024},
 					},
 				})
 				Expect(err).ShouldNot(HaveOccurred())
@@ -92,9 +155,10 @@ var _ = Describe("Process limits", func() {
 			})
 
 			It("handles large limits", func() {
+				var err error
 				container, err = createContainer(garden.ContainerSpec{
 					Limits: garden.Limits{
-						Memory: garden.MemoryLimits{4 * 1024 * 1024 * 1024},
+						Memory: garden.MemoryLimits{LimitInBytes: 4 * 1024 * 1024 * 1024},
 					},
 				})
 				Expect(err).ShouldNot(HaveOccurred())
@@ -179,19 +243,10 @@ var _ = Describe("Process limits", func() {
 		})
 
 		Describe("disk limits", func() {
-			var (
-				container garden.Container
-				err       error
-			)
-
-			AfterEach(func() {
-				err := client.Destroy(container.Handle())
-				Expect(err).ShouldNot(HaveOccurred())
-			})
-
 			It("generated data is enforced", func() {
 				limitInBytes := uint64(15 * 1024 * 1024)
 
+				var err error
 				container, err = createContainer(
 					garden.ContainerSpec{
 						Limits: garden.Limits{
@@ -224,6 +279,7 @@ var _ = Describe("Process limits", func() {
 
 			It("streamed in data is enforced", func() {
 				limit := uint64(8 * 1024 * 1024)
+				var err error
 				container, err = createContainer(
 					garden.ContainerSpec{
 						Limits: garden.Limits{

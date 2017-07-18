@@ -49,7 +49,7 @@ func BuildGarden() string {
 	return gardenPath
 }
 
-func StartGarden(gardenBin, containerizerBin string, argv ...string) (ifrit.Process, garden.Client) {
+func StartGarden(gardenBin, containerizerBin string, maxContainerProcs int, argv ...string) (ifrit.Process, garden.Client) {
 	gardenPort, err := localip.LocalPort()
 	Expect(err).NotTo(HaveOccurred())
 	gardenAddr := fmt.Sprintf("127.0.0.1:%d", gardenPort)
@@ -61,10 +61,15 @@ func StartGarden(gardenBin, containerizerBin string, argv ...string) (ifrit.Proc
 
 	containerizerPort, err := localip.LocalPort()
 	Expect(err).NotTo(HaveOccurred())
+
+	containerizerArgs := []string{"--machineIp", "127.0.0.1", "--port", strconv.Itoa(int(containerizerPort))}
+	if maxContainerProcs != 0 {
+		containerizerArgs = append(containerizerArgs, "--activeProcessLimit", strconv.Itoa(maxContainerProcs))
+	}
 	gardenRunner := garden_runner.New("tcp4", gardenAddr, tmpDir, gardenBin, fmt.Sprintf("http://127.0.0.1:%d", containerizerPort))
 	containerizerRunner := ginkgomon.New(ginkgomon.Config{
 		Name:              "containerizer",
-		Command:           exec.Command(containerizerBin, "--machineIp", "127.0.0.1", "--port", strconv.Itoa(int(containerizerPort))),
+		Command:           exec.Command(containerizerBin, containerizerArgs...),
 		AnsiColorCode:     "",
 		StartCheck:        "containerizer.started",
 		StartCheckTimeout: 10 * time.Second,

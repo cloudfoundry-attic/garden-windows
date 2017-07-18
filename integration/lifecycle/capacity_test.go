@@ -7,7 +7,7 @@ import (
 
 var _ = Describe("Capacity", func() {
 	JustBeforeEach(func() {
-		client = startGarden()
+		client = startGarden(0)
 	})
 
 	It("returns positive numbers", func() {
