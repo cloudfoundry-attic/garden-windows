@@ -20,6 +20,7 @@ var gardenRunner *garden_runner.Runner
 var gardenProcess ifrit.Process
 var containerizerPort int
 var client garden.Client
+var lsExePath string
 
 func startGarden(maxContainerProcs int, argv ...string) garden.Client {
 	gardenProcess, client = helpers.StartGarden(gardenBin, containerizerBin, maxContainerProcs, argv...)
@@ -29,8 +30,13 @@ func startGarden(maxContainerProcs int, argv ...string) garden.Client {
 func TestLifecycle(t *testing.T) {
 
 	BeforeSuite(func() {
+		var err error
+
 		containerizerBin = helpers.BuildContainerizer()
 		gardenBin = helpers.BuildGarden()
+
+		lsExePath, err = gexec.Build("code.cloudfoundry.org/garden-windows/integration/bin/ls-files", "-race")
+		Expect(err).ShouldNot(HaveOccurred())
 	})
 
 	BeforeEach(func() {
