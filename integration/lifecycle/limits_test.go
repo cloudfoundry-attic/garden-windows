@@ -2,6 +2,7 @@ package lifecycle
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"os/exec"
 	"strconv"
@@ -244,7 +245,9 @@ var _ = Describe("Process limits", func() {
 
 		Describe("disk limits", func() {
 			It("generated data is enforced", func() {
-				limitInBytes := uint64(15 * 1024 * 1024)
+				limit := 15
+				limitInBytes := uint64(limit * 1024 * 1024)
+				limitExcludingConsumeBinary := limit - 8
 
 				var err error
 				container, err = createContainer(
@@ -261,14 +264,14 @@ var _ = Describe("Process limits", func() {
 
 				process, err := container.Run(garden.ProcessSpec{
 					Path: "bin/consume.exe",
-					Args: []string{"disk", "10"},
+					Args: []string{"disk", strconv.Itoa(limitExcludingConsumeBinary + 1)},
 				}, garden.ProcessIO{Stdout: stdout})
 				Expect(err).ShouldNot(HaveOccurred())
 
 				exitCode, err := process.Wait()
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(stdout.String()).To(ContainSubstring("Consumed:  3 mb"))
-				Expect(stdout.String()).NotTo(ContainSubstring("Consumed:  10 mb"))
+				Expect(stdout.String()).NotTo(ContainSubstring(fmt.Sprintf("Consumed:  %d mb", limitExcludingConsumeBinary+1)))
 				Expect(stdout.String()).NotTo(ContainSubstring("Disk Consumed Successfully"))
 				Expect(exitCode).NotTo(Equal(42), "process did not get killed")
 
