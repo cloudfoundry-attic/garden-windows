@@ -12,6 +12,7 @@ import (
 
 	"code.cloudfoundry.org/garden"
 	"github.com/mitchellh/go-ps"
+	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
 	"github.com/pivotal-golang/localip"
@@ -67,9 +68,12 @@ func StartGarden(gardenBin, containerizerBin string, maxContainerProcs int, argv
 		containerizerArgs = append(containerizerArgs, "--activeProcessLimit", strconv.Itoa(maxContainerProcs))
 	}
 	gardenRunner := garden_runner.New("tcp4", gardenAddr, tmpDir, gardenBin, fmt.Sprintf("http://127.0.0.1:%d", containerizerPort))
+	cRunner := exec.Command(containerizerBin, containerizerArgs...)
+	cRunner.Stdout = GinkgoWriter
+	cRunner.Stderr = GinkgoWriter
 	containerizerRunner := ginkgomon.New(ginkgomon.Config{
 		Name:              "containerizer",
-		Command:           exec.Command(containerizerBin, containerizerArgs...),
+		Command:           cRunner,
 		AnsiColorCode:     "",
 		StartCheck:        "containerizer.started",
 		StartCheckTimeout: 10 * time.Second,
