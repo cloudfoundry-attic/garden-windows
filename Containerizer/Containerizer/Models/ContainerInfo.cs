@@ -52,6 +52,7 @@ namespace Containerizer.Models
         public List<PortMappingApiModel> MappedPorts;
         public Dictionary<string, string> Properties;
         public string ExternalIP;
+        public string ContainerIP;
     }
 
 

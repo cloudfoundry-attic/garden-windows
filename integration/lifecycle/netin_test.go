@@ -8,6 +8,7 @@ import (
 	"code.cloudfoundry.org/garden"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/pivotal-golang/localip"
 )
 
 var _ = Describe("NetIn", func() {
@@ -48,6 +49,20 @@ var _ = Describe("NetIn", func() {
 		for _, mp := range info.MappedPorts {
 			Expect(mp.HostPort).To(Equal(mapping[mp.ContainerPort]))
 		}
+	})
+
+	It("sets external IP and container IP to the host IP", func() {
+		_, _, err := c.NetIn(0, 1234)
+		Expect(err).To(BeNil())
+
+		info, err := c.Info()
+		Expect(err).To(BeNil())
+
+		hostIP, err := localip.LocalIP()
+		Expect(err).To(BeNil())
+
+		Expect(info.ExternalIP).To(Equal(hostIP))
+		Expect(info.ContainerIP).To(Equal(hostIP))
 	})
 
 	It("overrides the container's internal port with it's external port", func() {

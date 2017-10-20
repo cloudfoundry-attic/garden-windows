@@ -62,8 +62,10 @@ func StartGarden(gardenBin, containerizerBin string, maxContainerProcs int, argv
 
 	containerizerPort, err := localip.LocalPort()
 	Expect(err).NotTo(HaveOccurred())
+	containerizerIp, err := localip.LocalIP()
+	Expect(err).NotTo(HaveOccurred())
 
-	containerizerArgs := []string{"--machineIp", "127.0.0.1", "--port", strconv.Itoa(int(containerizerPort))}
+	containerizerArgs := []string{"--machineIp", containerizerIp, "--port", strconv.Itoa(int(containerizerPort))}
 	if maxContainerProcs != 0 {
 		containerizerArgs = append(containerizerArgs, "--activeProcessLimit", strconv.Itoa(maxContainerProcs))
 	}
