@@ -32,15 +32,12 @@ func BuildContainerizer() string {
 	msbuild := path.Join(windir, "Microsoft.NET", "Framework64", "v4.0.30319", "MSBuild")
 	cmd := exec.Command(msbuild, `Containerizer.csproj`)
 	cmd.Dir = containerizerDir
+	cmd.Stdout = GinkgoWriter
+	cmd.Stderr = GinkgoWriter
 	Expect(cmd.Run()).To(Succeed(), "Cannot build containerizer. Make sure there are no compilation errors")
 	containerizerBin := path.Join(containerizerDir, "bin", "Containerizer.exe")
 	Expect(containerizerBin).To(BeAnExistingFile())
 
-	cmd = exec.Command(msbuild, `Containerizer.csproj`)
-	cmd.Dir = containerizerDir
-	Expect(cmd.Run()).To(Succeed(), "Cannot build containerizer. Make sure there are no compilation errors")
-	containerizerBin = path.Join(containerizerDir, "bin", "Containerizer.exe")
-	Expect(containerizerBin).To(BeAnExistingFile())
 	return containerizerBin
 }
 

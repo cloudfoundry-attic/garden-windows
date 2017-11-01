@@ -3,9 +3,11 @@ package lifecycle
 import (
 	"archive/tar"
 	"bytes"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"syscall"
@@ -22,6 +24,8 @@ var _ = Describe("bind mounts", func() {
 		mount       garden.BindMount
 		srcDir      string
 		tmpFileName string
+		sourceACL   string
+		symlinkDir  string
 	)
 
 	BeforeEach(func() {
@@ -30,6 +34,13 @@ var _ = Describe("bind mounts", func() {
 
 		srcDir, err = ioutil.TempDir("", "mount.src")
 		Expect(err).ShouldNot(HaveOccurred())
+
+		symlinkDir, err = ioutil.TempDir("", "bind-mount-symlink")
+		Expect(err).NotTo(HaveOccurred())
+
+		output, err := exec.Command("powershell", "-command", fmt.Sprintf("(get-acl %s).Access | fl", srcDir)).CombinedOutput()
+		Expect(err).NotTo(HaveOccurred())
+		sourceACL = string(output)
 
 		tmpFile, err := ioutil.TempFile(srcDir, "")
 		Expect(err).ShouldNot(HaveOccurred())
@@ -74,8 +85,23 @@ var _ = Describe("bind mounts", func() {
 	})
 
 	AfterEach(func() {
-		Expect(client.Destroy(container.Handle())).To(Succeed())
+		_, err := client.Lookup(container.Handle())
+		if err == nil {
+			Expect(client.Destroy(container.Handle())).To(Succeed())
+		} else {
+			Expect(err).To(MatchError(garden.ContainerNotFoundError{Handle: container.Handle()}))
+		}
+		Expect(srcDir).NotTo(Equal(""))
 		Expect(os.RemoveAll(srcDir)).To(Succeed())
+		Expect(symlinkDir).NotTo(Equal(""))
+		Expect(os.RemoveAll(symlinkDir)).To(Succeed())
+	})
+
+	It("removes the acls from the bind mount after deleting the container", func() {
+		Expect(client.Destroy(container.Handle())).To(Succeed())
+		output, err := exec.Command("powershell", "-command", fmt.Sprintf("(get-acl %s).Access | fl", srcDir)).CombinedOutput()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(string(output)).To(Equal(sourceACL))
 	})
 
 	It("makes the files visible in the container", func() {
@@ -112,14 +138,10 @@ var _ = Describe("bind mounts", func() {
 
 	Context("the source of the bind mount is a symlink", func() {
 		var (
-			symlinkDir string
-			symlink    string
+			symlink string
 		)
 
 		BeforeEach(func() {
-			var err error
-			symlinkDir, err = ioutil.TempDir("", "bind-mount-symlink")
-			Expect(err).NotTo(HaveOccurred())
 			symlink = filepath.Join(symlinkDir, "link-dir")
 			Expect(createSymlinkToDir(srcDir, symlink)).To(Succeed())
 
@@ -127,10 +149,6 @@ var _ = Describe("bind mounts", func() {
 				SrcPath: symlink,
 				DstPath: "bind-mount-destination",
 			}
-		})
-
-		AfterEach(func() {
-			Expect(os.RemoveAll(symlinkDir)).To(Succeed())
 		})
 
 		It("makes the files visible in the container", func() {
