@@ -38,9 +38,7 @@ var _ = Describe("bind mounts", func() {
 		symlinkDir, err = ioutil.TempDir("", "bind-mount-symlink")
 		Expect(err).NotTo(HaveOccurred())
 
-		output, err := exec.Command("powershell", "-command", fmt.Sprintf("(get-acl %s).Access | fl", srcDir)).CombinedOutput()
-		Expect(err).NotTo(HaveOccurred())
-		sourceACL = string(output)
+		sourceACL = getAcl(srcDir)
 
 		tmpFile, err := ioutil.TempFile(srcDir, "")
 		Expect(err).ShouldNot(HaveOccurred())
@@ -98,10 +96,16 @@ var _ = Describe("bind mounts", func() {
 	})
 
 	It("removes the acls from the bind mount after deleting the container", func() {
+		Expect(getAcl(srcDir)).NotTo(Equal(sourceACL))
 		Expect(client.Destroy(container.Handle())).To(Succeed())
-		output, err := exec.Command("powershell", "-command", fmt.Sprintf("(get-acl %s).Access | fl", srcDir)).CombinedOutput()
-		Expect(err).NotTo(HaveOccurred())
-		Expect(string(output)).To(Equal(sourceACL))
+		Expect(getAcl(srcDir)).To(Equal(sourceACL))
+	})
+
+	Context("when the bind mount source is deleted before the container", func() {
+		It("still successfully deletes the container", func() {
+			Expect(os.RemoveAll(srcDir)).To(Succeed())
+			Expect(client.Destroy(container.Handle())).To(Succeed())
+		})
 	})
 
 	It("makes the files visible in the container", func() {
@@ -138,12 +142,15 @@ var _ = Describe("bind mounts", func() {
 
 	Context("the source of the bind mount is a symlink", func() {
 		var (
-			symlink string
+			symlink    string
+			symlinkACL string
 		)
 
 		BeforeEach(func() {
 			symlink = filepath.Join(symlinkDir, "link-dir")
 			Expect(createSymlinkToDir(srcDir, symlink)).To(Succeed())
+
+			symlinkACL = getAcl(symlink)
 
 			mount = garden.BindMount{
 				SrcPath: symlink,
@@ -163,6 +170,12 @@ var _ = Describe("bind mounts", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 
 			Expect(stdout.String()).To(ContainSubstring(filepath.Base(tmpFileName)))
+		})
+
+		It("removes the acls from the bind mount after deleting the container", func() {
+			Expect(getAcl(symlink)).NotTo(Equal(symlinkACL))
+			Expect(client.Destroy(container.Handle())).To(Succeed())
+			Expect(getAcl(symlink)).To(Equal(symlinkACL))
 		})
 
 		It("does not allow writing files to the bindmounted directory", func() {
@@ -186,12 +199,15 @@ var _ = Describe("bind mounts", func() {
 
 		Context("the source of the bind mount is a symlink to a symlink", func() {
 			var (
-				symlink2 string
+				symlink2    string
+				symlink2ACL string
 			)
 
 			BeforeEach(func() {
 				symlink2 = filepath.Join(symlinkDir, "link-dir-2")
 				Expect(createSymlinkToDir(symlink, symlink2)).To(Succeed())
+
+				symlink2ACL = getAcl(symlink2)
 
 				mount = garden.BindMount{
 					SrcPath: symlink2,
@@ -211,6 +227,11 @@ var _ = Describe("bind mounts", func() {
 				Expect(err).ShouldNot(HaveOccurred())
 
 				Expect(stdout.String()).To(ContainSubstring(filepath.Base(tmpFileName)))
+			})
+
+			It("removes the acls from the bind mount after deleting the container", func() {
+				Expect(client.Destroy(container.Handle())).To(Succeed())
+				Expect(getAcl(symlink2)).To(Equal(symlink2ACL))
 			})
 
 			It("does not allow writing files to the bindmounted directory", func() {
@@ -304,4 +325,10 @@ func createSymlinkToDir(oldname, newname string) error {
 		return &os.LinkError{Op: "symlink", Old: oldname, New: newname, Err: err}
 	}
 	return nil
+}
+
+func getAcl(path string) string {
+	output, err := exec.Command("powershell", "-command", fmt.Sprintf("(get-acl %s).Access | fl", path)).CombinedOutput()
+	Expect(err).NotTo(HaveOccurred())
+	return string(output)
 }
