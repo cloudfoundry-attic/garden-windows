@@ -2,7 +2,10 @@ package lifecycle
 
 import (
 	"bytes"
+	"math/rand"
 	"os"
+	"strconv"
+	"sync"
 	"time"
 
 	"code.cloudfoundry.org/garden"
@@ -14,7 +17,7 @@ var _ = Describe("Lifecycle", func() {
 	var c garden.Container
 	var err error
 
-	JustBeforeEach(func() {
+	BeforeEach(func() {
 		client = startGarden(0)
 		c, err = client.Create(garden.ContainerSpec{})
 		Expect(err).ToNot(HaveOccurred())
@@ -23,6 +26,34 @@ var _ = Describe("Lifecycle", func() {
 	AfterEach(func() {
 		err := client.Destroy(c.Handle())
 		Expect(err).ShouldNot(HaveOccurred())
+	})
+
+	Describe("stream in", func() {
+		Context("many calls to streamIn are made simultaneously", func() {
+			It("succeeds", func() {
+				var wg sync.WaitGroup
+				for i := 0; i < 100; i++ {
+					wg.Add(1)
+					go func() {
+						defer GinkgoRecover()
+						defer wg.Done()
+
+						tarFile, err := os.Open("../bin/consume.tar")
+						Expect(err).ShouldNot(HaveOccurred())
+						defer tarFile.Close()
+
+						path := strconv.FormatInt(rand.Int63(), 10)
+
+						Expect(c.StreamIn(garden.StreamInSpec{
+							Path:      path,
+							TarStream: tarFile,
+						})).To(Succeed())
+					}()
+				}
+				wg.Wait()
+
+			})
+		})
 	})
 
 	Describe("process", func() {

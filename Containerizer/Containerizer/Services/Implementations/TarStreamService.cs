@@ -3,6 +3,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq.Expressions;
 using System.Reflection;
 using Containerizer.Services.Interfaces;
 using IronFrame;
@@ -35,10 +36,21 @@ namespace Containerizer.Services.Implementations
         public void WriteTarStreamToPath(Stream stream, IContainer container, string filePath)
         {
             var localPath = container.Directory.MapBinPath("tar.exe");
-            if (!File.Exists(localPath))
+            using (var tarMutex = new System.Threading.Mutex(false, localPath.Replace('\\', '_')))
             {
-                File.Copy(TarArchiverPath("tar.exe"), localPath);
-                File.Copy(TarArchiverPath("zlib1.dll"), container.Directory.MapBinPath("zlib1.dll"));
+                tarMutex.WaitOne();
+                try
+                {
+                    if (!File.Exists(localPath))
+                    {
+                        File.Copy(TarArchiverPath("tar.exe"), localPath);
+                        File.Copy(TarArchiverPath("zlib1.dll"), container.Directory.MapBinPath("zlib1.dll"));
+                    }
+                }
+                finally
+                {
+                    tarMutex.ReleaseMutex();
+                }
             }
 
             var tmpFilePath = container.Directory.MapBinPath(Path.GetRandomFileName());
