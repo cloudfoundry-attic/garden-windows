@@ -120,7 +120,7 @@ var _ = Describe("Process limits", func() {
 				return len(strings.Fields(string(output))[1:])
 			}
 
-			Eventually(getContainerProcCount, "20s").Should(Equal(containerProcs))
+			Eventually(getContainerProcCount, "120s").Should(Equal(containerProcs))
 			launchProc()
 			Consistently(getContainerProcCount, "2s").Should(Equal(containerProcs))
 		}
