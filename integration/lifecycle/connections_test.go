@@ -16,7 +16,7 @@ import (
 var _ = Describe("Websocket connections", func() {
 	var c garden.Container
 	var err error
-	var connsBefore, connsAfter int
+	var connsBefore int
 
 	countConns := func() int {
 		out, err := exec.Command("netstat", "-an").CombinedOutput()
@@ -40,7 +40,6 @@ var _ = Describe("Websocket connections", func() {
 	})
 
 	AfterEach(func() {
-		connsAfter = countConns()
 		Eventually(func() int {
 			return countConns()
 		}, "10s", "0.1s").Should(Equal(connsBefore))
